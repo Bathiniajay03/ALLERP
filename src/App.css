@@ -107,6 +107,205 @@
   max-height: 100vh;
 }
 
+/* Mobile Responsive Sidebar Layout */
+@media (max-width: 1024px) {
+  .app-shell {
+    grid-template-columns: 180px 1fr;
+  }
+
+  .app-sidebar {
+    padding: 12px;
+  }
+
+  .sidebar-link {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .app-main {
+    padding: 16px 12px 20px;
+  }
+
+  .operations-section .operations-header {
+    padding: 16px;
+  }
+
+  .operations-section .operations-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(280px, 85vw);
+    padding-top: 32px;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1100;
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-shell[data-sidebar-open="true"] .app-sidebar {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .app-main {
+    padding: 14px 12px 20px;
+    max-height: 100vh;
+  }
+
+  .sidebar-close-btn {
+    display: block;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+  }
+
+  .operations-section {
+    max-width: 100%;
+    padding: 0 8px 32px;
+  }
+
+  .operations-section .operations-header {
+    padding: 14px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .operations-section .operations-card {
+    padding: 14px;
+    border-radius: 12px;
+    margin-top: 16px;
+  }
+
+  .operations-section .operation-form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .operations-section .form-actions button {
+    min-width: 120px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .operations-section input,
+  .operations-section select {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .operations-section .lot-summary,
+  .operations-section .scanner-panel {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-sidebar {
+    width: min(320px, 90vw);
+    padding: 12px;
+  }
+
+  .sidebar-link {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .app-main {
+    padding: 12px 10px 16px;
+  }
+
+  .sidebar-close-btn {
+    top: 8px;
+    right: 8px;
+    padding: 3px;
+  }
+
+  .operations-section {
+    padding: 0 6px 24px;
+  }
+
+  .operations-section .operations-header {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .operations-section .operations-card {
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 12px;
+  }
+
+  .operations-section .operation-form-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .operations-section .form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .operations-section .form-actions button {
+    width: 100%;
+    min-width: unset;
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .operations-section input,
+  .operations-section select,
+  .operations-section button {
+    font-size: 12px;
+  }
+
+  .operations-section input,
+  .operations-section select {
+    padding: 8px 8px;
+  }
+
+  .operations-section .lot-summary,
+  .operations-section .scanner-panel {
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  .mobile-top-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .mobile-top-bar .btn {
+    min-width: 100px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .mobile-role {
+    font-size: 12px;
+  }
+}
+
 .app-page-bg {
   background: transparent;
 }
