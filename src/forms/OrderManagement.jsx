@@ -1659,6 +1659,94 @@ export default function OrderManagement() {
         .timeline-dot { width: 20px; height: 20px; border-radius: 50%; margin: 0 auto; position: relative; z-index: 2; border: 3px solid white; box-shadow: 0 0 0 1px #cbd5e1; }
         .rider-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
         .rider-modal-card { background: white; width: 100%; max-width: 380px; border-radius: 12px; }
+
+        @media (max-width: 992px) {
+          .erp-table-container {
+            max-width: 100%;
+          }
+
+          .erp-panel {
+            min-height: auto;
+          }
+
+          .erp-panel-header {
+            padding: 10px 14px;
+          }
+
+          .erp-label,
+          .erp-status-tag {
+            font-size: 0.75rem;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .erp-panel {
+            border-radius: 10px;
+          }
+
+          .erp-panel-header,
+          .field-row {
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+
+          .erp-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .table-responsive {
+            overflow-x: auto;
+            min-width: 100%;
+          }
+
+          .erp-table thead th,
+          .erp-table tbody td {
+            white-space: nowrap;
+            font-size: 0.76rem;
+          }
+
+          .erp-status-tag {
+            display: inline-block;
+            margin-bottom: 6px;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .erp-panel-header,
+          .erp-nav,
+          .d-flex.justify-content-between,
+          .timeline-container {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+
+          .erp-panel-header {
+            padding: 10px 12px;
+          }
+
+          .field-row label {
+            width: 100%;
+            margin-bottom: 4px;
+          }
+
+          .field-row input,
+          .field-row select,
+          .field-row textarea {
+            width: 100%;
+          }
+
+          .erp-table-container,
+          .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+          }
+
+          .erp-status-tag {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+          }
+        }
       `}</style>
     </div>
   );

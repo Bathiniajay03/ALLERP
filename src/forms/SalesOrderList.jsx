@@ -732,6 +732,115 @@ export default function SalesOrderList() {
             display: none !important;
           }
         }
+
+        /* Mobile Responsive ERP Sales Order List */
+        @media (max-width: 992px) {
+          .erp-panel.d-flex.flex-column.shadow-sm {
+            height: auto !important;
+            min-height: 0 !important;
+          }
+
+          .erp-table-container {
+            max-width: 100%;
+          }
+
+          .erp-table thead th,
+          .erp-table tbody td {
+            white-space: normal !important;
+          }
+
+          .erp-table tbody td {
+            font-size: 0.75rem;
+          }
+
+          .row.g-4 {
+            gap: 16px !important;
+          }
+
+          .col-lg-5,
+          .col-xl-4,
+          .col-lg-7,
+          .col-xl-8,
+          .col-md-6,
+          .col-12 {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 0 0 100% !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .erp-panel-header {
+            padding: 10px 12px;
+          }
+
+          .erp-section-title {
+            font-size: 0.7rem;
+            margin-bottom: 10px;
+          }
+
+          .erp-input,
+          .form-control.erp-input,
+          .form-select.erp-input {
+            font-size: 0.8rem;
+            padding: 8px 10px;
+          }
+
+          .erp-btn,
+          .btn {
+            font-size: 0.75rem;
+            padding: 8px 10px;
+          }
+
+          .erp-dialog-body {
+            padding: 16px;
+          }
+
+          .erp-dialog-lg {
+            max-width: 100%;
+            margin: 0 12px;
+          }
+
+          .erp-dialog-header {
+            flex-wrap: wrap;
+            gap: 8px;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .erp-panel-header,
+          .erp-dialog-header,
+          .d-flex.justify-content-between.align-items-end {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px;
+          }
+
+          .erp-table {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+          }
+
+          .erp-table thead th,
+          .erp-table tbody td {
+            white-space: nowrap;
+            font-size: 0.75rem;
+          }
+
+          .erp-table thead th {
+            padding: 8px 10px;
+          }
+
+          .erp-table tbody td {
+            padding: 8px 10px;
+            min-width: 120px;
+          }
+
+          .erp-dialog-body {
+            padding: 12px;
+          }
+        }
       `}</style>
     </div>
   );

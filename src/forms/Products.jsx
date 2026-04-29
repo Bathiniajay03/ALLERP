@@ -3546,6 +3546,102 @@ export default function SmartERP() {
           transition: transform 0.2s ease;
         }
         .erp-kpi:hover { transform: translateY(-2px); }
+
+        @media (max-width: 992px) {
+          .erp-nav {
+            flex-direction: column;
+            gap: 10px;
+          }
+
+          .tab-link {
+            padding: 10px 16px;
+            font-size: 13px;
+          }
+
+          .field-row {
+            flex-wrap: wrap;
+          }
+
+          .field-row label {
+            width: 100%;
+          }
+
+          .field-row input,
+          .field-row select,
+          .field-row textarea {
+            width: 100%;
+          }
+
+          .erp-group-box {
+            padding: 20px 16px;
+          }
+
+          .erp-kpi {
+            padding: 18px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .field-row {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .field-row label {
+            margin-bottom: 8px;
+          }
+
+          .erp-tabs {
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 12px;
+          }
+
+          .erp-btn {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .erp-group-box {
+            padding: 18px 14px;
+          }
+
+          .erp-table-container,
+          .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+          }
+
+          .erp-panel {
+            min-height: auto;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .erp-btn {
+            padding: 10px 14px;
+            font-size: 12px;
+          }
+
+          .field-row {
+            gap: 10px;
+          }
+
+          .field-row label {
+            font-size: 12px;
+          }
+
+          .field-row input,
+          .field-row select,
+          .field-row textarea {
+            font-size: 13px;
+          }
+
+          .box-title {
+            font-size: 11px;
+            left: 14px;
+          }
+        }
       `}</style>
     </div>
   );
