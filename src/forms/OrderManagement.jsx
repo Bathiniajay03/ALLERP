@@ -1166,7 +1166,8 @@ export default function OrderManagement() {
   
   // UI States
   const [showPastOrders, setShowPastOrders] = useState(false);
-  const [viewingRider, setViewingRider] = useState(null); 
+  const [viewingRider, setViewingRider] = useState(null);
+  const [automationEnabled, setAutomationEnabled] = useState(true); 
 
   // Form States
   const [assignForm, setAssignForm] = useState({ orderId: "", packerId: "" });
@@ -1174,6 +1175,33 @@ export default function OrderManagement() {
   const [riderForm, setRiderForm] = useState({ orderId: "", riderId: "" });
   
   const orderDetailsRef = useRef(null);
+  const autoPackTimerRef = useRef(null);
+
+  const getActivePackers = useMemo(() => packers.filter((p) => p.isActive !== false), [packers]);
+  const getActiveRiders = useMemo(() => riders.filter((r) => (r.isActive ?? true)), [riders]);
+
+  const riderTotalStats = useMemo(() => {
+    const stats = {};
+    orders.forEach(o => {
+      const rid = o.deliveryStatus?.riderId || o.assignedRiderId;
+      if (rid) stats[rid] = (stats[rid] || 0) + 1;
+    });
+    return stats;
+  }, [orders]);
+
+  const chooseLeastBusyPacker = useCallback(() => {
+    if (getActivePackers.length === 0) return null;
+    return [...getActivePackers].sort((a, b) => (a.assignedOrders || 0) - (b.assignedOrders || 0))[0];
+  }, [getActivePackers]);
+
+  const chooseNextRider = useCallback(() => {
+    if (getActiveRiders.length === 0) return null;
+    return [...getActiveRiders].sort((a, b) => {
+      const countA = riderTotalStats[a.riderId] || 0;
+      const countB = riderTotalStats[b.riderId] || 0;
+      return countA - countB;
+    })[0];
+  }, [getActiveRiders, riderTotalStats]);
 
   // --- Data Sync ---
   const loadData = useCallback(async () => {
@@ -1210,15 +1238,6 @@ export default function OrderManagement() {
   const activeOrders = useMemo(() => orders.filter(o => ACTIVE_ORDER_STATUSES.includes(o.status)), [orders]);
   const pastOrders = useMemo(() => orders.filter(o => ["Delivered", "Cancelled"].includes(o.status)), [orders]);
   const selectedOrder = useMemo(() => orders.find(o => String(o.id) === String(selectedOrderId)), [orders, selectedOrderId]);
-
-  const riderTotalStats = useMemo(() => {
-    const stats = {};
-    orders.forEach(o => {
-      const rid = o.deliveryStatus?.riderId || o.assignedRiderId;
-      if (rid) stats[rid] = (stats[rid] || 0) + 1;
-    });
-    return stats;
-  }, [orders]);
 
   // --- Logic Handlers ---
   const handleAction = async (type, payload) => {
@@ -1257,6 +1276,137 @@ export default function OrderManagement() {
       setLoading(false);
     }
   };
+
+  const autoMarkPacked = async (orderIds) => {
+    if (!orderIds || orderIds.length === 0) {
+      setMessage('No orders were scheduled for auto-packing.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await Promise.all(orderIds.map((orderId) =>
+        smartErpApi.updateCustomerOrderStatus(Number(orderId), { status: 'Packed' })
+      ));
+      setMessage(`Auto-packed ${orderIds.length} order(s). Ready for rider dispatch.`);
+      await loadData();
+      
+      // Automatically dispatch riders after packing
+      setTimeout(() => autoDispatchRiders(), 500);
+    } catch (err) {
+      setMessage('Auto-packing failed: ' + (err.response?.data?.message || err.message || 'Server error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const autoAssignPackers = async () => {
+    const pendingOrders = orders.filter((o) => o.status === 'Pending');
+    if (pendingOrders.length === 0) {
+      setMessage('No pending orders available for auto-assignment.');
+      return;
+    }
+    if (getActivePackers.length === 0) {
+      setMessage('No active packers found. Please create or activate a packer first.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const assignedOrderIds = [];
+      const packerQueue = getActivePackers.map((p) => ({ ...p, load: p.assignedOrders || 0 }));
+
+      for (const order of pendingOrders) {
+        packerQueue.sort((a, b) => a.load - b.load);
+        const packer = packerQueue[0];
+        if (!packer) break;
+        await smartErpApi.updateCustomerOrderStatus(Number(order.id), { status: 'Picking', assignedPackerId: Number(packer.id) });
+        packer.load += 1;
+        assignedOrderIds.push(order.id);
+      }
+
+      setMessage(`Auto-assigned ${assignedOrderIds.length} order(s) to packers. They will be marked packed in 2 minutes.`);
+      await loadData();
+
+      if (autoPackTimerRef.current) {
+        window.clearTimeout(autoPackTimerRef.current);
+      }
+      autoPackTimerRef.current = window.setTimeout(() => autoMarkPacked(assignedOrderIds), 120000);
+    } catch (err) {
+      setMessage('Auto-assignment failed: ' + (err.response?.data?.message || err.message || 'Server error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const autoDispatchRiders = async () => {
+    const packedOrders = orders.filter((o) => o.status === 'Packed');
+    if (packedOrders.length === 0) {
+      setMessage('No packed orders ready for rider dispatch.');
+      return;
+    }
+    if (getActiveRiders.length === 0) {
+      setMessage('No available riders found.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const dispatchResults = [];
+      const riderWork = { ...riderTotalStats };
+      for (const order of packedOrders) {
+        const rider = [...getActiveRiders].sort((a, b) => (riderWork[a.riderId] || 0) - (riderWork[b.riderId] || 0))[0];
+        if (!rider) break;
+        await smartErpApi.assignDelivery({ orderId: Number(order.id), riderId: Number(rider.riderId) });
+        riderWork[rider.riderId] = (riderWork[rider.riderId] || 0) + 1;
+        dispatchResults.push(order.id);
+      }
+      setMessage(`Auto-dispatched ${dispatchResults.length} packed order(s) to riders.`);
+      await loadData();
+    } catch (err) {
+      setMessage('Auto rider dispatch failed: ' + (err.response?.data?.message || err.message || 'Server error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const runFullAutomation = async () => {
+    if (!automationEnabled) {
+      setMessage('Automation is disabled. Toggle "Enable Automation" to use this feature.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const pendingOrders = orders.filter((o) => o.status === 'Pending');
+      
+      if (pendingOrders.length === 0) {
+        setMessage('No pending orders to automate.');
+        setLoading(false);
+        return;
+      }
+
+      setMessage(`Starting full automation for ${pendingOrders.length} order(s)...`);
+      
+      // Step 1: Auto-assign packers (this schedules auto-pack in 2 minutes)
+      // Step 2: Auto-pack will automatically dispatch riders when complete
+      await autoAssignPackers();
+      
+      setMessage(`✓ Automation started! ${pendingOrders.length} order(s) assigned to packers. Will auto-pack in 2 minutes, then dispatch riders.`);
+    } catch (err) {
+      setMessage('Full automation failed: ' + (err.message || 'Server error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (autoPackTimerRef.current) {
+        window.clearTimeout(autoPackTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedOrder && orderDetailsRef.current) {
@@ -1531,7 +1681,43 @@ export default function OrderManagement() {
                   </div>
                 )}
               </div>
-              
+
+              <div className="mb-4 border rounded p-3 bg-light">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <label className="erp-label mb-0">Full Automation</label>
+                  <div className="form-check form-switch">
+                    <input 
+                      className="form-check-input" 
+                      type="checkbox" 
+                      id="automationToggle"
+                      checked={automationEnabled}
+                      onChange={(e) => setAutomationEnabled(e.target.checked)}
+                    />
+                    <label className="form-check-label small" htmlFor="automationToggle">
+                      {automationEnabled ? 'Enabled' : 'Disabled'}
+                    </label>
+                  </div>
+                </div>
+                <button 
+                  className="btn btn-lg btn-success w-100 fw-bold py-3" 
+                  onClick={runFullAutomation} 
+                  disabled={loading || !automationEnabled}
+                  style={{ fontSize: '1.1rem' }}
+                >
+                  {loading ? '⟳ Running Full Automation...' : '▶ ONE-CLICK: Run Full Automation'}
+                </button>
+                <small className="text-muted d-block mt-2">
+                  {automationEnabled 
+                    ? '✓ Auto-assigns pending orders → Auto-packs in 2 min → Dispatches riders'
+                    : '✗ Automation disabled. Use manual controls below.'}
+                </small>
+              </div>
+
+              {/* Manual Controls Remain Available */}
+              <div className="mb-4 border rounded p-2 bg-white">
+                <small className="text-muted fw-bold">Manual Assignment Controls (Always Available)</small>
+              </div>
+
               {/* Start Packing */}
               <div className="mb-4">
                 <label className="erp-label">Step 1: Start Packing</label>

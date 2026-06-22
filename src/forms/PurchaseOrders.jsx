@@ -29,7 +29,8 @@ export default function PurchaseOrders() {
     purchaseOrderLineId: '',
     quantity: 0,
     lotNumber: '',
-    scannerDeviceId: 'PO-SCN-01'
+    scannerDeviceId: 'PO-SCN-01',
+    generateSerials: false
   });
 
   const loadData = async () => {
@@ -235,7 +236,8 @@ export default function PurchaseOrders() {
         purchaseOrderLineId: Number(receiveForm.purchaseOrderLineId),
         quantity: Number(receiveForm.quantity),
         lotNumber: receiveForm.lotNumber || null,
-        scannerDeviceId: receiveForm.scannerDeviceId
+        scannerDeviceId: receiveForm.scannerDeviceId,
+        generateSerials: receiveForm.generateSerials
       });
 
       setMessage(`✓ ${res?.data?.message || 'Received'} (${res?.data?.poNumber || ''})`);
@@ -244,7 +246,8 @@ export default function PurchaseOrders() {
         purchaseOrderLineId: '',
         quantity: 0,
         lotNumber: '',
-        scannerDeviceId: 'PO-SCN-01'
+        scannerDeviceId: 'PO-SCN-01',
+        generateSerials: false
       });
       await loadData();
     } catch (err) {
@@ -423,7 +426,28 @@ export default function PurchaseOrders() {
 
                   <div className="mb-4">
                     <label className="erp-label">Target PO Line <span className="text-danger">*</span></label>
-                    <select className="form-select erp-input font-monospace" value={receiveForm.purchaseOrderLineId} onChange={(e) => setReceiveForm((prev) => ({ ...prev, purchaseOrderLineId: e.target.value }))} required disabled={!receiveForm.poId}>
+                    <select
+                      className="form-select erp-input font-monospace"
+                      value={receiveForm.purchaseOrderLineId}
+                      onChange={(e) => {
+                        const lineId = e.target.value;
+                        let autoGen = false;
+                        if (lineId) {
+                          const selectedLine = pendingLines.find(l => Number(l.lineId) === Number(lineId));
+                          if (selectedLine) {
+                            const itemDetails = items.find(i => i.id === selectedLine.itemId);
+                            autoGen = itemDetails && !!itemDetails.serialPrefix;
+                          }
+                        }
+                        setReceiveForm((prev) => ({
+                          ...prev,
+                          purchaseOrderLineId: lineId,
+                          generateSerials: !!autoGen
+                        }));
+                      }}
+                      required
+                      disabled={!receiveForm.poId}
+                    >
                       <option value="">-- Select specific line item --</option>
                       {pendingLines.map((line) => (
                         <option key={line.lineId} value={line.lineId}>
@@ -446,6 +470,18 @@ export default function PurchaseOrders() {
                     <div className="col-md-12 mt-2">
                       <label className="erp-label">Scanner Device ID</label>
                       <input className="form-control erp-input font-monospace text-muted" value={receiveForm.scannerDeviceId} onChange={(e) => setReceiveForm((prev) => ({ ...prev, scannerDeviceId: e.target.value }))} />
+                    </div>
+                    <div className="col-md-12 mt-2 d-flex align-items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="generateSerialsCheck"
+                        className="form-check-input mt-0"
+                        checked={receiveForm.generateSerials}
+                        onChange={(e) => setReceiveForm((prev) => ({ ...prev, generateSerials: e.target.checked }))}
+                      />
+                      <label htmlFor="generateSerialsCheck" className="form-check-label fw-bold small text-dark" style={{ cursor: 'pointer' }}>
+                        Generate Serial Numbers
+                      </label>
                     </div>
                   </div>
 

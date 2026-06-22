@@ -304,7 +304,7 @@
 //   );
 // }
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { smartErpApi } from '../services/smartErpApi';
 
 export default function Automation() {
@@ -337,6 +337,133 @@ export default function Automation() {
   const [assignOrderForm, setAssignOrderForm] = useState({ orderId: '', packerId: '' });
   const [assignRiderForm, setAssignRiderForm] = useState({ orderId: '', riderId: '' });
   const [updatePackerStatusForm, setUpdatePackerStatusForm] = useState({ orderId: '', status: 'Received' });
+  const autoPackTimerRef = useRef(null);
+
+  const packerWorkloads = useMemo(() => {
+    const stats = {};
+    salesOrders.forEach((order) => {
+      if (order.assignedPackerId) {
+        stats[order.assignedPackerId] = (stats[order.assignedPackerId] || 0) + 1;
+      }
+    });
+    return stats;
+  }, [salesOrders]);
+
+  const riderWorkloads = useMemo(() => {
+    const stats = {};
+    salesOrders.forEach((order) => {
+      const riderId = order.assignedRiderId || order.deliveryStatus?.riderId;
+      if (riderId) {
+        stats[riderId] = (stats[riderId] || 0) + 1;
+      }
+    });
+    return stats;
+  }, [salesOrders]);
+
+  const scheduleAutoPack = (orderIds = []) => {
+    if (!orderIds.length) return;
+    if (autoPackTimerRef.current) {
+      window.clearTimeout(autoPackTimerRef.current);
+    }
+    autoPackTimerRef.current = window.setTimeout(async () => {
+      try {
+        await Promise.all(orderIds.map((orderId) =>
+          smartErpApi.updateSalesOrderStatus(Number(orderId), { status: 'Packed' })
+        ));
+        setResult(`Auto-packed ${orderIds.length} order(s).`);
+        loadData();
+      } catch (err) {
+        setResult(err?.response?.data || 'Auto-pack failed');
+      }
+    }, 120000);
+  };
+
+  const runAutoOrderAutomation = async () => {
+    const assignableOrders = salesOrders.filter((order) => ['Pending', 'Confirmed'].includes(order.status));
+    if (assignableOrders.length === 0) {
+      setResult('No orders available for auto assignment.');
+      return;
+    }
+    if (packers.length === 0) {
+      setResult('No packers available for auto assignment.');
+      return;
+    }
+
+    try {
+      const pickedOrders = [];
+      const activePackers = [...packers];
+
+      for (const order of assignableOrders) {
+        activePackers.sort((a, b) => (packerWorkloads[a.id] || 0) - (packerWorkloads[b.id] || 0));
+        const chosenPacker = activePackers[0];
+        if (!chosenPacker) break;
+
+        await smartErpApi.updateSalesOrderStatus(Number(order.id), {
+          status: 'Picking',
+          assignedPackerId: Number(chosenPacker.id)
+        });
+
+        packerWorkloads[chosenPacker.id] = (packerWorkloads[chosenPacker.id] || 0) + 1;
+        pickedOrders.push(order.id);
+      }
+
+      if (pickedOrders.length) {
+        setResult(`Auto-assigned ${pickedOrders.length} order(s) to packers. Auto-packing in 2 minutes.`);
+        loadData();
+        scheduleAutoPack(pickedOrders);
+      } else {
+        setResult('No orders were auto-assigned.');
+      }
+    } catch (err) {
+      setResult(err?.response?.data || 'Auto assignment failed');
+    }
+  };
+
+  const runAutoRiderDispatch = async () => {
+    const readyOrders = salesOrders.filter((order) => order.status === 'Packed');
+    if (readyOrders.length === 0) {
+      setResult('No packed orders ready for rider dispatch.');
+      return;
+    }
+    if (riders.length === 0) {
+      setResult('No riders available for dispatch.');
+      return;
+    }
+
+    try {
+      const dispatched = [];
+      for (const order of readyOrders) {
+        const availableRiders = [...riders].sort((a, b) => (riderWorkloads[a.riderId] || 0) - (riderWorkloads[b.riderId] || 0));
+        const chosenRider = availableRiders[0];
+        if (!chosenRider) break;
+
+        await smartErpApi.updateSalesOrderStatus(Number(order.id), {
+          status: 'Shipped',
+          assignedRiderId: Number(chosenRider.riderId)
+        });
+
+        riderWorkloads[chosenRider.riderId] = (riderWorkloads[chosenRider.riderId] || 0) + 1;
+        dispatched.push(order.id);
+      }
+
+      if (dispatched.length) {
+        setResult(`Auto-dispatched ${dispatched.length} packed order(s) to riders.`);
+        loadData();
+      } else {
+        setResult('No rider dispatches were completed.');
+      }
+    } catch (err) {
+      setResult(err?.response?.data || 'Auto rider dispatch failed');
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (autoPackTimerRef.current) {
+        window.clearTimeout(autoPackTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -669,6 +796,23 @@ export default function Automation() {
             <button className="btn-close btn-sm" onClick={() => setWarning('')}></button>
           </div>
         )}
+
+        <div className="erp-panel shadow-sm mb-4">
+          <div className="erp-panel-header bg-light d-flex justify-content-between align-items-center">
+            <span className="fw-bold">Order Automation Controls</span>
+            <span className="text-muted small">Manual workflows remain available below</span>
+          </div>
+          <div className="p-3 bg-white">
+            <div className="d-flex flex-column gap-2">
+              <button className="btn btn-sm btn-success w-100" onClick={runAutoOrderAutomation}>
+                Auto Assign Packers + Schedule Auto-Pack in 2 Min
+              </button>
+              <button className="btn btn-sm btn-warning w-100" onClick={runAutoRiderDispatch}>
+                Auto Dispatch Riders for Packed Orders
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="row g-4 mb-4">
           {/* Health Panel */}

@@ -3,7 +3,6 @@ import api from '../services/apiClient';
 
 export default function Warehouses() {
   const [warehouses, setWarehouses] = useState([]);
-  const [form, setForm] = useState({ code: '', name: '', location: '' });
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
@@ -18,47 +17,6 @@ export default function Warehouses() {
     } catch (e) {
       console.error(e);
       setMessage({ text: "Failed to load warehouses.", type: "danger" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sanitize = (str) => str.replace(/[^A-Za-z0-9\- ]/g, '').trim();
-
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    setMessage({ text: "", type: "" });
-
-    const code = sanitize(form.code).toUpperCase().replace(/\s+/g, '-');
-    const name = sanitize(form.name);
-    const location = sanitize(form.location);
-
-    if (!/[A-Z]/.test(code)) {
-      setMessage({ text: "Warehouse code must include at least one letter.", type: "warning" });
-      return;
-    }
-
-    const exists = warehouses.some((w) =>
-      w.code.toLowerCase() === code.toLowerCase() ||
-      w.name.toLowerCase() === name.toLowerCase()
-    );
-
-    if (exists) {
-      setMessage({ text: "A warehouse with that code or name already exists.", type: "warning" });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const locationParam = location ? `&location=${encodeURIComponent(location)}` : '';
-      await api.post(`/warehouses?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}${locationParam}`);
-      const locationSuffix = location ? ` at ${location}` : '';
-      setMessage({ text: `✓ Warehouse ${code} created successfully${locationSuffix}.`, type: "success" });
-      setForm({ code: '', name: '', location: '' });
-      fetchWarehouses();
-    } catch (e) {
-      console.error(e);
-      setMessage({ text: "Failed to create warehouse.", type: "danger" });
     } finally {
       setLoading(false);
     }
@@ -100,63 +58,8 @@ export default function Warehouses() {
 
         <div className="row g-4">
           
-          {/* LEFT: CREATE WAREHOUSE */}
-          <div className="col-md-5 col-lg-4">
-            <div className="erp-panel shadow-sm h-100">
-              <div className="erp-panel-header bg-light">
-                <span className="fw-bold">Register Facility</span>
-              </div>
-              <div className="p-4 bg-white">
-                <form onSubmit={handleAdd}>
-                  <div className="mb-3">
-                    <label className="erp-label">Facility Code <span className="text-danger">*</span></label>
-                    <input
-                      className="form-control erp-input font-monospace"
-                      placeholder="e.g. KNR-MAIN"
-                      value={form.code}
-                      onChange={(e) => setForm({ ...form, code: e.target.value })}
-                      required
-                      disabled={loading}
-                    />
-                    <small className="text-muted mt-1 d-block" style={{ fontSize: '0.7rem' }}>Must contain at least one letter.</small>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="erp-label">Facility Name <span className="text-danger">*</span></label>
-                    <input
-                      className="form-control erp-input"
-                      placeholder="e.g. Karimnagar Main"
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="erp-label">Facility Location <span className="text-muted">(Optional)</span></label>
-                    <input
-                      className="form-control erp-input"
-                      placeholder="e.g. East Campus - Block C"
-                      value={form.location}
-                      onChange={(e) => setForm({ ...form, location: e.target.value })}
-                      disabled={loading}
-                    />
-                    <small className="text-muted mt-1" style={{ fontSize: '0.7rem' }}>This helps the warehouse overview show precise addresses or zones.</small>
-                  </div>
-
-                  <div className="pt-3 border-top">
-                    <button type="submit" className="btn btn-primary erp-btn w-100 fw-bold" disabled={loading || !form.code || !form.name}>
-                      {loading ? "Processing..." : "+ Add Warehouse"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT: WAREHOUSE LIST */}
-          <div className="col-md-7 col-lg-8">
+          {/* WAREHOUSE LIST */}
+          <div className="col-12">
             <div className="erp-panel d-flex flex-column shadow-sm" style={{ height: "calc(100vh - 180px)", minHeight: '400px' }}>
               <div className="erp-panel-header d-flex justify-content-between align-items-center bg-light">
                 <span className="fw-bold">Active Locations</span>
