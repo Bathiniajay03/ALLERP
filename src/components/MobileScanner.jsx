@@ -847,9 +847,13 @@ export default function MobileScanner({
   const [serialLoading, setSerialLoading] = useState(false);
   const [serialError, setSerialError] = useState('');
   const [selectedSerialIds, setSelectedSerialIds] = useState(new Set());
+  const [trackSerials, setTrackSerials] = useState(true);
+  const [serialSearchInput, setSerialSearchInput] = useState('');
 
   // --- Serial Generation Modal States ---
   const [showSerialModal, setShowSerialModal] = useState(false);
+  const [serialGenerationMode, setSerialGenerationMode] = useState('auto'); // 'auto' or 'manual'
+  const [manualSerialsText, setManualSerialsText] = useState('');
   const [serialGenerationForm, setSerialGenerationForm] = useState({
     quantity: 0,
     generatedSerials: []
@@ -951,7 +955,11 @@ export default function MobileScanner({
   }, [currentItem, items, txForm.itemId]);
 
   const isSerialTracked = Boolean(selectedItem?.serialPrefix);
-  const requiresSerialSelection = isSerialTracked && (txMode === 'out' || txMode === 'transfer');
+  const requiresSerialSelection = isSerialTracked && trackSerials && (txMode === 'out' || txMode === 'transfer');
+
+  useEffect(() => {
+    setTrackSerials(isSerialTracked);
+  }, [isSerialTracked]);
   const lotNumberValue = txForm.lotNumber?.trim() || '';
   const desiredSerialQty = parseInt(txForm.quantity, 10) || 0;
   const availableSerialsForAuto = useMemo(
@@ -1256,6 +1264,8 @@ export default function MobileScanner({
       quantity: parseFloat(txForm.quantity),
       generatedSerials: []
     });
+    setSerialGenerationMode('auto');
+    setManualSerialsText('');
     setShowSerialModal(true);
   };
 
@@ -1274,6 +1284,34 @@ export default function MobileScanner({
     setSerialGenerationForm(prev => ({ ...prev, generatedSerials: serials }));
   };
 
+  const handleManualSerialsChange = (text) => {
+    setManualSerialsText(text);
+    const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+    const serialObjects = lines.map(line => ({ serialNumber: line }));
+    setSerialGenerationForm(prev => ({ ...prev, generatedSerials: serialObjects }));
+  };
+
+  const handleSerialSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = serialSearchInput.trim().toUpperCase();
+    if (!trimmed) return;
+    const matched = availableSerials.find(s => {
+      const sn = s.serialNumber || s.serial || s.SerialNumber;
+      return sn && sn.toUpperCase() === trimmed;
+    });
+    if (matched) {
+      setSelectedSerialIds(prev => {
+        const next = new Set(prev);
+        next.add(matched.id);
+        return next;
+      });
+      showStatus('success', `Selected serial ${trimmed}`);
+      setSerialSearchInput('');
+    } else {
+      showStatus('error', `Serial ${trimmed} is not available in the current lot/location.`);
+    }
+  };
+
   // --- TRANSACTION EXECUTION ---
   const handleStockTransaction = async (e) => {
     e?.preventDefault();
@@ -1289,6 +1327,11 @@ export default function MobileScanner({
         warehouseId: parseInt(txForm.warehouseId, 10),
         quantity: parseFloat(txForm.quantity),
       };
+
+      if (isSerialTracked && !trackSerials) {
+        payload.generateSerials = false;
+        payload.useSerials = false;
+      }
 
       const selectedSerialArray = Array.from(selectedSerialIds);
       if (requiresSerialSelection && selectedSerialArray.length === 0 && serialGenerationForm.generatedSerials.length === 0) {
@@ -1450,6 +1493,25 @@ export default function MobileScanner({
                   </div>
                 </div>
 
+                {isSerialTracked && (
+                  <div className="row g-2 mb-3">
+                    <div className="col-12">
+                      <div className="form-check form-switch mt-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="trackSerialsToggleStock"
+                          checked={trackSerials}
+                          onChange={(e) => setTrackSerials(e.target.checked)}
+                        />
+                        <label className="form-check-label erp-label m-0 fw-bold text-dark" htmlFor="trackSerialsToggleStock">
+                          Track Serial Numbers
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="row g-2 mb-3">
                   <div className="col-4">
                     <label className="erp-label">Qty <span className="text-danger">*</span></label>
@@ -1503,6 +1565,17 @@ export default function MobileScanner({
                           </button>
                         </div>
                       </div>
+
+                      <form onSubmit={handleSerialSearchSubmit} className="d-flex gap-2 my-1">
+                        <input
+                          type="text"
+                          className="form-control form-control-sm font-monospace"
+                          placeholder="Type or scan serial to select..."
+                          value={serialSearchInput}
+                          onChange={(e) => setSerialSearchInput(e.target.value)}
+                        />
+                        <button type="submit" className="btn btn-sm btn-primary erp-btn py-1 px-3">Select</button>
+                      </form>
                       {serialError && <div className="alert alert-warning py-2 small mb-2">{serialError}</div>}
                       {serialLoading ? (
                         <div className="text-muted small">Loading available serials...</div>
@@ -1548,9 +1621,11 @@ export default function MobileScanner({
                 )}
 
                 <div className="d-flex flex-column gap-2 pt-3 border-top mt-auto">
-                  <button type="button" onClick={openSerialGenerationModal} disabled={loading || !txForm.itemId || !txForm.warehouseId || !txForm.quantity} className="btn btn-outline-primary erp-btn w-100 fw-bold">
-                    + ASSIGN SERIAL NUMBERS
-                  </button>
+                  {txMode === 'in' && isSerialTracked && trackSerials && (
+                    <button type="button" onClick={openSerialGenerationModal} disabled={loading || !txForm.itemId || !txForm.warehouseId || !txForm.quantity} className="btn btn-outline-primary erp-btn w-100 fw-bold">
+                      + ASSIGN SERIAL NUMBERS
+                    </button>
+                  )}
                   <button type="button" onClick={handleStockTransaction} disabled={loading || !txForm.itemId || !txForm.warehouseId || !txForm.quantity} className={`btn erp-btn w-100 py-2 fw-bold ${txMode === 'in' ? 'btn-success' : txMode === 'out' ? 'btn-danger' : 'btn-warning text-dark'}`}>
                     {loading ? 'PROCESSING...' : txMode === 'in' ? 'EXECUTE RECEIPT' : txMode === 'out' ? 'EXECUTE DISPATCH' : 'EXECUTE TRANSFER'}
                   </button>
@@ -1594,6 +1669,25 @@ export default function MobileScanner({
                     </select>
                   </div>
                 </div>
+
+                {isSerialTracked && (
+                  <div className="row g-2 mb-3">
+                    <div className="col-12">
+                      <div className="form-check form-switch mt-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="trackSerialsTogglePo"
+                          checked={trackSerials}
+                          onChange={(e) => setTrackSerials(e.target.checked)}
+                        />
+                        <label className="form-check-label erp-label m-0 fw-bold text-dark" htmlFor="trackSerialsTogglePo">
+                          Track Serial Numbers
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="row g-2 mb-3">
                   <div className="col-4">
                     <label className="erp-label">Qty <span className="text-danger">*</span></label>
@@ -1605,9 +1699,11 @@ export default function MobileScanner({
                   </div>
                 </div>
                 <div className="d-flex flex-column gap-2 pt-3 border-top mt-auto">
-                  <button type="button" onClick={openSerialGenerationModal} disabled={loading || !txForm.quantity || !currentPoLine} className="btn btn-outline-primary erp-btn w-100 fw-bold">
-                    + ASSIGN SERIAL NUMBERS
-                  </button>
+                  {isSerialTracked && trackSerials && (
+                    <button type="button" onClick={openSerialGenerationModal} disabled={loading || !txForm.quantity || !currentPoLine} className="btn btn-outline-primary erp-btn w-100 fw-bold">
+                      + ASSIGN SERIAL NUMBERS
+                    </button>
+                  )}
                   <button type="button" onClick={handleStockTransaction} disabled={loading || !txForm.quantity || !currentPoLine} className="btn btn-primary erp-btn w-100 py-2 fw-bold">
                     {loading ? 'PROCESSING...' : 'RECEIVE PO STOCK'}
                   </button>
@@ -1691,38 +1787,89 @@ export default function MobileScanner({
               <button className="btn-close btn-close-white" onClick={() => setShowSerialModal(false)}></button>
             </div>
             <div className="erp-dialog-body p-3 bg-white">
-              <div className="d-flex justify-content-between align-items-center mb-3 p-2 bg-light border rounded">
+              <div className="d-flex justify-content-between align-items-center mb-3">
                 <div>
                   <span className="erp-label m-0">Target Qty</span>
                   <span className="fs-5 fw-bold font-monospace text-primary">{serialGenerationForm.quantity}</span>
                 </div>
-                <button className="btn btn-sm btn-outline-primary fw-bold erp-btn" onClick={generateSerialNumbers}>
-                  + Generate Sequence
-                </button>
+                <div className="btn-group" role="group">
+                  <button
+                    type="button"
+                    className={`btn btn-sm erp-btn ${serialGenerationMode === 'auto' ? 'btn-primary' : 'btn-light border'}`}
+                    onClick={() => {
+                      setSerialGenerationMode('auto');
+                      setSerialGenerationForm(prev => ({ ...prev, generatedSerials: [] }));
+                    }}
+                  >
+                    Auto Sequence
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn btn-sm erp-btn ${serialGenerationMode === 'manual' ? 'btn-primary' : 'btn-light border'}`}
+                    onClick={() => {
+                      setSerialGenerationMode('manual');
+                      setSerialGenerationForm(prev => ({ ...prev, generatedSerials: [] }));
+                      setManualSerialsText('');
+                    }}
+                  >
+                    Manual Type
+                  </button>
+                </div>
               </div>
 
-              {serialGenerationForm.generatedSerials.length > 0 ? (
-                <div className="border rounded overflow-hidden" style={{ maxHeight: '250px', overflowY: 'auto' }}>
-                  <table className="table table-sm table-striped m-0 font-monospace" style={{ fontSize: '0.8rem' }}>
-                    <thead className="table-light sticky-top">
-                      <tr>
-                        <th className="ps-3 text-uppercase text-muted">S/N</th>
-                        <th className="text-uppercase text-muted">Generated Identifier</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {serialGenerationForm.generatedSerials.map((s, i) => (
-                        <tr key={i}>
-                          <td className="ps-3 text-muted">{i + 1}</td>
-                          <td className="fw-bold">{s.serialNumber}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {serialGenerationMode === 'auto' && (
+                <div className="mb-3">
+                  <button className="btn btn-sm btn-outline-primary fw-bold erp-btn w-100 mb-3" onClick={generateSerialNumbers}>
+                    + Generate Sequence
+                  </button>
+                  
+                  {serialGenerationForm.generatedSerials.length > 0 ? (
+                    <div className="border rounded overflow-hidden" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                      <table className="table table-sm table-striped m-0 font-monospace" style={{ fontSize: '0.8rem' }}>
+                        <thead className="table-light sticky-top">
+                          <tr>
+                            <th className="ps-3 text-uppercase text-muted">S/N</th>
+                            <th className="text-uppercase text-muted">Generated Identifier</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {serialGenerationForm.generatedSerials.map((s, i) => (
+                            <tr key={i}>
+                              <td className="ps-3 text-muted">{i + 1}</td>
+                              <td className="fw-bold">{s.serialNumber}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-muted small border rounded bg-light">
+                      Click generate to assign unique serials for this transaction.
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center py-4 text-muted small border rounded bg-light">
-                  Click generate to assign unique serials for this transaction.
+              )}
+
+              {serialGenerationMode === 'manual' && (
+                <div className="mb-3">
+                  <label className="erp-label">Type or Paste Serial Numbers (one per line)</label>
+                  <textarea
+                    className="form-control font-monospace erp-input w-100"
+                    rows="8"
+                    placeholder="Enter serial numbers here, one per line..."
+                    value={manualSerialsText}
+                    onChange={(e) => handleManualSerialsChange(e.target.value)}
+                  />
+                  <div className="d-flex justify-content-between mt-2 small">
+                    <span className="text-muted">
+                      Entered: {serialGenerationForm.generatedSerials.length} / {serialGenerationForm.quantity}
+                    </span>
+                    {serialGenerationForm.generatedSerials.length !== serialGenerationForm.quantity && (
+                      <span className="text-danger fw-bold">
+                        Must match target quantity exactly!
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1731,7 +1878,11 @@ export default function MobileScanner({
               <button 
                 className="btn btn-primary erp-btn px-4" 
                 onClick={confirmStockTransactionWithSerials}
-                disabled={serialGenerationForm.generatedSerials.length === 0 || loading}
+                disabled={
+                  serialGenerationForm.generatedSerials.length === 0 || 
+                  serialGenerationForm.generatedSerials.length !== serialGenerationForm.quantity || 
+                  loading
+                }
               >
                 {loading ? 'Saving...' : 'Commit to Ledger'}
               </button>

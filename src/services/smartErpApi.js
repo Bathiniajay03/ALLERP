@@ -24,6 +24,9 @@ export const smartErpApi = {
   getRiders: () =>
     api.get("/rider/all"),
 
+  getCustomers: () =>
+    api.get("/customers"),
+
   getCurrentAccess: () =>
     api.get("/admin/me/access"),
 
@@ -159,6 +162,9 @@ export const smartErpApi = {
 
   recordSalesPayment: (payload) =>
     api.post("/payments", payload),
+
+  getPayments: () =>
+    api.get("/payments"),
 
   getInvoices: () =>
     api.get("/invoices"),

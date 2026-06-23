@@ -793,7 +793,7 @@ import { LocalAIProvider } from "./context/LocalAIContext";
 import { smartErpApi } from "./services/smartErpApi";
 
 // 1. Grouped Module Configuration
-const ROLE_MODULES_VERSION = 3;
+const ROLE_MODULES_VERSION = 4;
 const ROLE_MODULES_KEY = "erp_role_modules";
 const ROLE_MODULES_VERSION_KEY = "erp_role_modules_version";
 
@@ -838,7 +838,7 @@ const MODULE_CONFIG = [
     label: "Finance & Data",
     isGroup: true,
     subModules: [
-      { id: "finance", label: "Finance", path: "/finance" },
+      { id: "finance", label: "Finance & Payments", path: "/finance" },
       { id: "reports", label: "Reports", path: "/reports" },
       { id: "stockAlerts", label: "Stock Alerts", path: "/stock-alerts" },
     ]
@@ -868,12 +868,12 @@ const DEFAULT_ROLE_MODULES = {
   Operator: ["operations", "scannerDevice", "serialScan"],
   OperationsWorker: [
     "dashboard", "products", "inventory", "operations", "salesOrderList", "createSalesOrder", "customers", 
-    "vendors", "purchaseOrders", "vendorReturns", "stockAlerts", "notifications", "scannerDevice", "serialScan"
+    "vendors", "purchaseOrders", "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan"
   ],
   ScannerWorker: ["scannerDevice", "serialScan", "operations"],
   "Warehouse Manager": [
     "dashboard", "products", "inventory", "lots", "warehouses", "operations", "purchaseOrders", "vendors", 
-    "vendorReturns", "stockAlerts", "notifications", "scannerDevice", "serialScan"
+    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan"
   ],
   "Finance Manager": [
     "dashboard", "finance", "reports", "salesOrderList", "purchaseOrders", "customers", "vendors", 
