@@ -1361,28 +1361,45 @@ export default function MobileScanner({
         quantity: parseFloat(txForm.quantity),
       };
 
-      if (isSerialTracked && !trackSerials) {
+      // Serial skip already handled in serial logic block above
+
+      // --- Serial handling logic ---
+      if (isSerialTracked && trackSerials) {
+        if (activeTab === 'po' || txMode === 'in') {
+          // IN / PO Receive: generate new serials
+          if (serialGenerationForm.generatedSerials.length > 0) {
+            // User explicitly generated/typed serials via modal
+            payload.serialNumbers = serialGenerationForm.generatedSerials.map(s => s.serialNumber);
+          }
+          // else: let the backend auto-generate (GenerateSerials not set = defaults to true if serialPrefix exists)
+          payload.generateSerials = true;
+        } else if (txMode === 'out' || txMode === 'transfer') {
+          // OUT / TRANSFER: select existing serials from lot
+          let selectedSerialArray = Array.from(selectedSerialIds);
+
+          if (selectedSerialArray.length === 0) {
+            // Auto-select from already-fetched list
+            const available = availableSerials.filter(s =>
+              (s.status || s.Status || '').toUpperCase() === 'AVAILABLE'
+            );
+            const autoSelected = available.slice(0, desiredSerialQty);
+            selectedSerialArray = autoSelected.map(s => s.id || s.Id);
+          }
+
+          if (selectedSerialArray.length > 0) {
+            payload.serialIds = selectedSerialArray;
+            payload.useSerials = true;
+          } else {
+            // No serials available — block the transaction
+            return showStatus('error', `No serials available in the selected lot. Please refresh serials or check stock.`);
+          }
+        }
+      } else if (isSerialTracked && !trackSerials) {
+        // User turned off tracking for this transaction
         payload.generateSerials = false;
         payload.useSerials = false;
       }
 
-      let selectedSerialArray = Array.from(selectedSerialIds);
-      if (requiresSerialSelection && selectedSerialArray.length === 0) {
-        // Auto-select on execute
-        const available = availableSerials.filter(s => s.status === 'AVAILABLE');
-        const autoSelected = available.slice(0, desiredSerialQty);
-        selectedSerialArray = autoSelected.map(s => s.id);
-      }
-
-      if (requiresSerialSelection && selectedSerialArray.length === 0 && serialGenerationForm.generatedSerials.length === 0) {
-        return showStatus('error', 'Select serials before executing this transaction.');
-      }
-
-      if (selectedSerialArray.length > 0) {
-        payload.serialIds = selectedSerialArray;
-      } else if (serialGenerationForm.generatedSerials.length > 0) {
-        payload.serialNumbers = serialGenerationForm.generatedSerials.map(s => s.serialNumber);
-      }
 
       if (activeTab === 'po') {
         if (!selectedPo || !currentPoLine) return showStatus('error', 'Valid PO Line required');
@@ -1405,8 +1422,12 @@ export default function MobileScanner({
       else if (activeTab === 'stock' && txMode === 'transfer') {
         if (!txForm.lotId || !txForm.destWarehouseId) return showStatus('error', 'Lot and Dest Warehouse required');
         endpoint = '/stock/transfer';
+        // Transfer DTO fields: fromWarehouseId, toWarehouseId, lotId, itemId, quantity
+        payload.fromWarehouseId = parseInt(txForm.warehouseId, 10);
+        payload.toWarehouseId = parseInt(txForm.destWarehouseId, 10);
         payload.lotId = parseInt(txForm.lotId, 10);
-        payload.destinationWarehouseId = parseInt(txForm.destWarehouseId, 10);
+        // Remove the generic warehouseId since transfer uses fromWarehouseId
+        delete payload.warehouseId;
       }
 
       const response = await api.post(endpoint, payload);
