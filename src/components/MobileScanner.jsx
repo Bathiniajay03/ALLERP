@@ -1366,38 +1366,44 @@ export default function MobileScanner({
       // --- Serial handling logic ---
       if (isSerialTracked && trackSerials) {
         if (activeTab === 'po' || txMode === 'in') {
-          // IN / PO Receive: generate new serials
+          // IN / PO Receive: generate new serials using backend auto-generation
           if (serialGenerationForm.generatedSerials.length > 0) {
-            // User explicitly generated/typed serials via modal
+            // User explicitly typed/generated serials via modal
             payload.serialNumbers = serialGenerationForm.generatedSerials.map(s => s.serialNumber);
           }
-          // else: let the backend auto-generate (GenerateSerials not set = defaults to true if serialPrefix exists)
+          // Always set generateSerials=true so backend knows to create serial records
           payload.generateSerials = true;
         } else if (txMode === 'out' || txMode === 'transfer') {
           // OUT / TRANSFER: select existing serials from lot
           let selectedSerialArray = Array.from(selectedSerialIds);
 
-          if (selectedSerialArray.length === 0) {
+          if (selectedSerialArray.length === 0 && availableSerials.length > 0) {
             // Auto-select from already-fetched list
             const available = availableSerials.filter(s =>
               (s.status || s.Status || '').toUpperCase() === 'AVAILABLE'
             );
             const autoSelected = available.slice(0, desiredSerialQty);
-            selectedSerialArray = autoSelected.map(s => s.id || s.Id);
+            selectedSerialArray = autoSelected.map(s => s.id || s.Id).filter(Boolean);
           }
 
-          if (selectedSerialArray.length > 0) {
+          if (selectedSerialArray.length === desiredSerialQty) {
+            // Exact match — send explicit serial IDs for ledger tracking
             payload.serialIds = selectedSerialArray;
             payload.useSerials = true;
           } else {
-            // No serials available — block the transaction
-            return showStatus('error', `No serials available in the selected lot. Please refresh serials or check stock.`);
+            // Not enough selected — let backend auto-dispatch from lot (DispatchSerialsFromLotAsync)
+            payload.useSerials = true;
+            // Don't send serialIds — backend will auto-pick oldest AVAILABLE serials
           }
         }
       } else if (isSerialTracked && !trackSerials) {
-        // User turned off tracking for this transaction
+        // User manually disabled serial tracking for this transaction
         payload.generateSerials = false;
         payload.useSerials = false;
+      } else {
+        // Item is NOT serial-tracked — skip all serial operations on backend
+        payload.useSerials = false;
+        payload.generateSerials = false;
       }
 
 
