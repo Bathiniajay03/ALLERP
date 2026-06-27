@@ -277,7 +277,7 @@
 
 //   return (
 //     <div className="erp-app-wrapper min-vh-100">
-      
+
 //       {/* HEADER */}
 //       <nav className="erp-topbar d-flex justify-content-end align-items-center px-4">
 //         <div className="d-flex gap-3 align-items-center text-white-50 small">
@@ -287,7 +287,7 @@
 //       </nav>
 
 //       <div className="container-fluid px-4 py-3">
-        
+
 //         {message.text && (
 //           <div className={`alert alert-${message.type} erp-alert d-flex justify-content-between align-items-center py-2 mb-3`}>
 //             <span className="fw-semibold">{message.text}</span>
@@ -337,7 +337,7 @@
 //                       const stock = totalStock(item.id);
 //                       const isLowStock = stock < (item.maxStockLevel || 1000);
 //                       const isCritical = stock < 5;
-                      
+
 //                       return (
 //                         <tr key={item.id} className={isLowStock ? "table-warning" : ""}> 
 //                           <td>
@@ -395,7 +395,7 @@
 //       {(activeItem || detailItem) && (
 //         <div className="erp-modal-overlay">
 //           <div className={`erp-dialog ${detailItem ? 'erp-dialog-lg' : 'erp-dialog-md'}`}>
-            
+
 //             {/* INBOUND STOCK DIALOG */}
 //             {activeItem && (
 //               <>
@@ -446,7 +446,7 @@
 //                     <button className="btn-close btn-close-white ms-2" onClick={() => setDetailItem(null)}></button>
 //                   </div>
 //                 </div>
-                
+
 //                 <div className="erp-dialog-body p-0">
 //                   <div className="row g-0">
 //                     <div className="col-md-8 p-4 border-end">
@@ -455,11 +455,11 @@
 //                         <div className="col-sm-4"><div className="erp-meta-label">Barcode</div><div className="erp-meta-value font-monospace">{detailItem.barcode || 'N/A'}</div></div>
 //                         <div className="col-sm-4"><div className="erp-meta-label">Item Type</div><div className="erp-meta-value">{detailItem.itemType || 'N/A'}</div></div>
 //                         <div className="col-sm-4"><div className="erp-meta-label">Category</div><div className="erp-meta-value">{detailItem.category || 'N/A'}</div></div>
-                        
+
 //                         <div className="col-sm-4"><div className="erp-meta-label">Serial Prefix</div><div className="erp-meta-value font-monospace">{detailItem.serialPrefix || 'N/A'}</div></div>
 //                         <div className="col-sm-4"><div className="erp-meta-label">Max Stock Level</div><div className="erp-meta-value">{detailItem.maxStockLevel}</div></div>
 //                         <div className="col-sm-4"><div className="erp-meta-label">Safety Stock</div><div className="erp-meta-value">{detailItem.safetyStock}</div></div>
-                        
+
 //                         <div className="col-sm-4"><div className="erp-meta-label">Lead Time</div><div className="erp-meta-value">{detailItem.leadTimeDays} days</div></div>
 //                         <div className="col-sm-4"><div className="erp-meta-label">Avg Daily Sales</div><div className="erp-meta-value">{detailItem.averageDailySales}</div></div>
 //                         <div className="col-sm-4"><div className="erp-meta-label">Base Unit</div><div className="erp-meta-value">{detailItem.unit || detailItem.UOM}</div></div>
@@ -538,7 +538,7 @@
 //                         </div>
 //                       )}
 //                     </div>
-                    
+
 //                     {/* RIGHT SIDE PANEL OF DIALOG: INVENTORY LEVELS */}
 //                     <div className="col-md-4 bg-light p-4">
 //                       <div className="d-flex flex-column gap-3 mb-4">
@@ -601,7 +601,7 @@
 //                     <input className="form-control erp-input" placeholder="General" value={productForm.category} onChange={(e) => setProductForm({ ...productForm, category: e.target.value })} />
 //                   </div>
 //                 </div>
-                
+
 //                 <div className="mb-3">
 //                   <label className="erp-label">Item Description <span className="text-danger">*</span></label>
 //                   <textarea className="form-control erp-input" rows="2" value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} required />
@@ -694,7 +694,7 @@
 //         }
 
 //         .erp-text-muted { color: var(--erp-text-muted) !important; }
-        
+
 //         /* Top Navigation */
 //         .erp-topbar {
 //           background-color: #1a252f;
@@ -766,7 +766,7 @@
 //         .erp-table-container::-webkit-scrollbar { width: 8px; height: 8px; }
 //         .erp-table-container::-webkit-scrollbar-thumb { background: #b0bec5; border-radius: 4px; }
 //         .erp-table-container::-webkit-scrollbar-track { background: #eceff1; }
-        
+
 //         .erp-table { font-size: 0.8rem; }
 //         .erp-table thead th {
 //           background-color: #eceff1;
@@ -836,7 +836,7 @@
 //         .erp-meta-label { font-size: 0.7rem; text-transform: uppercase; color: var(--erp-text-muted); font-weight: 600; }
 //         .erp-meta-value { font-size: 0.9rem; font-weight: 500; color: #212529; }
 //         .erp-edit-box { background: #f8f9fa; border: 1px dashed #b0bec5; padding: 16px; border-radius: 4px; }
-        
+
 //         .erp-kpi-box {
 //           background: white; border: 1px solid var(--erp-border);
 //           padding: 12px 16px; border-left: 4px solid var(--erp-primary);
@@ -844,7 +844,7 @@
 //         }
 //         .erp-kpi-label { display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--erp-text-muted); font-weight: 600; }
 //         .erp-kpi-value { display: block; font-size: 1.5rem; font-weight: 700; }
-        
+
 //         .erp-lot-list { display: flex; flex-direction: column; gap: 8px; }
 //         .erp-lot-row {
 //           display: flex; justify-content: space-between; align-items: center;
@@ -861,7 +861,7 @@
 //           border: 2px solid white;
 //         }
 //         .ai-fab:hover { transform: scale(1.05); background: #1565c0; }
-        
+
 //         .erp-alert { border-radius: 3px; font-size: 0.85rem; border: 1px solid transparent; }
 //       `}</style>
 //     </div>
@@ -926,7 +926,7 @@
 //   const [poMap, setPoMap] = useState({});
 //   const [loading, setLoading] = useState(false);
 //   const [message, setMessage] = useState({ text: "", type: "" });
-  
+
 //   // UI States
 //   const [activeTab, setActiveTab] = useState("Main");
 //   const [searchTerm, setSearchTerm] = useState("");
@@ -984,11 +984,11 @@
 //   // Advanced validation checks
 //   const validateProductForm = () => {
 //     const errors = [];
-    
+
 //     // Required field validation
 //     if (!productForm.itemCode?.trim()) errors.push("Item Code is required");
 //     if (!productForm.description?.trim()) errors.push("Description is required");
-    
+
 //     // Duplicate checking
 //     if (productForm.itemCode?.trim()) {
 //       const duplicate = items.find(item => 
@@ -997,7 +997,7 @@
 //       );
 //       if (duplicate) errors.push(`Item Code "${productForm.itemCode}" already exists`);
 //     }
-    
+
 //     if (productForm.barcode?.trim()) {
 //       const duplicate = items.find(item => 
 //         item.id !== productForm.id && 
@@ -1005,69 +1005,69 @@
 //       );
 //       if (duplicate) errors.push(`Barcode "${productForm.barcode}" already exists`);
 //     }
-    
+
 //     // Data type validation
 //     if (productForm.price < 0) errors.push("Price cannot be negative");
 //     if (productForm.safetyStock < 0) errors.push("Safety Stock cannot be negative");
 //     if (productForm.maxStockLevel < 0) errors.push("Max Stock Level cannot be negative");
 //     if (productForm.leadTimeDays < 0) errors.push("Lead Time cannot be negative");
 //     if (productForm.averageDailySales < 0) errors.push("Average Daily Sales cannot be negative");
-    
+
 //     // Logical validation
 //     if (productForm.maxStockLevel > 0 && productForm.safetyStock > productForm.maxStockLevel) {
 //       errors.push("Safety Stock cannot exceed Max Stock Level");
 //     }
-    
+
 //     // Serial prefix validation for lot tracked items
 //     if (productForm.isLotTracked && !productForm.serialPrefix?.trim()) {
 //       errors.push("Serial Prefix is required for lot tracked items");
 //     }
-    
+
 //     return errors;
 //   };
 
 //   // Stock level analysis
 //   const getStockStatus = (item) => {
 //     if (!item) return { status: 'unknown', color: 'secondary', message: 'No data' };
-    
+
 //     const currentStock = totalStock(item.id);
 //     const safetyStock = item.safetyStock || 0;
 //     const maxStock = item.maxStockLevel || 1000;
 //     const inTransit = poMap[item.id] || 0;
-    
+
 //     if (currentStock <= 0) return { status: 'out-of-stock', color: 'danger', message: 'Out of Stock' };
 //     if (currentStock < safetyStock) return { status: 'critical', color: 'danger', message: 'Critical Low' };
 //     if (currentStock < safetyStock * 1.5) return { status: 'low', color: 'warning', message: 'Low Stock' };
 //     if (currentStock > maxStock) return { status: 'overstock', color: 'info', message: 'Overstocked' };
 //     if (currentStock >= maxStock * 0.9) return { status: 'high', color: 'success', message: 'Near Max' };
-    
+
 //     return { status: 'optimal', color: 'success', message: 'Optimal' };
 //   };
 
 //   // Data integrity checks
 //   const runIntegrityChecks = async () => {
 //     const issues = [];
-    
+
 //     try {
 //       // Check for items without inventory records
 //       const itemsWithoutInventory = items.filter(item => totalStock(item.id) === 0);
 //       if (itemsWithoutInventory.length > 0) {
 //         issues.push(`${itemsWithoutInventory.length} items have no inventory records`);
 //       }
-      
+
 //       // Check for negative stock levels
 //       const negativeStock = inventory.filter(inv => (inv.quantity || inv.Quantity || 0) < 0);
 //       if (negativeStock.length > 0) {
 //         issues.push(`${negativeStock.length} inventory records show negative quantities`);
 //       }
-      
+
 //       // Check for orphaned inventory records
 //       const validItemIds = new Set(items.map(item => item.id));
 //       const orphanedInventory = inventory.filter(inv => !validItemIds.has(inv.itemId || inv.ItemId));
 //       if (orphanedInventory.length > 0) {
 //         issues.push(`${orphanedInventory.length} inventory records reference non-existent items`);
 //       }
-      
+
 //       // Check for items with invalid data
 //       const invalidItems = items.filter(item => 
 //         !item.itemCode?.trim() || 
@@ -1077,21 +1077,21 @@
 //       if (invalidItems.length > 0) {
 //         issues.push(`${invalidItems.length} items have invalid or missing data`);
 //       }
-      
+
 //     } catch (err) {
 //       issues.push("Failed to run integrity checks");
 //     }
-    
+
 //     return issues;
 //   };
 
 //   // Auto-suggestions for item codes
 //   const getItemCodeSuggestions = (input) => {
 //     if (!input || input.length < 2) return [];
-    
+
 //     const suggestions = [];
 //     const prefix = input.toUpperCase();
-    
+
 //     // Category-based suggestions
 //     const categoryPrefixes = {
 //       'RAW': 'RM-',
@@ -1100,7 +1100,7 @@
 //       'PACKAGING': 'PKG-',
 //       'SPARE': 'SPR-'
 //     };
-    
+
 //     Object.entries(categoryPrefixes).forEach(([cat, prefix]) => {
 //       if (cat.toLowerCase().includes(input.toLowerCase()) || prefix.toLowerCase().includes(input.toLowerCase())) {
 //         const nextNumber = items
@@ -1113,7 +1113,7 @@
 //         suggestions.push(`${prefix}${nextNumber.toString().padStart(3, '0')}`);
 //       }
 //     });
-    
+
 //     // Sequential numbering
 //     const existingNumbers = items
 //       .map(item => {
@@ -1122,11 +1122,11 @@
 //       })
 //       .filter(num => num !== null)
 //       .sort((a, b) => b - a);
-    
+
 //     if (existingNumbers.length > 0) {
 //       suggestions.push(`${prefix}-${(existingNumbers[0] + 1).toString().padStart(3, '0')}`);
 //     }
-    
+
 //     return [...new Set(suggestions)].slice(0, 5);
 //   };
 
@@ -1135,12 +1135,12 @@
 //     if (!text || !pattern) return false;
 //     const normalizedText = text.toLowerCase();
 //     const normalizedPattern = pattern.toLowerCase();
-    
+
 //     // If no wildcards, use substring match
 //     if (!normalizedPattern.includes('*')) {
 //       return normalizedText.includes(normalizedPattern);
 //     }
-    
+
 //     // Convert wildcard pattern to regex
 //     // AJ* → ^AJ.*
 //     // *AJ → .*AJ$
@@ -1149,7 +1149,7 @@
 //       .replace(/\./g, '\\.')  // Escape dots
 //       .replace(/\*/g, '.*')   // * becomes .*
 //       .replace(/\?/g, '.');   // ? becomes .
-    
+
 //     try {
 //       const regex = new RegExp(`^${regexPattern}$`);
 //       return regex.test(normalizedText);
@@ -1162,7 +1162,7 @@
 //   // Filter Sidebar as user types - supports wildcard patterns like AJ*, *AJ, etc.
 //   const filteredSidebarItems = useMemo(() => {
 //     if (!searchTerm) return items;
-    
+
 //     return items.filter(i => 
 //       matchesWildcardPattern(i.itemCode, searchTerm) ||
 //       matchesWildcardPattern(i.description, searchTerm)
@@ -1263,12 +1263,12 @@
 //     // Run validation
 //     const errors = validateProductForm();
 //     setValidationErrors(errors);
-    
+
 //     if (errors.length > 0) {
 //       setMessage({ text: `Validation failed: ${errors.length} issue(s) found`, type: "danger" });
 //       return;
 //     }
-    
+
 //     try {
 //       setLoading(true);
 //       if (productForm.id) {
@@ -1299,7 +1299,7 @@
 //   // Handle item code input with suggestions
 //   const handleItemCodeChange = (value) => {
 //     setProductForm({...productForm, itemCode: value});
-    
+
 //     if (value.length >= 2) {
 //       const suggestions = getItemCodeSuggestions(value);
 //       setItemCodeSuggestions(suggestions);
@@ -1335,7 +1335,7 @@
 
 //   return (
 //     <div className="erp-app-shell vh-100 d-flex flex-column">
-      
+
 //       {/* 🛠 TOP TOOLBAR */}
 //       <div className="erp-nav d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-white shadow-sm">
 //         <div className="d-flex gap-2">
@@ -1367,7 +1367,7 @@
 //       </div>
 
 //       <div className="d-flex flex-grow-1 overflow-hidden">
-        
+
 //         {/* 📋 SIDEBAR LIST */}
 //         {showSidebar && (
 //           <div className="erp-sidebar border-end bg-white d-flex flex-column shadow-sm" style={{width: '280px'}}>
@@ -1386,7 +1386,7 @@
 //                   const matchesCode = matchesWildcardPattern(item.itemCode, searchTerm);
 //                   const matchesName = matchesWildcardPattern(item.description, searchTerm);
 //                   const stockStatus = getStockStatus(item);
-                  
+
 //                   return (
 //                     <div 
 //                       key={item.id} 
@@ -1643,7 +1643,7 @@
 //               <h5 className="mb-0 fw-bold text-primary">🔍 Data Integrity Check</h5>
 //               <button className="btn-close" onClick={() => setShowIntegrityCheck(false)}></button>
 //             </div>
-            
+
 //             {integrityIssues.length === 0 ? (
 //               <div className="text-center py-4">
 //                 <div className="text-success mb-2" style={{fontSize: '48px'}}>✅</div>
@@ -1665,7 +1665,7 @@
 //                 </div>
 //               </div>
 //             )}
-            
+
 //             <div className="d-flex justify-content-end gap-2 mt-3">
 //               <button className="btn btn-secondary btn-sm" onClick={() => setShowIntegrityCheck(false)}>Close</button>
 //               {integrityIssues.length > 0 && (
@@ -1682,9 +1682,9 @@
 //         .erp-app-shell { background: #f4f7f9; font-family: 'Segoe UI', system-ui, sans-serif; }
 //         .erp-btn { background: white; border: 1px solid #ced4da; font-size: 12px; padding: 5px 15px; border-radius: 3px; cursor: pointer; font-weight: 500; }
 //         .erp-btn:hover { background: #f8f9fa; border-color: #adb5bd; }
-        
+
 //         .hover-bg-light:hover { background-color: #f8f9fa !important; }
-        
+
 //         .sidebar-row { transition: 0.1s; border-left: 3px solid transparent; }
 //         .sidebar-row:hover { background: #f8f9fa; }
 //         .active-row { background: #e7f1ff !important; border-left-color: #0d6efd !important; }
@@ -1750,7 +1750,7 @@
 //   const [poMap, setPoMap] = useState({});
 //   const [loading, setLoading] = useState(false);
 //   const [message, setMessage] = useState({ text: "", type: "" });
-  
+
 //   // UI States
 //   const [activeTab, setActiveTab] = useState("Main");
 //   const [searchTerm, setSearchTerm] = useState("");
@@ -1808,11 +1808,11 @@
 //   // Advanced validation checks
 //   const validateProductForm = () => {
 //     const errors = [];
-    
+
 //     // Required field validation
 //     if (!productForm.itemCode?.trim()) errors.push("Item Code is required");
 //     if (!productForm.description?.trim()) errors.push("Description is required");
-    
+
 //     // Duplicate checking
 //     if (productForm.itemCode?.trim()) {
 //       const duplicate = items.find(item => 
@@ -1821,7 +1821,7 @@
 //       );
 //       if (duplicate) errors.push(`Item Code "${productForm.itemCode}" already exists`);
 //     }
-    
+
 //     if (productForm.barcode?.trim()) {
 //       const duplicate = items.find(item => 
 //         item.id !== productForm.id && 
@@ -1829,7 +1829,7 @@
 //       );
 //       if (duplicate) errors.push(`Barcode "${productForm.barcode}" already exists`);
 //     }
-    
+
 //     // Data type validation
 //     if (productForm.price < 0) errors.push("Selling Price cannot be negative");
 //     if (productForm.unitPrice < 0) errors.push("Unit Price cannot be negative"); // Added Unit Price validation
@@ -1837,59 +1837,59 @@
 //     if (productForm.maxStockLevel < 0) errors.push("Max Stock Level cannot be negative");
 //     if (productForm.leadTimeDays < 0) errors.push("Lead Time cannot be negative");
 //     if (productForm.averageDailySales < 0) errors.push("Average Daily Sales cannot be negative");
-    
+
 //     // Logical validation
 //     if (productForm.maxStockLevel > 0 && productForm.safetyStock > productForm.maxStockLevel) {
 //       errors.push("Safety Stock cannot exceed Max Stock Level");
 //     }
-    
+
 //     // Serial prefix validation for lot tracked items
 //     if (productForm.isLotTracked && !productForm.serialPrefix?.trim()) {
 //       errors.push("Serial Prefix is required for lot tracked items");
 //     }
-    
+
 //     return errors;
 //   };
 
 //   // Stock level analysis
 //   const getStockStatus = (item) => {
 //     if (!item) return { status: 'unknown', color: 'secondary', message: 'No data' };
-    
+
 //     const currentStock = totalStock(item.id);
 //     const safetyStock = item.safetyStock || 0;
 //     const maxStock = item.maxStockLevel || 1000;
 //     const inTransit = poMap[item.id] || 0;
-    
+
 //     if (currentStock <= 0) return { status: 'out-of-stock', color: 'danger', message: 'Out of Stock' };
 //     if (currentStock < safetyStock) return { status: 'critical', color: 'danger', message: 'Critical Low' };
 //     if (currentStock < safetyStock * 1.5) return { status: 'low', color: 'warning', message: 'Low Stock' };
 //     if (currentStock > maxStock) return { status: 'overstock', color: 'info', message: 'Overstocked' };
 //     if (currentStock >= maxStock * 0.9) return { status: 'high', color: 'success', message: 'Near Max' };
-    
+
 //     return { status: 'optimal', color: 'success', message: 'Optimal' };
 //   };
 
 //   // Data integrity checks
 //   const runIntegrityChecks = async () => {
 //     const issues = [];
-    
+
 //     try {
 //       const itemsWithoutInventory = items.filter(item => totalStock(item.id) === 0);
 //       if (itemsWithoutInventory.length > 0) {
 //         issues.push(`${itemsWithoutInventory.length} items have no inventory records`);
 //       }
-      
+
 //       const negativeStock = inventory.filter(inv => (inv.quantity || inv.Quantity || 0) < 0);
 //       if (negativeStock.length > 0) {
 //         issues.push(`${negativeStock.length} inventory records show negative quantities`);
 //       }
-      
+
 //       const validItemIds = new Set(items.map(item => item.id));
 //       const orphanedInventory = inventory.filter(inv => !validItemIds.has(inv.itemId || inv.ItemId));
 //       if (orphanedInventory.length > 0) {
 //         issues.push(`${orphanedInventory.length} inventory records reference non-existent items`);
 //       }
-      
+
 //       const invalidItems = items.filter(item => 
 //         !item.itemCode?.trim() || 
 //         !item.description?.trim() || 
@@ -1898,21 +1898,21 @@
 //       if (invalidItems.length > 0) {
 //         issues.push(`${invalidItems.length} items have invalid or missing data`);
 //       }
-      
+
 //     } catch (err) {
 //       issues.push("Failed to run integrity checks");
 //     }
-    
+
 //     return issues;
 //   };
 
 //   // Auto-suggestions for item codes
 //   const getItemCodeSuggestions = (input) => {
 //     if (!input || input.length < 2) return [];
-    
+
 //     const suggestions = [];
 //     const prefix = input.toUpperCase();
-    
+
 //     const categoryPrefixes = {
 //       'RAW': 'RM-',
 //       'FINISHED': 'FG-',
@@ -1920,7 +1920,7 @@
 //       'PACKAGING': 'PKG-',
 //       'SPARE': 'SPR-'
 //     };
-    
+
 //     Object.entries(categoryPrefixes).forEach(([cat, prefix]) => {
 //       if (cat.toLowerCase().includes(input.toLowerCase()) || prefix.toLowerCase().includes(input.toLowerCase())) {
 //         const nextNumber = items
@@ -1933,7 +1933,7 @@
 //         suggestions.push(`${prefix}${nextNumber.toString().padStart(3, '0')}`);
 //       }
 //     });
-    
+
 //     const existingNumbers = items
 //       .map(item => {
 //         const match = item.itemCode?.match(/^([A-Z]+)-?(\d+)$/);
@@ -1941,11 +1941,11 @@
 //       })
 //       .filter(num => num !== null)
 //       .sort((a, b) => b - a);
-    
+
 //     if (existingNumbers.length > 0) {
 //       suggestions.push(`${prefix}-${(existingNumbers[0] + 1).toString().padStart(3, '0')}`);
 //     }
-    
+
 //     return [...new Set(suggestions)].slice(0, 5);
 //   };
 
@@ -1954,16 +1954,16 @@
 //     if (!text || !pattern) return false;
 //     const normalizedText = text.toLowerCase();
 //     const normalizedPattern = pattern.toLowerCase();
-    
+
 //     if (!normalizedPattern.includes('*')) {
 //       return normalizedText.includes(normalizedPattern);
 //     }
-    
+
 //     const regexPattern = normalizedPattern
 //       .replace(/\./g, '\\.')
 //       .replace(/\*/g, '.*')
 //       .replace(/\?/g, '.');
-    
+
 //     try {
 //       const regex = new RegExp(`^${regexPattern}$`);
 //       return regex.test(normalizedText);
@@ -1974,7 +1974,7 @@
 
 //   const filteredSidebarItems = useMemo(() => {
 //     if (!searchTerm) return items;
-    
+
 //     return items.filter(i => 
 //       matchesWildcardPattern(i.itemCode, searchTerm) ||
 //       matchesWildcardPattern(i.description, searchTerm)
@@ -2076,12 +2076,12 @@
 //   const handleSave = async () => {
 //     const errors = validateProductForm();
 //     setValidationErrors(errors);
-    
+
 //     if (errors.length > 0) {
 //       setMessage({ text: `Validation failed: ${errors.length} issue(s) found`, type: "danger" });
 //       return;
 //     }
-    
+
 //     try {
 //       setLoading(true);
 //       if (productForm.id) {
@@ -2108,7 +2108,7 @@
 //       setMessage({ text: "Please select an item to delete first.", type: "warning" });
 //       return;
 //     }
-    
+
 //     if (!window.confirm(`Are you sure you want to delete item: ${productForm.itemCode}?`)) {
 //       return;
 //     }
@@ -2137,7 +2137,7 @@
 
 //   const handleItemCodeChange = (value) => {
 //     setProductForm({...productForm, itemCode: value});
-    
+
 //     if (value.length >= 2) {
 //       const suggestions = getItemCodeSuggestions(value);
 //       setItemCodeSuggestions(suggestions);
@@ -2173,7 +2173,7 @@
 
 //   return (
 //     <div className="erp-app-shell vh-100 d-flex flex-column">
-      
+
 //       {/* 🛠 TOP TOOLBAR */}
 //       <div className="erp-nav d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-white shadow-sm">
 //         <div className="d-flex gap-2">
@@ -2209,7 +2209,7 @@
 //       </div>
 
 //       <div className="d-flex flex-grow-1 overflow-hidden">
-        
+
 //         {/* 📋 SIDEBAR LIST */}
 //         {showSidebar && (
 //           <div className="erp-sidebar border-end bg-white d-flex flex-column shadow-sm" style={{width: '280px'}}>
@@ -2228,7 +2228,7 @@
 //                   const matchesCode = matchesWildcardPattern(item.itemCode, searchTerm);
 //                   const matchesName = matchesWildcardPattern(item.description, searchTerm);
 //                   const stockStatus = getStockStatus(item);
-                  
+
 //                   return (
 //                     <div 
 //                       key={item.id} 
@@ -2512,7 +2512,7 @@
 //               <h5 className="mb-0 fw-bold text-primary">🔍 Data Integrity Check</h5>
 //               <button className="btn-close" onClick={() => setShowIntegrityCheck(false)}></button>
 //             </div>
-            
+
 //             {integrityIssues.length === 0 ? (
 //               <div className="text-center py-4">
 //                 <div className="text-success mb-2" style={{fontSize: '48px'}}>✅</div>
@@ -2534,7 +2534,7 @@
 //                 </div>
 //               </div>
 //             )}
-            
+
 //             <div className="d-flex justify-content-end gap-2 mt-3">
 //               <button className="btn btn-secondary btn-sm" onClick={() => setShowIntegrityCheck(false)}>Close</button>
 //               {integrityIssues.length > 0 && (
@@ -2552,9 +2552,9 @@
 //         .erp-btn { background: white; border: 1px solid #ced4da; font-size: 12px; padding: 5px 15px; border-radius: 3px; cursor: pointer; font-weight: 500; }
 //         .erp-btn:hover:not(:disabled) { background: #f8f9fa; border-color: #adb5bd; }
 //         .erp-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        
+
 //         .hover-bg-light:hover { background-color: #f8f9fa !important; }
-        
+
 //         .sidebar-row { transition: 0.1s; border-left: 3px solid transparent; }
 //         .sidebar-row:hover { background: #f8f9fa; }
 //         .active-row { background: #e7f1ff !important; border-left-color: #0d6efd !important; }
@@ -2602,8 +2602,8 @@ const createEmptyProductForm = () => ({
   unit: "NOS",
   itemType: "Purchased",
   // Pricing & Costs
-  price: 0,           
-  unitPrice: 0,       
+  price: 0,
+  unitPrice: 0,
   standardCost: 0,    // Advanced: Standard vs Avg Cost
   taxCode: "STANDARD", // Advanced: Taxation
   // Inventory Control
@@ -2618,7 +2618,7 @@ const createEmptyProductForm = () => ({
   mpn: "",            // Manufacturer Part Number
   preferredVendor: "",
   moq: 1,             // Minimum Order Quantity
-  netWeight: 0,       
+  netWeight: 0,
   grossWeight: 0,
   volumeCBM: 0,       // Cubic Meters
   shelfLifeDays: 0,
@@ -2633,17 +2633,17 @@ export default function SmartERP() {
   const [poMap, setPoMap] = useState({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
-  
+
   // UI States
   const [activeTab, setActiveTab] = useState("Main");
   const [searchTerm, setSearchTerm] = useState("");
   const [showSidebar, setShowSidebar] = useState(true);
   const [productForm, setProductForm] = useState(createEmptyProductForm());
-  const [whAssignment, setWhAssignment] = useState({ 
-    warehouseId: "", 
-    quantity: 0, 
-    lotNumber: "", 
-    scannerDeviceId: "WEB-APP-01" 
+  const [whAssignment, setWhAssignment] = useState({
+    warehouseId: "",
+    quantity: 0,
+    lotNumber: "",
+    scannerDeviceId: "WEB-APP-01"
   });
   const [selectedLot, setSelectedLot] = useState(null);
   const [serials, setSerials] = useState([]);
@@ -2691,38 +2691,38 @@ export default function SmartERP() {
   // Advanced validation checks
   const validateProductForm = () => {
     const errors = [];
-    
+
     // Required field validation
     if (!productForm.itemCode?.trim()) errors.push("Item Code is required");
     if (!productForm.description?.trim()) errors.push("Description is required");
-    
+
     // Duplicate checking
     if (productForm.itemCode?.trim()) {
-      const duplicate = items.find(item => 
-        item.id !== productForm.id && 
+      const duplicate = items.find(item =>
+        item.id !== productForm.id &&
         item.itemCode?.toLowerCase() === productForm.itemCode.toLowerCase()
       );
       if (duplicate) errors.push(`Item Code "${productForm.itemCode}" already exists`);
     }
-    
+
     if (productForm.barcode?.trim()) {
-      const duplicate = items.find(item => 
-        item.id !== productForm.id && 
+      const duplicate = items.find(item =>
+        item.id !== productForm.id &&
         item.barcode?.toLowerCase() === productForm.barcode.toLowerCase()
       );
       if (duplicate) errors.push(`Barcode "${productForm.barcode}" already exists`);
     }
-    
+
     // Data type validation (Including new advanced fields)
     if (productForm.price < 0) errors.push("Selling Price cannot be negative");
-    if (productForm.unitPrice < 0) errors.push("Unit Price cannot be negative"); 
+    if (productForm.unitPrice < 0) errors.push("Unit Price cannot be negative");
     if (productForm.safetyStock < 0) errors.push("Safety Stock cannot be negative");
     if (productForm.maxStockLevel < 0) errors.push("Max Stock Level cannot be negative");
     if (productForm.leadTimeDays < 0) errors.push("Lead Time cannot be negative");
     if (productForm.moq < 1) errors.push("Minimum Order Quantity (MOQ) must be at least 1");
     if (productForm.netWeight < 0 || productForm.grossWeight < 0) errors.push("Weights cannot be negative");
     if (productForm.shelfLifeDays < 0) errors.push("Shelf life cannot be negative");
-    
+
     // Logical validation
     if (productForm.maxStockLevel > 0 && productForm.safetyStock > productForm.maxStockLevel) {
       errors.push("Safety Stock cannot exceed Max Stock Level");
@@ -2730,29 +2730,29 @@ export default function SmartERP() {
     if (productForm.netWeight > productForm.grossWeight) {
       errors.push("Net Weight cannot be greater than Gross Weight");
     }
-    
+
     // Serial prefix validation for lot tracked items
     if (productForm.isLotTracked && !productForm.serialPrefix?.trim()) {
       errors.push("Serial Prefix is required for lot tracked items");
     }
-    
+
     return errors;
   };
 
   // Stock level analysis
   const getStockStatus = (item) => {
     if (!item) return { status: 'unknown', color: 'secondary', message: 'No data' };
-    
+
     const currentStock = totalStock(item.id);
     const safetyStock = item.safetyStock || 0;
     const maxStock = item.maxStockLevel || 1000;
-    
+
     if (currentStock <= 0) return { status: 'out-of-stock', color: 'danger', message: 'Out of Stock' };
     if (currentStock < safetyStock) return { status: 'critical', color: 'danger', message: 'Critical Low' };
     if (currentStock < safetyStock * 1.5) return { status: 'low', color: 'warning', message: 'Low Stock' };
     if (currentStock > maxStock) return { status: 'overstock', color: 'info', message: 'Overstocked' };
     if (currentStock >= maxStock * 0.9) return { status: 'high', color: 'success', message: 'Near Max' };
-    
+
     return { status: 'optimal', color: 'success', message: 'Optimal' };
   };
 
@@ -2762,14 +2762,14 @@ export default function SmartERP() {
     try {
       const itemsWithoutInventory = items.filter(item => totalStock(item.id) === 0);
       if (itemsWithoutInventory.length > 0) issues.push(`${itemsWithoutInventory.length} items have no inventory records`);
-      
+
       const negativeStock = inventory.filter(inv => (inv.quantity || inv.Quantity || 0) < 0);
       if (negativeStock.length > 0) issues.push(`${negativeStock.length} inventory records show negative quantities`);
-      
+
       const validItemIds = new Set(items.map(item => item.id));
       const orphanedInventory = inventory.filter(inv => !validItemIds.has(inv.itemId || inv.ItemId));
       if (orphanedInventory.length > 0) issues.push(`${orphanedInventory.length} inventory records reference non-existent items`);
-      
+
       const invalidItems = items.filter(item => !item.itemCode?.trim() || !item.description?.trim() || item.price < 0);
       if (invalidItems.length > 0) issues.push(`${invalidItems.length} items have invalid or missing data`);
     } catch (err) {
@@ -2781,14 +2781,14 @@ export default function SmartERP() {
   // Auto-suggestions for item codes
   const getItemCodeSuggestions = (input) => {
     if (!input || input.length < 2) return [];
-    
+
     const suggestions = [];
     const prefix = input.toUpperCase();
-    
+
     const categoryPrefixes = {
       'RAW': 'RM-', 'FINISHED': 'FG-', 'SEMI': 'SM-', 'PACKAGING': 'PKG-', 'SPARE': 'SPR-'
     };
-    
+
     Object.entries(categoryPrefixes).forEach(([cat, prefix]) => {
       if (cat.toLowerCase().includes(input.toLowerCase()) || prefix.toLowerCase().includes(input.toLowerCase())) {
         const nextNumber = items
@@ -2801,7 +2801,7 @@ export default function SmartERP() {
         suggestions.push(`${prefix}${nextNumber.toString().padStart(3, '0')}`);
       }
     });
-    
+
     const existingNumbers = items
       .map(item => {
         const match = item.itemCode?.match(/^([A-Z]+)-?(\d+)$/);
@@ -2809,11 +2809,11 @@ export default function SmartERP() {
       })
       .filter(num => num !== null)
       .sort((a, b) => b - a);
-    
+
     if (existingNumbers.length > 0) {
       suggestions.push(`${prefix}-${(existingNumbers[0] + 1).toString().padStart(3, '0')}`);
     }
-    
+
     return [...new Set(suggestions)].slice(0, 5);
   };
 
@@ -2822,14 +2822,14 @@ export default function SmartERP() {
     if (!text || !pattern) return false;
     const normalizedText = text.toLowerCase();
     const normalizedPattern = pattern.toLowerCase();
-    
+
     if (!normalizedPattern.includes('*')) return normalizedText.includes(normalizedPattern);
-    
+
     const regexPattern = normalizedPattern
       .replace(/\./g, '\\.')
       .replace(/\*/g, '.*')
       .replace(/\?/g, '.');
-    
+
     try {
       const regex = new RegExp(`^${regexPattern}$`);
       return regex.test(normalizedText);
@@ -2840,7 +2840,7 @@ export default function SmartERP() {
 
   const filteredSidebarItems = useMemo(() => {
     if (!searchTerm) return items;
-    return items.filter(i => 
+    return items.filter(i =>
       matchesWildcardPattern(i.itemCode, searchTerm) ||
       matchesWildcardPattern(i.description, searchTerm)
     );
@@ -2860,10 +2860,10 @@ export default function SmartERP() {
   };
 
   const selectItem = (item) => {
-    setProductForm({ 
-      ...createEmptyProductForm(), 
-      ...item, 
-      serialPrefix: item.serialPrefix || "" 
+    setProductForm({
+      ...createEmptyProductForm(),
+      ...item,
+      serialPrefix: item.serialPrefix || ""
     });
     setActiveTab("Main");
     setValidationErrors([]);
@@ -2938,12 +2938,12 @@ export default function SmartERP() {
   const handleSave = async () => {
     const errors = validateProductForm();
     setValidationErrors(errors);
-    
+
     if (errors.length > 0) {
       setMessage({ text: `Validation failed: ${errors.length} issue(s) found`, type: "danger" });
       return;
     }
-    
+
     try {
       setLoading(true);
       if (productForm.id) {
@@ -2991,7 +2991,7 @@ export default function SmartERP() {
   };
 
   const handleItemCodeChange = (value) => {
-    setProductForm({...productForm, itemCode: value});
+    setProductForm({ ...productForm, itemCode: value });
     if (value.length >= 2) {
       const suggestions = getItemCodeSuggestions(value);
       setItemCodeSuggestions(suggestions);
@@ -3002,7 +3002,7 @@ export default function SmartERP() {
   };
 
   const selectSuggestion = (suggestion) => {
-    setProductForm({...productForm, itemCode: suggestion});
+    setProductForm({ ...productForm, itemCode: suggestion });
     setShowSuggestions(false);
   };
 
@@ -3027,7 +3027,7 @@ export default function SmartERP() {
 
   return (
     <div className="erp-app-shell vh-100 d-flex flex-column">
-      
+
       {/* 🛠 TOP TOOLBAR */}
       <div className="erp-nav d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-white shadow-sm">
         <div className="d-flex gap-2">
@@ -3050,11 +3050,11 @@ export default function SmartERP() {
 
         <div className="d-flex align-items-center gap-2">
           <label className="small fw-bold text-muted mb-0">Quick Search:</label>
-          <input 
-            type="text" 
-            className="form-control form-control-sm" 
-            style={{width: '280px'}} 
-            placeholder="e.g. AJ*, *BOLT, BLK* (use * for wildcard)" 
+          <input
+            type="text"
+            className="form-control form-control-sm"
+            style={{ width: '280px' }}
+            placeholder="e.g. AJ*, *BOLT, BLK* (use * for wildcard)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -3062,10 +3062,10 @@ export default function SmartERP() {
       </div>
 
       <div className="d-flex flex-grow-1 overflow-hidden">
-        
+
         {/* 📋 SIDEBAR LIST */}
         {showSidebar && (
-          <div className="erp-sidebar border-end bg-white d-flex flex-column shadow-sm" style={{width: '280px'}}>
+          <div className="erp-sidebar border-end bg-white d-flex flex-column shadow-sm" style={{ width: '280px' }}>
             <div className="p-2 small fw-bold bg-light border-bottom d-flex justify-content-between text-muted">
               <span>ITEMS MASTER</span>
               <span className="badge bg-secondary">{filteredSidebarItems.length}</span>
@@ -3073,7 +3073,7 @@ export default function SmartERP() {
             <div className="flex-grow-1 overflow-auto">
               {filteredSidebarItems.length === 0 ? (
                 <div className="p-3 text-center text-muted small">
-                  <div style={{fontSize: '24px', marginBottom: '8px'}}>🔍</div>
+                  <div style={{ fontSize: '24px', marginBottom: '8px' }}>🔍</div>
                   No items match "{searchTerm}"
                 </div>
               ) : (
@@ -3081,10 +3081,10 @@ export default function SmartERP() {
                   const matchesCode = matchesWildcardPattern(item.itemCode, searchTerm);
                   const matchesName = matchesWildcardPattern(item.description, searchTerm);
                   const stockStatus = getStockStatus(item);
-                  
+
                   return (
-                    <div 
-                      key={item.id} 
+                    <div
+                      key={item.id}
                       className={`sidebar-row p-2 border-bottom cursor-pointer ${productForm.id === item.id ? 'active-row' : ''}`}
                       onClick={() => selectItem(item)}
                       style={{
@@ -3093,17 +3093,17 @@ export default function SmartERP() {
                       }}
                     >
                       <div className="d-flex justify-content-between fw-bold small align-items-start gap-2">
-                        <div style={{flex: 1}}>
+                        <div style={{ flex: 1 }}>
                           <span className={`fw-bold ${matchesCode ? 'text-danger' : 'text-dark'}`}>{item.itemCode}</span>
-                          <div className={`badge bg-${stockStatus.color} text-white ms-1`} style={{fontSize: '9px'}}>
+                          <div className={`badge bg-${stockStatus.color} text-white ms-1`} style={{ fontSize: '9px' }}>
                             {stockStatus.message}
                           </div>
                         </div>
-                        <span className="text-primary badge bg-light text-dark" style={{whiteSpace: 'nowrap'}}>
+                        <span className="text-primary badge bg-light text-dark" style={{ whiteSpace: 'nowrap' }}>
                           {totalStock(item.id)} units
                         </span>
                       </div>
-                      <div className={`text-truncate ${matchesName && !matchesCode ? 'text-danger fw-bold' : 'text-muted'}`} style={{fontSize: '11px'}}>
+                      <div className={`text-truncate ${matchesName && !matchesCode ? 'text-danger fw-bold' : 'text-muted'}`} style={{ fontSize: '11px' }}>
                         {item.description || 'No description'}
                       </div>
                     </div>
@@ -3119,7 +3119,7 @@ export default function SmartERP() {
           {message.text && (
             <div className={`alert alert-${message.type} py-1 small fw-bold mb-3 d-flex justify-content-between`}>
               {message.text}
-              <span className="cursor-pointer" onClick={() => setMessage({text:"", type:""})}>×</span>
+              <span className="cursor-pointer" onClick={() => setMessage({ text: "", type: "" })}>×</span>
             </div>
           )}
 
@@ -3135,9 +3135,9 @@ export default function SmartERP() {
           <div className="erp-card bg-white border shadow-sm rounded-1">
             <div className="erp-tabs d-flex border-bottom bg-light">
               {["Main", "Planning", "Advanced", "Warehouse", "Quantities", "Costs"].map(tabName => (
-                <button 
-                  key={tabName} 
-                  className={`tab-link ${activeTab === tabName ? 'active' : ''}`} 
+                <button
+                  key={tabName}
+                  className={`tab-link ${activeTab === tabName ? 'active' : ''}`}
                   onClick={() => setActiveTab(tabName)}
                 >
                   {tabName}
@@ -3153,17 +3153,17 @@ export default function SmartERP() {
                     <div className="erp-group-box">
                       <span className="box-title">Identification</span>
                       <div className="field-row position-relative">
-                        <label>Item Code:</label> 
-                        <div style={{width: '65%', position: 'relative'}}>
-                          <input 
-                            className={`fw-bold ${validationErrors.some(e => e.includes('Item Code')) ? 'border-danger' : ''}`} 
-                            value={productForm.itemCode} 
+                        <label>Item Code:</label>
+                        <div style={{ width: '65%', position: 'relative' }}>
+                          <input
+                            className={`fw-bold ${validationErrors.some(e => e.includes('Item Code')) ? 'border-danger' : ''}`}
+                            value={productForm.itemCode}
                             onChange={e => handleItemCodeChange(e.target.value)}
                             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                             placeholder="e.g. RM-001, FG-100"
                           />
                           {showSuggestions && itemCodeSuggestions.length > 0 && (
-                            <div className="position-absolute bg-white border rounded shadow-sm mt-1" style={{width: '100%', zIndex: 1000, maxHeight: '150px', overflowY: 'auto'}}>
+                            <div className="position-absolute bg-white border rounded shadow-sm mt-1" style={{ width: '100%', zIndex: 1000, maxHeight: '150px', overflowY: 'auto' }}>
                               {itemCodeSuggestions.map((suggestion, idx) => (
                                 <div key={idx} className="p-2 small cursor-pointer hover-bg-light" onClick={() => selectSuggestion(suggestion)}>{suggestion}</div>
                               ))}
@@ -3172,27 +3172,27 @@ export default function SmartERP() {
                         </div>
                       </div>
                       <div className="field-row"><label>Barcode:</label> <input className="font-monospace" value={productForm.barcode} onChange={e => handleBarcodeChange(e.target.value)} /></div>
-                      <div className="field-row"><label className="text-primary fw-bold">Serial Prefix:</label> <input className="border-primary" placeholder="Enter Prefix..." value={productForm.serialPrefix} onChange={e => setProductForm({...productForm, serialPrefix: e.target.value})} /></div>
-                      <div className="field-row"><label>Description:</label> <textarea rows="2" value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} /></div>
+                      <div className="field-row"><label className="text-primary fw-bold">Serial Prefix:</label> <input className="border-primary" placeholder="Enter Prefix..." value={productForm.serialPrefix} onChange={e => setProductForm({ ...productForm, serialPrefix: e.target.value })} /></div>
+                      <div className="field-row"><label>Description:</label> <textarea rows="2" value={productForm.description} onChange={e => setProductForm({ ...productForm, description: e.target.value })} /></div>
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="erp-group-box">
                       <span className="box-title">Inventory Attributes</span>
-                      <div className="field-row"><label>Category:</label> <input value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} /></div>
-                      <div className="field-row"><label>Unit (UOM):</label> 
-                        <select value={productForm.unit} onChange={e => setProductForm({...productForm, unit: e.target.value})}>
+                      <div className="field-row"><label>Category:</label> <input value={productForm.category} onChange={e => setProductForm({ ...productForm, category: e.target.value })} /></div>
+                      <div className="field-row"><label>Unit (UOM):</label>
+                        <select value={productForm.unit} onChange={e => setProductForm({ ...productForm, unit: e.target.value })}>
                           <option>NOS</option><option>BX</option><option>KGS</option><option>PCS</option><option>LTR</option>
                         </select>
                       </div>
-                      <div className="field-row"><label>Type:</label> 
-                        <select value={productForm.itemType} onChange={e => setProductForm({...productForm, itemType: e.target.value})}>
+                      <div className="field-row"><label>Type:</label>
+                        <select value={productForm.itemType} onChange={e => setProductForm({ ...productForm, itemType: e.target.value })}>
                           <option>Purchased</option><option>Manufactured</option><option>Service</option>
                         </select>
                       </div>
                       <div className="field-row mt-3 p-2 bg-light border rounded">
                         <label className="form-check-label fw-bold small">Enable Lot Tracking:</label>
-                        <input type="checkbox" className="form-check-input ms-2" checked={productForm.isLotTracked} onChange={e => setProductForm({...productForm, isLotTracked: e.target.checked})} />
+                        <input type="checkbox" className="form-check-input ms-2" checked={productForm.isLotTracked} onChange={e => setProductForm({ ...productForm, isLotTracked: e.target.checked })} />
                       </div>
                     </div>
                   </div>
@@ -3205,17 +3205,17 @@ export default function SmartERP() {
                   <div className="col-md-6">
                     <div className="erp-group-box">
                       <span className="box-title">Stock Controls</span>
-                      <div className="field-row"><label>Safety Stock:</label> <input type="number" className="text-end" value={productForm.safetyStock} onChange={e => setProductForm({...productForm, safetyStock: Number(e.target.value)})} /></div>
-                      <div className="field-row"><label>Max Stock Level:</label> <input type="number" className="text-end" value={productForm.maxStockLevel} onChange={e => setProductForm({...productForm, maxStockLevel: Number(e.target.value)})} /></div>
-                      <div className="field-row"><label>Avg Daily Sales:</label> <input type="number" className="text-end" value={productForm.averageDailySales} onChange={e => setProductForm({...productForm, averageDailySales: Number(e.target.value)})} /></div>
+                      <div className="field-row"><label>Safety Stock:</label> <input type="number" className="text-end" value={productForm.safetyStock} onChange={e => setProductForm({ ...productForm, safetyStock: Number(e.target.value) })} /></div>
+                      <div className="field-row"><label>Max Stock Level:</label> <input type="number" className="text-end" value={productForm.maxStockLevel} onChange={e => setProductForm({ ...productForm, maxStockLevel: Number(e.target.value) })} /></div>
+                      <div className="field-row"><label>Avg Daily Sales:</label> <input type="number" className="text-end" value={productForm.averageDailySales} onChange={e => setProductForm({ ...productForm, averageDailySales: Number(e.target.value) })} /></div>
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="erp-group-box">
                       <span className="box-title">Procurement Info</span>
-                      <div className="field-row"><label>Lead Time (Days):</label> <input type="number" className="text-end" value={productForm.leadTimeDays} onChange={e => setProductForm({...productForm, leadTimeDays: Number(e.target.value)})} /></div>
-                      <div className="field-row"><label>Pref. Vendor:</label> <input placeholder="e.g. VEND-001" value={productForm.preferredVendor} onChange={e => setProductForm({...productForm, preferredVendor: e.target.value})} /></div>
-                      <div className="field-row"><label>Min Order Qty (MOQ):</label> <input type="number" className="text-end" value={productForm.moq} onChange={e => setProductForm({...productForm, moq: Number(e.target.value)})} /></div>
+                      <div className="field-row"><label>Lead Time (Days):</label> <input type="number" className="text-end" value={productForm.leadTimeDays} onChange={e => setProductForm({ ...productForm, leadTimeDays: Number(e.target.value) })} /></div>
+                      <div className="field-row"><label>Pref. Vendor:</label> <input placeholder="e.g. VEND-001" value={productForm.preferredVendor} onChange={e => setProductForm({ ...productForm, preferredVendor: e.target.value })} /></div>
+                      <div className="field-row"><label>Min Order Qty (MOQ):</label> <input type="number" className="text-end" value={productForm.moq} onChange={e => setProductForm({ ...productForm, moq: Number(e.target.value) })} /></div>
                     </div>
                   </div>
                 </div>
@@ -3227,20 +3227,20 @@ export default function SmartERP() {
                   <div className="col-md-6">
                     <div className="erp-group-box border-info">
                       <span className="box-title text-info">Dimensions & Weight</span>
-                      <div className="field-row"><label>Net Weight (kg):</label> <input type="number" step="0.01" className="text-end" value={productForm.netWeight} onChange={e => setProductForm({...productForm, netWeight: Number(e.target.value)})} /></div>
-                      <div className="field-row"><label>Gross Weight (kg):</label> <input type="number" step="0.01" className="text-end" value={productForm.grossWeight} onChange={e => setProductForm({...productForm, grossWeight: Number(e.target.value)})} /></div>
-                      <div className="field-row"><label>Volume (CBM):</label> <input type="number" step="0.001" className="text-end" value={productForm.volumeCBM} onChange={e => setProductForm({...productForm, volumeCBM: Number(e.target.value)})} /></div>
+                      <div className="field-row"><label>Net Weight (kg):</label> <input type="number" step="0.01" className="text-end" value={productForm.netWeight} onChange={e => setProductForm({ ...productForm, netWeight: Number(e.target.value) })} /></div>
+                      <div className="field-row"><label>Gross Weight (kg):</label> <input type="number" step="0.01" className="text-end" value={productForm.grossWeight} onChange={e => setProductForm({ ...productForm, grossWeight: Number(e.target.value) })} /></div>
+                      <div className="field-row"><label>Volume (CBM):</label> <input type="number" step="0.001" className="text-end" value={productForm.volumeCBM} onChange={e => setProductForm({ ...productForm, volumeCBM: Number(e.target.value) })} /></div>
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="erp-group-box border-warning">
                       <span className="box-title text-warning">Quality & Compliance</span>
-                      <div className="field-row"><label>Country of Origin:</label> <input placeholder="e.g. IND, USA" value={productForm.countryOfOrigin} onChange={e => setProductForm({...productForm, countryOfOrigin: e.target.value})} /></div>
-                      <div className="field-row"><label>Shelf Life (Days):</label> <input type="number" className="text-end" value={productForm.shelfLifeDays} onChange={e => setProductForm({...productForm, shelfLifeDays: Number(e.target.value)})} placeholder="0 for infinite" /></div>
-                      <div className="field-row"><label>Mfg Part No (MPN):</label> <input value={productForm.mpn} onChange={e => setProductForm({...productForm, mpn: e.target.value})} /></div>
+                      <div className="field-row"><label>Country of Origin:</label> <input placeholder="e.g. IND, USA" value={productForm.countryOfOrigin} onChange={e => setProductForm({ ...productForm, countryOfOrigin: e.target.value })} /></div>
+                      <div className="field-row"><label>Shelf Life (Days):</label> <input type="number" className="text-end" value={productForm.shelfLifeDays} onChange={e => setProductForm({ ...productForm, shelfLifeDays: Number(e.target.value) })} placeholder="0 for infinite" /></div>
+                      <div className="field-row"><label>Mfg Part No (MPN):</label> <input value={productForm.mpn} onChange={e => setProductForm({ ...productForm, mpn: e.target.value })} /></div>
                       <div className="field-row mt-3 p-2 bg-light border rounded border-warning">
                         <label className="form-check-label fw-bold small text-warning-emphasis">Requires Inbound QA Inspection:</label>
-                        <input type="checkbox" className="form-check-input ms-2" checked={productForm.requiresQA} onChange={e => setProductForm({...productForm, requiresQA: e.target.checked})} />
+                        <input type="checkbox" className="form-check-input ms-2" checked={productForm.requiresQA} onChange={e => setProductForm({ ...productForm, requiresQA: e.target.checked })} />
                       </div>
                     </div>
                   </div>
@@ -3253,13 +3253,13 @@ export default function SmartERP() {
                   <div className="col-md-6 erp-group-box border-primary p-4">
                     <span className="box-title text-primary">Inbound Material Posting</span>
                     <div className="field-row mb-3"><label className="fw-bold">Warehouse:</label>
-                      <select value={whAssignment.warehouseId} onChange={e => setWhAssignment({...whAssignment, warehouseId: e.target.value})}>
+                      <select value={whAssignment.warehouseId} onChange={e => setWhAssignment({ ...whAssignment, warehouseId: e.target.value })}>
                         <option value="">-- Select Destination --</option>
                         {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                       </select>
                     </div>
-                    <div className="field-row mb-3"><label className="fw-bold">Receipt Qty:</label> <input type="number" className="text-end fw-bold" value={whAssignment.quantity} onChange={e => setWhAssignment({...whAssignment, quantity: e.target.value})} /></div>
-                    <div className="field-row mb-4"><label className="fw-bold">Lot Number:</label> <input placeholder={productForm.isLotTracked ? "REQUIRED" : "N/A"} value={whAssignment.lotNumber} onChange={e => setWhAssignment({...whAssignment, lotNumber: e.target.value})} disabled={!productForm.isLotTracked} /></div>
+                    <div className="field-row mb-3"><label className="fw-bold">Receipt Qty:</label> <input type="number" className="text-end fw-bold" value={whAssignment.quantity} onChange={e => setWhAssignment({ ...whAssignment, quantity: e.target.value })} /></div>
+                    <div className="field-row mb-4"><label className="fw-bold">Lot Number:</label> <input placeholder={productForm.isLotTracked ? "REQUIRED" : "N/A"} value={whAssignment.lotNumber} onChange={e => setWhAssignment({ ...whAssignment, lotNumber: e.target.value })} disabled={!productForm.isLotTracked} /></div>
                     <button className="btn btn-primary w-100 fw-bold" onClick={postStock}>POST TO INVENTORY</button>
                   </div>
                 </div>
@@ -3283,13 +3283,13 @@ export default function SmartERP() {
                   <div className="col-md-8 px-4">
                     <h6 className="small fw-bold text-uppercase text-muted border-bottom pb-2">Location & Lot Details</h6>
                     <div className="mt-3">
-                      {detailInventoryRows.length === 0 ? <p className="text-center p-5 text-muted small">No active stock records.</p> : 
+                      {detailInventoryRows.length === 0 ? <p className="text-center p-5 text-muted small">No active stock records.</p> :
                         detailInventoryRows.map(row => (
                           <div key={row.id}>
                             <div className={`d-flex justify-content-between align-items-center border-bottom py-2 cursor-pointer ${selectedLot === row.id ? 'bg-light' : ''}`} onClick={() => handleLotClick(row)}>
                               <div>
                                 <div className="fw-bold small text-dark">{row.lot.toUpperCase()}</div>
-                                <div className="text-muted" style={{fontSize:'10px'}}>{row.whName}</div>
+                                <div className="text-muted" style={{ fontSize: '10px' }}>{row.whName}</div>
                               </div>
                               <div className="fw-bold fs-5">{row.qty.toLocaleString()}</div>
                             </div>
@@ -3298,12 +3298,12 @@ export default function SmartERP() {
                                 <h6 className="small fw-bold text-primary mb-2">Serial Numbers</h6>
                                 {loadingSerials ? <div className="text-center py-2"><div className="spinner-border spinner-border-sm text-primary"></div></div> : serials.length === 0 ? <p className="text-muted small mb-0">No serials found.</p> : (
                                   <><div className="d-flex flex-wrap gap-1">
-                                      {serials.map((serial, idx) => {
-                                        const val = serial?.SerialNumber || serial?.serialNumber || serial;
-                                        const sel = selectedSerial && (selectedSerial?.SerialNumber === val || selectedSerial?.serialNumber === val || selectedSerial === serial);
-                                        return <span key={idx} className={`badge small ${sel ? 'bg-primary text-white' : 'bg-secondary text-dark'} cursor-pointer`} onClick={() => handleSerialClick(serial)}>{val}</span>;
-                                      })}
-                                    </div>
+                                    {serials.map((serial, idx) => {
+                                      const val = serial?.SerialNumber || serial?.serialNumber || serial;
+                                      const sel = selectedSerial && (selectedSerial?.SerialNumber === val || selectedSerial?.serialNumber === val || selectedSerial === serial);
+                                      return <span key={idx} className={`badge small ${sel ? 'bg-primary text-white' : 'bg-secondary text-dark'} cursor-pointer`} onClick={() => handleSerialClick(serial)}>{val}</span>;
+                                    })}
+                                  </div>
                                     {selectedSerial && <div className="mt-3 p-3 border rounded bg-white"><div className="small text-muted mb-2">Barcode preview</div><svg ref={serialBarcodeRef}></svg></div>}
                                   </>
                                 )}
@@ -3323,16 +3323,16 @@ export default function SmartERP() {
                   <div className="col-md-6">
                     <div className="erp-group-box">
                       <span className="box-title">Pricing & Costs</span>
-                      <div className="field-row"><label>Standard Cost:</label> <input type="number" className="text-end" value={productForm.standardCost} onChange={e => setProductForm({...productForm, standardCost: Number(e.target.value)})} title="Base accounting cost" /></div>
-                      <div className="field-row"><label>Actual Unit Price:</label> <input type="number" className="text-end fw-bold" value={productForm.unitPrice} onChange={e => setProductForm({...productForm, unitPrice: Number(e.target.value)})} title="Last purchase cost" /></div>
-                      <div className="field-row"><label>Selling Price:</label> <input type="number" className="text-end" value={productForm.price} onChange={e => setProductForm({...productForm, price: Number(e.target.value)})} /></div>
+                      <div className="field-row"><label>Standard Cost:</label> <input type="number" className="text-end" value={productForm.standardCost} onChange={e => setProductForm({ ...productForm, standardCost: Number(e.target.value) })} title="Base accounting cost" /></div>
+                      <div className="field-row"><label>Actual Unit Price:</label> <input type="number" className="text-end fw-bold" value={productForm.unitPrice} onChange={e => setProductForm({ ...productForm, unitPrice: Number(e.target.value) })} title="Last purchase cost" /></div>
+                      <div className="field-row"><label>Selling Price:</label> <input type="number" className="text-end" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: Number(e.target.value) })} /></div>
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="erp-group-box">
                       <span className="box-title">Taxation</span>
-                      <div className="field-row"><label>Tax Code:</label> 
-                        <select value={productForm.taxCode} onChange={e => setProductForm({...productForm, taxCode: e.target.value})}>
+                      <div className="field-row"><label>Tax Code:</label>
+                        <select value={productForm.taxCode} onChange={e => setProductForm({ ...productForm, taxCode: e.target.value })}>
                           <option value="STANDARD">Standard Rate</option>
                           <option value="EXEMPT">Tax Exempt</option>
                           <option value="REDUCED">Reduced Rate</option>
@@ -3349,25 +3349,25 @@ export default function SmartERP() {
 
       {/* INTEGRITY CHECK MODAL */}
       {showIntegrityCheck && (
-        <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center" style={{zIndex: 1050}}>
-          <div className="bg-white rounded shadow-lg p-4" style={{maxWidth: '500px', width: '90%'}}>
+        <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center" style={{ zIndex: 1050 }}>
+          <div className="bg-white rounded shadow-lg p-4" style={{ maxWidth: '500px', width: '90%' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="mb-0 fw-bold text-primary">🔍 Data Integrity Check</h5>
               <button className="btn-close" onClick={() => setShowIntegrityCheck(false)}></button>
             </div>
             {integrityIssues.length === 0 ? (
-              <div className="text-center py-4"><div className="text-success mb-2" style={{fontSize: '48px'}}>✅</div><div className="fw-bold text-success">All checks passed!</div><div className="text-muted small">No data integrity issues found</div></div>
+              <div className="text-center py-4"><div className="text-success mb-2" style={{ fontSize: '48px' }}>✅</div><div className="fw-bold text-success">All checks passed!</div><div className="text-muted small">No data integrity issues found</div></div>
             ) : (
-              <div><div className="alert alert-warning py-2 mb-3"><strong>{integrityIssues.length} issue(s) found</strong></div><div style={{maxHeight: '300px', overflowY: 'auto'}}>{integrityIssues.map((issue, idx) => <div key={idx} className="d-flex align-items-start mb-2 p-2 bg-light rounded"><span className="text-warning me-2">⚠️</span><span className="small">{issue}</span></div>)}</div></div>
+              <div><div className="alert alert-warning py-2 mb-3"><strong>{integrityIssues.length} issue(s) found</strong></div><div style={{ maxHeight: '300px', overflowY: 'auto' }}>{integrityIssues.map((issue, idx) => <div key={idx} className="d-flex align-items-start mb-2 p-2 bg-light rounded"><span className="text-warning me-2">⚠️</span><span className="small">{issue}</span></div>)}</div></div>
             )}
             <div className="d-flex justify-content-end gap-2 mt-3">
               <button className="btn btn-secondary btn-sm" onClick={() => setShowIntegrityCheck(false)}>Close</button>
-              {integrityIssues.length > 0 && <button className="btn btn-primary btn-sm" onClick={() => {setShowIntegrityCheck(false); handleIntegrityCheck();}}>🔄 Re-run Check</button>}
+              {integrityIssues.length > 0 && <button className="btn btn-primary btn-sm" onClick={() => { setShowIntegrityCheck(false); handleIntegrityCheck(); }}>🔄 Re-run Check</button>}
             </div>
           </div>
         </div>
       )}
-<style>{`
+      <style>{`
         /* Global Shell */
         .erp-app-shell { 
           background: #f1f5f9; /* Modern slate background */

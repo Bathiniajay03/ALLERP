@@ -1040,7 +1040,7 @@ function AppContent() {
     if (!isAuthenticated) return;
 
     let timeoutId;
-    const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 Minutes
+    const INACTIVITY_LIMIT = 120 * 60 * 1000; // 120 Minutes
 
     const resetTimer = () => {
       if (timeoutId) clearTimeout(timeoutId);
