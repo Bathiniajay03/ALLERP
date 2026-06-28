@@ -70,6 +70,9 @@ export const smartErpApi = {
   getCustomerOrders: () =>
     api.get("/public/orders"),
 
+  getCustomerOrderById: (id) =>
+    api.get(`/public/orders/${id}`),
+
   updateCustomerOrderStatus: (id, payload) =>
     api.put(`/public/orders/${id}/status`, payload),
 

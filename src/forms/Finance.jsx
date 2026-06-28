@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { smartErpApi } from "../services/smartErpApi";
 
 export default function Finance() {
@@ -23,15 +23,18 @@ export default function Finance() {
   const [txFilter, setTxFilter] = useState({ type: "all", customer: "", dateFrom: "", dateTo: "" });
   const [formData, setFormData] = useState({ salesOrderId: "", amount: "", paymentMethod: "Credit Card", reference: "" });
 
+  const [customerOrders, setCustomerOrders] = useState([]);
+
   useEffect(() => { loadAllFinanceData(); }, []);
 
   const loadAllFinanceData = async () => {
     setLoading(true);
     try {
-      const [txRes, vrRes, invRes, pmRes, custRes, soRes] = await Promise.allSettled([
+      const [txRes, vrRes, invRes, pmRes, custRes, soRes, coRes] = await Promise.allSettled([
         smartErpApi.reportsTransactions(), smartErpApi.getVendorReturns(),
         smartErpApi.getInvoices(), smartErpApi.getPayments(),
-        smartErpApi.getCustomers(), smartErpApi.getSalesOrders()
+        smartErpApi.getCustomers(), smartErpApi.getSalesOrders(),
+        smartErpApi.getCustomerOrders()
       ]);
       if (txRes.status === "fulfilled") {
         setTransactions((txRes.value.data || []).map(tx => ({
@@ -49,16 +52,42 @@ export default function Finance() {
         if (d.length > 0 && selectedCustomerId === null) setSelectedCustomerId(d[0].id);
       }
       if (soRes.status === "fulfilled") setSalesOrders(soRes.value.data || []);
+      if (coRes.status === "fulfilled") setCustomerOrders(coRes.value.data || []);
       setError("");
     } catch (err) { setError("Failed to load financial records."); console.error(err); }
     finally { setLoading(false); }
   };
 
-  const openOrderDetail = async (salesOrderId) => {
+  const openOrderDetail = async (salesOrderId, customerOrderId = null) => {
     setShowDetailModal(true); setDetailLoading(true); setOrderDetails(null);
     try {
-      const res = await smartErpApi.getSalesOrder(salesOrderId);
-      setOrderDetails(res.data);
+      if (salesOrderId) {
+        const res = await smartErpApi.getSalesOrder(salesOrderId);
+        setOrderDetails(res.data);
+      } else if (customerOrderId) {
+        const res = await smartErpApi.getCustomerOrderById(customerOrderId);
+        const data = res.data;
+        setOrderDetails({
+          id: data.id,
+          orderNumber: data.orderNumber,
+          customerName: data.customerName || data.customer?.companyName || (data.customer?.firstName ? data.customer.firstName + " " + data.customer.lastName : "B2C Customer"),
+          createdAt: data.createdAt,
+          subTotal: data.totalAmount,
+          taxAmount: 0,
+          totalAmount: data.totalAmount,
+          paymentStatus: data.status === "Delivered" ? "Paid" : "Pending",
+          items: data.items ? data.items.map(i => ({
+            id: i.productId || i.id,
+            itemId: i.productId || i.itemId,
+            itemCode: i.productName || i.itemCode,
+            warehouseName: i.warehouseName || "N/A",
+            quantity: i.quantity,
+            unitPrice: i.price || i.unitPrice,
+            lineTotal: i.totalPrice || i.lineTotal
+          })) : [],
+          statusHistory: [] // Can be enriched later
+        });
+      }
     } catch (e) { console.error(e); }
     finally { setDetailLoading(false); }
   };
@@ -189,8 +218,25 @@ export default function Finance() {
         direction: "credit", 
         customer: p.customerName || "N/A",
         salesOrderId: p.salesOrderId, 
+        customerOrderId: p.customerOrderId,
         orderNumber: p.orderNumber, 
         status: p.status 
+      });
+    });
+
+    // Add Customer Orders (B2C)
+    customerOrders.forEach(co => {
+      list.push({
+        id: `co-${co.id}`,
+        date: new Date(co.createdAt),
+        type: "B2C Order",
+        reference: `B2C-${co.orderNumber}`,
+        amount: Number(co.totalAmount),
+        direction: "debit",
+        customer: co.customerName || co.customer?.companyName || (co.customer?.firstName ? co.customer.firstName + " " + co.customer.lastName : "B2C Customer"),
+        customerOrderId: co.id,
+        orderNumber: co.orderNumber,
+        status: co.status
       });
     });
 
@@ -205,7 +251,7 @@ export default function Finance() {
       if (txFilter.dateTo && tx.date > new Date(txFilter.dateTo + "T23:59:59")) return false;
       return true;
     });
-  }, [invoices, payments, salesOrders, transactions, txFilter]); // Added transactions to dependency array
+  }, [invoices, payments, salesOrders, transactions, customerOrders, txFilter]); // Added transactions to dependency array
 
   const customerReceivables = useMemo(() => {
     return customers.filter(c => Number(c.outstandingBalance || 0) > 0).map(c => {
@@ -313,7 +359,7 @@ export default function Finance() {
                               <td><span className="badge bg-light text-dark border">{p.paymentMethod}</span></td>
                               <td className="text-end font-monospace fw-bold text-success">₹{Number(p.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
                               <td><span className={`badge ${p.status === "Captured" ? "bg-success" : "bg-warning"}`}>{p.status}</span></td>
-                              <td><button className="btn btn-sm btn-outline-primary py-0 px-2" onClick={() => openOrderDetail(p.salesOrderId)}>View →</button></td>
+                              <td><button className="btn btn-sm btn-outline-primary py-0 px-2" onClick={() => openOrderDetail(p.salesOrderId, p.customerOrderId)}>View →</button></td>
                             </tr>
                           ))}
                           {payments.length === 0 && <tr><td colSpan="7" className="text-center py-4 text-muted">No payments recorded yet.</td></tr>}
@@ -437,7 +483,7 @@ export default function Finance() {
                                 <td className="text-end font-monospace">{tx.debit > 0 ? `₹${tx.debit.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : "—"}</td>
                                 <td className="text-end font-monospace text-success">{tx.credit > 0 ? `₹${tx.credit.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : "—"}</td>
                                 <td className={`text-end font-monospace fw-bold ${tx.balance > 0 ? "text-danger" : "text-success"}`}>₹{tx.balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
-                                <td><button className="btn btn-sm btn-outline-primary py-0 px-2" onClick={() => openOrderDetail(tx.salesOrderId)}>View →</button></td>
+                                <td><button className="btn btn-sm btn-outline-primary py-0 px-2" onClick={() => openOrderDetail(tx.salesOrderId, tx.customerOrderId)}>View →</button></td>
                               </tr>
                             ))}
                           </tbody>
@@ -501,8 +547,8 @@ export default function Finance() {
                         <td className="text-end font-monospace">{tx.direction === "debit" ? `₹${tx.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : "—"}</td>
                         <td className="text-end font-monospace text-success">{tx.direction === "credit" ? `₹${tx.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : "—"}</td>
                         <td>
-                          {tx.salesOrderId && (
-                            <button className="btn btn-sm btn-outline-primary py-0 px-2" onClick={() => openOrderDetail(tx.salesOrderId)}>Details →</button>
+                          {(tx.salesOrderId || tx.customerOrderId) && (
+                            <button className="btn btn-sm btn-outline-primary py-0 px-2" onClick={() => openOrderDetail(tx.salesOrderId, tx.customerOrderId)}>Details →</button>
                           )}
                         </td>
                       </tr>

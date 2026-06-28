@@ -2594,36 +2594,19 @@ import api from "../services/apiClient";
 import { smartErpApi } from "../services/smartErpApi";
 
 const createEmptyProductForm = () => ({
-  // Core
   itemCode: "",
   description: "",
   barcode: "",
   category: "General",
   unit: "NOS",
-  itemType: "Purchased",
-  // Pricing & Costs
   price: 0,
-  unitPrice: 0,
-  standardCost: 0,    // Advanced: Standard vs Avg Cost
-  taxCode: "STANDARD", // Advanced: Taxation
-  // Inventory Control
   warehouseLocation: "",
   isLotTracked: false,
   serialPrefix: "",
   maxStockLevel: 0,
   safetyStock: 0,
   leadTimeDays: 0,
-  averageDailySales: 0,
-  // Advanced Supply Chain & Quality
-  mpn: "",            // Manufacturer Part Number
-  preferredVendor: "",
-  moq: 1,             // Minimum Order Quantity
-  netWeight: 0,
-  grossWeight: 0,
-  volumeCBM: 0,       // Cubic Meters
-  shelfLifeDays: 0,
-  countryOfOrigin: "",
-  requiresQA: false   // Quality Assurance routing
+  averageDailySales: 0
 });
 
 export default function SmartERP() {
@@ -2688,7 +2671,7 @@ export default function SmartERP() {
 
   useEffect(() => { loadAllData(); }, []);
 
-  // Advanced validation checks
+  // Validation checks
   const validateProductForm = () => {
     const errors = [];
 
@@ -2713,22 +2696,15 @@ export default function SmartERP() {
       if (duplicate) errors.push(`Barcode "${productForm.barcode}" already exists`);
     }
 
-    // Data type validation (Including new advanced fields)
+    // Data type validation
     if (productForm.price < 0) errors.push("Selling Price cannot be negative");
-    if (productForm.unitPrice < 0) errors.push("Unit Price cannot be negative");
     if (productForm.safetyStock < 0) errors.push("Safety Stock cannot be negative");
     if (productForm.maxStockLevel < 0) errors.push("Max Stock Level cannot be negative");
     if (productForm.leadTimeDays < 0) errors.push("Lead Time cannot be negative");
-    if (productForm.moq < 1) errors.push("Minimum Order Quantity (MOQ) must be at least 1");
-    if (productForm.netWeight < 0 || productForm.grossWeight < 0) errors.push("Weights cannot be negative");
-    if (productForm.shelfLifeDays < 0) errors.push("Shelf life cannot be negative");
 
     // Logical validation
     if (productForm.maxStockLevel > 0 && productForm.safetyStock > productForm.maxStockLevel) {
       errors.push("Safety Stock cannot exceed Max Stock Level");
-    }
-    if (productForm.netWeight > productForm.grossWeight) {
-      errors.push("Net Weight cannot be greater than Gross Weight");
     }
 
     // Serial prefix validation for lot tracked items
@@ -3134,7 +3110,7 @@ export default function SmartERP() {
 
           <div className="erp-card bg-white border shadow-sm rounded-1">
             <div className="erp-tabs d-flex border-bottom bg-light">
-              {["Main", "Planning", "Advanced", "Warehouse", "Quantities", "Costs"].map(tabName => (
+              {["Main", "Planning", "Warehouse", "Quantities"].map(tabName => (
                 <button
                   key={tabName}
                   className={`tab-link ${activeTab === tabName ? 'active' : ''}`}
@@ -3185,11 +3161,7 @@ export default function SmartERP() {
                           <option>NOS</option><option>BX</option><option>KGS</option><option>PCS</option><option>LTR</option>
                         </select>
                       </div>
-                      <div className="field-row"><label>Type:</label>
-                        <select value={productForm.itemType} onChange={e => setProductForm({ ...productForm, itemType: e.target.value })}>
-                          <option>Purchased</option><option>Manufactured</option><option>Service</option>
-                        </select>
-                      </div>
+                      <div className="field-row"><label>Selling Price:</label> <input type="number" className="text-end" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: Number(e.target.value) })} /></div>
                       <div className="field-row mt-3 p-2 bg-light border rounded">
                         <label className="form-check-label fw-bold small">Enable Lot Tracking:</label>
                         <input type="checkbox" className="form-check-input ms-2" checked={productForm.isLotTracked} onChange={e => setProductForm({ ...productForm, isLotTracked: e.target.checked })} />
@@ -3214,34 +3186,6 @@ export default function SmartERP() {
                     <div className="erp-group-box">
                       <span className="box-title">Procurement Info</span>
                       <div className="field-row"><label>Lead Time (Days):</label> <input type="number" className="text-end" value={productForm.leadTimeDays} onChange={e => setProductForm({ ...productForm, leadTimeDays: Number(e.target.value) })} /></div>
-                      <div className="field-row"><label>Pref. Vendor:</label> <input placeholder="e.g. VEND-001" value={productForm.preferredVendor} onChange={e => setProductForm({ ...productForm, preferredVendor: e.target.value })} /></div>
-                      <div className="field-row"><label>Min Order Qty (MOQ):</label> <input type="number" className="text-end" value={productForm.moq} onChange={e => setProductForm({ ...productForm, moq: Number(e.target.value) })} /></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 3: ADVANCED (NEW) */}
-              {activeTab === "Advanced" && (
-                <div className="row g-4">
-                  <div className="col-md-6">
-                    <div className="erp-group-box border-info">
-                      <span className="box-title text-info">Dimensions & Weight</span>
-                      <div className="field-row"><label>Net Weight (kg):</label> <input type="number" step="0.01" className="text-end" value={productForm.netWeight} onChange={e => setProductForm({ ...productForm, netWeight: Number(e.target.value) })} /></div>
-                      <div className="field-row"><label>Gross Weight (kg):</label> <input type="number" step="0.01" className="text-end" value={productForm.grossWeight} onChange={e => setProductForm({ ...productForm, grossWeight: Number(e.target.value) })} /></div>
-                      <div className="field-row"><label>Volume (CBM):</label> <input type="number" step="0.001" className="text-end" value={productForm.volumeCBM} onChange={e => setProductForm({ ...productForm, volumeCBM: Number(e.target.value) })} /></div>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="erp-group-box border-warning">
-                      <span className="box-title text-warning">Quality & Compliance</span>
-                      <div className="field-row"><label>Country of Origin:</label> <input placeholder="e.g. IND, USA" value={productForm.countryOfOrigin} onChange={e => setProductForm({ ...productForm, countryOfOrigin: e.target.value })} /></div>
-                      <div className="field-row"><label>Shelf Life (Days):</label> <input type="number" className="text-end" value={productForm.shelfLifeDays} onChange={e => setProductForm({ ...productForm, shelfLifeDays: Number(e.target.value) })} placeholder="0 for infinite" /></div>
-                      <div className="field-row"><label>Mfg Part No (MPN):</label> <input value={productForm.mpn} onChange={e => setProductForm({ ...productForm, mpn: e.target.value })} /></div>
-                      <div className="field-row mt-3 p-2 bg-light border rounded border-warning">
-                        <label className="form-check-label fw-bold small text-warning-emphasis">Requires Inbound QA Inspection:</label>
-                        <input type="checkbox" className="form-check-input ms-2" checked={productForm.requiresQA} onChange={e => setProductForm({ ...productForm, requiresQA: e.target.checked })} />
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -3312,32 +3256,6 @@ export default function SmartERP() {
                           </div>
                         ))
                       }
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 6: COSTS */}
-              {activeTab === "Costs" && (
-                <div className="row g-4">
-                  <div className="col-md-6">
-                    <div className="erp-group-box">
-                      <span className="box-title">Pricing & Costs</span>
-                      <div className="field-row"><label>Standard Cost:</label> <input type="number" className="text-end" value={productForm.standardCost} onChange={e => setProductForm({ ...productForm, standardCost: Number(e.target.value) })} title="Base accounting cost" /></div>
-                      <div className="field-row"><label>Actual Unit Price:</label> <input type="number" className="text-end fw-bold" value={productForm.unitPrice} onChange={e => setProductForm({ ...productForm, unitPrice: Number(e.target.value) })} title="Last purchase cost" /></div>
-                      <div className="field-row"><label>Selling Price:</label> <input type="number" className="text-end" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: Number(e.target.value) })} /></div>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="erp-group-box">
-                      <span className="box-title">Taxation</span>
-                      <div className="field-row"><label>Tax Code:</label>
-                        <select value={productForm.taxCode} onChange={e => setProductForm({ ...productForm, taxCode: e.target.value })}>
-                          <option value="STANDARD">Standard Rate</option>
-                          <option value="EXEMPT">Tax Exempt</option>
-                          <option value="REDUCED">Reduced Rate</option>
-                        </select>
-                      </div>
                     </div>
                   </div>
                 </div>
