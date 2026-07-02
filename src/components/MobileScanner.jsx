@@ -413,6 +413,11 @@ export default function MobileScanner({
     }
   }, [resolveBarcode]);
 
+  const handleDetectedCodeRef = useRef(handleDetectedCode);
+  useEffect(() => {
+    handleDetectedCodeRef.current = handleDetectedCode;
+  }, [handleDetectedCode]);
+
   const handleManualSubmit = async (e) => {
     e.preventDefault();
     if (!manualInput) return;
@@ -429,7 +434,7 @@ export default function MobileScanner({
 
       const deviceId = await findBackCamera();
       codeReaderRef.current.decodeFromVideoDevice(deviceId ?? undefined, videoRef.current, (result, error) => {
-        if (result) handleDetectedCode(result.getText());
+        if (result) handleDetectedCodeRef.current(result.getText());
       }).catch((err) => {
         setCameraError(`Camera unavailable: ${err.message}`);
         setCameraActive(false);
@@ -441,7 +446,7 @@ export default function MobileScanner({
       setCameraError(`Camera unavailable: ${err.message}`);
       setCameraActive(false);
     }
-  }, [handleDetectedCode, showStatus, findBackCamera]);
+  }, [showStatus, findBackCamera]);
 
   useEffect(() => {
     if (activeTab !== 'create') {
@@ -737,7 +742,8 @@ export default function MobileScanner({
           {cameraError && <div className="alert alert-danger py-2 small fw-bold">⚠️ {cameraError}</div>}
 
           <form onSubmit={handleManualSubmit} className="d-flex gap-2 mb-3">
-            <input type="text" className="form-control erp-input font-monospace" placeholder="Manual barcode entry..." value={manualInput} onChange={(e) => setManualInput(e.target.value)} />
+            <label className="visually-hidden" htmlFor="manualBarcodeInput">Manual barcode entry</label>
+            <input id="manualBarcodeInput" name="manualInput" title="Manual barcode entry" type="text" className="form-control erp-input font-monospace" placeholder="Manual barcode entry..." value={manualInput} onChange={(e) => setManualInput(e.target.value)} />
             <button type="submit" className="btn btn-primary erp-btn px-4" disabled={!manualInput}>Lookup</button>
           </form>
 
@@ -784,8 +790,8 @@ export default function MobileScanner({
               <form onSubmit={(e) => e.preventDefault()}>
                 <div className="row g-2 mb-3">
                   <div className="col-12">
-                    <label className="erp-label">Location <span className="text-danger">*</span></label>
-                    <select className="form-select erp-input" value={txForm.warehouseId} onChange={(e) => setTxForm({ ...txForm, warehouseId: e.target.value })}>
+                    <label className="erp-label" htmlFor="stockWarehouseSelect">Location <span className="text-danger">*</span></label>
+                    <select id="stockWarehouseSelect" name="warehouseId" title="Warehouse Location" className="form-select erp-input" value={txForm.warehouseId} onChange={(e) => setTxForm({ ...txForm, warehouseId: e.target.value })}>
                       {warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                     </select>
                   </div>
@@ -812,14 +818,17 @@ export default function MobileScanner({
 
                 <div className="row g-2 mb-3">
                   <div className="col-4">
-                    <label className="erp-label">Qty <span className="text-danger">*</span></label>
-                    <input type="number" className="form-control erp-input font-monospace text-end fw-bold text-primary" value={txForm.quantity} onChange={(e) => setTxForm({ ...txForm, quantity: e.target.value })} min="1" placeholder="0" />
+                    <label className="erp-label" htmlFor="stockQuantityInput">Qty <span className="text-danger">*</span></label>
+                    <input id="stockQuantityInput" name="quantity" title="Quantity" type="number" className="form-control erp-input font-monospace text-end fw-bold text-primary" value={txForm.quantity} onChange={(e) => setTxForm({ ...txForm, quantity: e.target.value })} min="1" placeholder="0" />
                   </div>
 
                   {txMode === 'in' ? (
                     <div className="col-8">
-                      <label className="erp-label">Assign Lot / Batch Number</label>
+                      <label className="erp-label" htmlFor="stockLotNumberInput">Assign Lot / Batch Number</label>
                       <input
+                        id="stockLotNumberInput"
+                        name="lotNumber"
+                        title="Lot Number"
                         type="text"
                         className="form-control erp-input font-monospace"
                         value={txForm.lotNumber}
@@ -829,8 +838,8 @@ export default function MobileScanner({
                     </div>
                   ) : (
                     <div className="col-8">
-                      <label className="erp-label">Source Lot <span className="text-danger">*</span></label>
-                      <select className="form-select erp-input font-monospace" value={txForm.lotId} onChange={(e) => {
+                      <label className="erp-label" htmlFor="stockLotIdSelect">Source Lot <span className="text-danger">*</span></label>
+                      <select id="stockLotIdSelect" name="lotId" title="Source Lot" className="form-select erp-input font-monospace" value={txForm.lotId} onChange={(e) => {
                         const selectedLot = availableLots.find((lot) => String(lot.lotId) === e.target.value);
                         setTxForm({
                           ...txForm,
@@ -907,8 +916,8 @@ export default function MobileScanner({
                 {txMode === 'transfer' && (
                   <div className="row g-2 mb-3 p-2 bg-light border rounded">
                     <div className="col-12">
-                      <label className="erp-label text-warning">Dest Location <span className="text-danger">*</span></label>
-                      <select className="form-select erp-input" value={txForm.destWarehouseId} onChange={(e) => setTxForm({ ...txForm, destWarehouseId: e.target.value })}>
+                      <label className="erp-label text-warning" htmlFor="destWarehouseSelect">Dest Location <span className="text-danger">*</span></label>
+                      <select id="destWarehouseSelect" name="destWarehouseId" title="Destination Location" className="form-select erp-input" value={txForm.destWarehouseId} onChange={(e) => setTxForm({ ...txForm, destWarehouseId: e.target.value })}>
                         <option value="">-- Target Bin --</option>
                         {warehouses.filter((w) => w.id !== parseInt(txForm.warehouseId, 10)).map((w) => (
                           <option key={w.id} value={w.id}>{w.name}</option>
@@ -948,8 +957,8 @@ export default function MobileScanner({
           <div className="p-3 bg-white flex-grow-1 d-flex flex-column rounded-bottom">
 
             <div className="mb-4">
-              <label className="erp-label m-0 mb-2">Target Purchase Order</label>
-              <select className="form-select erp-input font-monospace mb-2" value={selectedPoNumber} onChange={(e) => { setSelectedPoNumber(e.target.value); setCurrentPoLine(null); }}>
+              <label className="erp-label m-0 mb-2" htmlFor="poNumberSelect">Target Purchase Order</label>
+              <select id="poNumberSelect" name="poNumber" title="Target Purchase Order" className="form-select erp-input font-monospace mb-2" value={selectedPoNumber} onChange={(e) => { setSelectedPoNumber(e.target.value); setCurrentPoLine(null); }}>
                 <option value="">-- Select PO --</option>
                 {filteredPoList.map((po) => (
                   <option key={po.poNumber} value={po.poNumber}>{po.poNumber} (Pending: {po.totalPending})</option>
@@ -966,8 +975,8 @@ export default function MobileScanner({
               <form onSubmit={(e) => e.preventDefault()}>
                 <div className="row g-2 mb-3">
                   <div className="col-12">
-                    <label className="erp-label">Receive Location</label>
-                    <select className="form-select erp-input" value={txForm.warehouseId} onChange={(e) => setTxForm({ ...txForm, warehouseId: e.target.value })}>
+                    <label className="erp-label" htmlFor="poWarehouseSelect">Receive Location</label>
+                    <select id="poWarehouseSelect" name="warehouseId" title="Receive Location" className="form-select erp-input" value={txForm.warehouseId} onChange={(e) => setTxForm({ ...txForm, warehouseId: e.target.value })}>
                       {warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                     </select>
                   </div>
@@ -993,12 +1002,12 @@ export default function MobileScanner({
                 )}
                 <div className="row g-2 mb-3">
                   <div className="col-4">
-                    <label className="erp-label">Qty <span className="text-danger">*</span></label>
-                    <input type="number" className="form-control erp-input font-monospace text-end fw-bold text-primary" value={txForm.quantity} onChange={(e) => setTxForm({ ...txForm, quantity: e.target.value })} min="1" placeholder="0" />
+                    <label className="erp-label" htmlFor="poQuantityInput">Qty <span className="text-danger">*</span></label>
+                    <input id="poQuantityInput" name="quantity" title="Quantity" type="number" className="form-control erp-input font-monospace text-end fw-bold text-primary" value={txForm.quantity} onChange={(e) => setTxForm({ ...txForm, quantity: e.target.value })} min="1" placeholder="0" />
                   </div>
                   <div className="col-8">
-                    <label className="erp-label">Assign Lot Number</label>
-                    <input type="text" className="form-control erp-input font-monospace" value={txForm.lotNumber} onChange={(e) => setTxForm({ ...txForm, lotNumber: e.target.value })} placeholder="Type custom lot..." />
+                    <label className="erp-label" htmlFor="poLotNumberInput">Assign Lot Number</label>
+                    <input id="poLotNumberInput" name="lotNumber" title="Lot Number" type="text" className="form-control erp-input font-monospace" value={txForm.lotNumber} onChange={(e) => setTxForm({ ...txForm, lotNumber: e.target.value })} placeholder="Type custom lot..." />
                   </div>
                 </div>
                 <div className="d-flex flex-column gap-2 pt-3 border-top mt-auto">
