@@ -1162,16 +1162,25 @@ export default function OrderManagement() {
     isActive: true
   });
   
+  const [showRiderForm, setShowRiderForm] = useState(false);
+  const [newRider, setNewRider] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    isActive: true
+  });
+
   // UI States
   const [showPastOrders, setShowPastOrders] = useState(false);
   const [viewingRider, setViewingRider] = useState(null);
-  const [automationEnabled, setAutomationEnabled] = useState(true); 
+  const [automationEnabled, setAutomationEnabled] = useState(true);
 
   // Form States
   const [assignForm, setAssignForm] = useState({ orderId: "", packerId: "" });
   const [packerStatusForm, setPackerStatusForm] = useState({ orderId: "", status: "Received" });
   const [riderForm, setRiderForm] = useState({ orderId: "", riderId: "" });
-  
+
   const orderDetailsRef = useRef(null);
   const [autoQueue, setAutoQueue] = useState([]); // Array of { id, number, secondsLeft, packerName }
 
@@ -1181,7 +1190,7 @@ export default function OrderManagement() {
       const latestOrdersRes = await smartErpApi.getCustomerOrders();
       const currentOrders = latestOrdersRes.data || [];
       const order = currentOrders.find((o) => o.id === orderId);
-      
+
       if (!order || order.status !== 'Picking') {
         return; // Skip if manually updated/modified
       }
@@ -1197,7 +1206,7 @@ export default function OrderManagement() {
       ]);
       const currentRiders = ridersRes.data || [];
       const activeRiders = currentRiders.filter((r) => (r.isActive ?? true));
-      
+
       if (activeRiders.length === 0) {
         setMessage('Auto rider dispatch failed: No available riders found.');
         return;
@@ -1328,6 +1337,26 @@ export default function OrderManagement() {
     } finally {
       setLoading(false);
     }
+    };
+
+  const handleCreateRider = async () => {
+    if (!newRider.name.trim() || !newRider.email.trim() || !newRider.password.trim()) {
+      setMessage("Rider name, email, and password are required.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await smartErpApi.createRider(newRider);
+      setMessage("Rider created successfully.");
+      setShowRiderForm(false);
+      setNewRider({ name: "", email: "", password: "", phone: "", isActive: true });
+      await loadData();
+    } catch (err) {
+      setMessage("Create rider failed: " + (err?.response?.data?.message || err?.message || "Server Error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -1341,7 +1370,7 @@ export default function OrderManagement() {
     setLoading(true);
     try {
       const pendingOrders = orders.filter((o) => o.status === 'Pending');
-      
+
       if (pendingOrders.length === 0) {
         setMessage('No pending orders available for automation.');
         setLoading(false);
@@ -1357,16 +1386,16 @@ export default function OrderManagement() {
       const newQueueItems = [];
       const assignPromises = [];
       const packerQueue = getActivePackers.map((p) => ({ ...p, load: p.assignedOrders || 0 }));
-      
+
       for (const order of pendingOrders) {
         packerQueue.sort((a, b) => a.load - b.load);
         const packer = packerQueue[0];
         if (!packer) break;
-        
+
         assignPromises.push(
-          smartErpApi.updateCustomerOrderStatus(Number(order.id), { 
-            status: 'Picking', 
-            assignedPackerId: Number(packer.id) 
+          smartErpApi.updateCustomerOrderStatus(Number(order.id), {
+            status: 'Picking',
+            assignedPackerId: Number(packer.id)
           })
         );
         packer.load += 1;
@@ -1377,10 +1406,10 @@ export default function OrderManagement() {
           packerName: packer.name || packer.username || 'Packer'
         });
       }
-      
+
       await Promise.all(assignPromises);
       setMessage(`Automation started: Assigned ${newQueueItems.length} order(s) to packers. Packing simulation (1 minute) is active.`);
-      
+
       // Add to simulation queue
       setAutoQueue((prev) => [...prev, ...newQueueItems]);
       await loadData();
@@ -1399,7 +1428,7 @@ export default function OrderManagement() {
 
   return (
     <div className="erp-app-wrapper bg-light min-vh-100 pb-5">
-      
+
       {/* 1. TOP HEADER */}
       <div className="bg-white border-bottom py-3 px-4 sticky-top shadow-sm mb-4">
         <div className="d-flex justify-content-between align-items-center">
@@ -1408,13 +1437,13 @@ export default function OrderManagement() {
             <div className="extra-small text-uppercase fw-bold text-muted">End-to-End Tracking & Inventory Traceability</div>
           </div>
           <button className="btn btn-primary erp-btn px-4 shadow-sm" onClick={loadData} disabled={loading}>
-            {loading ? <span className="spinner-border spinner-border-sm me-2"/> : "Refresh Board"}
+            {loading ? <span className="spinner-border spinner-border-sm me-2" /> : "Refresh Board"}
           </button>
         </div>
       </div>
 
       <div className="container-fluid px-4">
-        
+
         {/* 2. KPI METRICS */}
         <div className="row g-3 mb-4">
           <div className="col-md-3">
@@ -1426,13 +1455,13 @@ export default function OrderManagement() {
           <div className="col-md-3">
             <div className="erp-kpi-box border-start-orange">
               <label className="erp-label">In Packing</label>
-              <div className="h3 fw-bold">{orders.filter(o=>o.status==="Picking").length}</div>
+              <div className="h3 fw-bold">{orders.filter(o => o.status === "Picking").length}</div>
             </div>
           </div>
           <div className="col-md-3">
             <div className="erp-kpi-box border-start-green">
               <label className="erp-label">Out for Delivery</label>
-              <div className="h3 fw-bold">{orders.filter(o=>o.status==="OutForDelivery").length}</div>
+              <div className="h3 fw-bold">{orders.filter(o => o.status === "OutForDelivery").length}</div>
             </div>
           </div>
           <div className="col-md-3">
@@ -1450,7 +1479,7 @@ export default function OrderManagement() {
           <div className="col-xl-8">
             <div className="erp-panel shadow-sm mb-4">
               <div className="erp-panel-header bg-white fw-bold">Active Customer Requests</div>
-              <div className="table-responsive bg-white" style={{maxHeight: '400px'}}>
+              <div className="table-responsive bg-white" style={{ maxHeight: '400px' }}>
                 <table className="table erp-table align-middle m-0 table-hover">
                   <thead className="table-light sticky-top">
                     <tr>
@@ -1462,9 +1491,9 @@ export default function OrderManagement() {
                   </thead>
                   <tbody>
                     {activeOrders.map(o => (
-                      <tr 
-                        key={o.id} 
-                        onClick={() => setSelectedOrderId(String(o.id))} 
+                      <tr
+                        key={o.id}
+                        onClick={() => setSelectedOrderId(String(o.id))}
                         className={selectedOrderId === String(o.id) ? "table-primary cursor-pointer" : "cursor-pointer"}
                       >
                         <td className="font-monospace fw-bold">{o.orderNumber}</td>
@@ -1486,7 +1515,7 @@ export default function OrderManagement() {
                   <button className="btn btn-sm btn-outline-light" onClick={() => setSelectedOrderId("")}>Close</button>
                 </div>
                 <div className="card-body bg-white p-4">
-                  
+
                   {/* FULFILLMENT TIMELINE */}
                   <div className="mb-4">
                     <label className="erp-label text-primary border-bottom pb-1 mb-3 w-100">End-to-End Processing Timeline</label>
@@ -1575,9 +1604,9 @@ export default function OrderManagement() {
                           <div className="extra-small text-muted">Dispatched: {formatDateTime(selectedOrder.deliveryStatus?.assignedAt)}</div>
                         </div>
                         {selectedOrder.deliveryStatus?.riderId && (
-                           <button className="btn btn-sm btn-dark" onClick={() => setViewingRider(riders.find(r => r.riderId === selectedOrder.deliveryStatus.riderId))}>
-                             Rider Profile
-                           </button>
+                          <button className="btn btn-sm btn-dark" onClick={() => setViewingRider(riders.find(r => r.riderId === selectedOrder.deliveryStatus.riderId))}>
+                            Rider Profile
+                          </button>
                         )}
                       </div>
                     </div>
@@ -1591,7 +1620,7 @@ export default function OrderManagement() {
           <div className="col-xl-4">
             <div className="erp-panel p-4 bg-white shadow-sm mb-4">
               <h6 className="fw-bold border-bottom pb-2 mb-3">Operations Dispatch</h6>
-              
+
               {/* Create New Packer */}
               <div className="mb-4">
                 <div className="d-flex justify-content-between align-items-center mb-2">
@@ -1665,13 +1694,73 @@ export default function OrderManagement() {
                 )}
               </div>
 
+              {/* Create New Rider */}
+              <div className="mb-4">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <label className="erp-label mb-0">Rider Management</label>
+                  <button className="btn btn-sm btn-outline-primary" onClick={() => setShowRiderForm(!showRiderForm)}>
+                    {showRiderForm ? "Hide" : "Create New Rider"}
+                  </button>
+                </div>
+                {showRiderForm && (
+                  <div className="p-2 border rounded bg-light">
+                    <div className="mb-2">
+                      <input
+                        className="form-control form-control-sm"
+                        placeholder="Rider Name"
+                        value={newRider.name}
+                        onChange={(e) => setNewRider(prev => ({ ...prev, name: e.target.value }))}
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <input
+                        className="form-control form-control-sm"
+                        placeholder="Email"
+                        value={newRider.email}
+                        onChange={(e) => setNewRider(prev => ({ ...prev, email: e.target.value }))}
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <input
+                        className="form-control form-control-sm"
+                        placeholder="Password"
+                        type="password"
+                        value={newRider.password}
+                        onChange={(e) => setNewRider(prev => ({ ...prev, password: e.target.value }))}
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <input
+                        className="form-control form-control-sm"
+                        placeholder="Phone (Optional)"
+                        value={newRider.phone}
+                        onChange={(e) => setNewRider(prev => ({ ...prev, phone: e.target.value }))}
+                      />
+                    </div>
+                    <div className="form-check mb-2">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={newRider.isActive}
+                        id="riderIsActive"
+                        onChange={(e) => setNewRider(prev => ({ ...prev, isActive: e.target.checked }))}
+                      />
+                      <label className="form-check-label" htmlFor="riderIsActive">Active</label>
+                    </div>
+                    <button className="btn btn-sm btn-success w-100" onClick={handleCreateRider} disabled={loading}>
+                      {loading ? "Saving..." : "Save Rider"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="mb-4 border rounded p-3 bg-light">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <label className="erp-label mb-0">Full Automation</label>
                   <div className="form-check form-switch">
-                    <input 
-                      className="form-check-input" 
-                      type="checkbox" 
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
                       id="automationToggle"
                       checked={automationEnabled}
                       onChange={(e) => setAutomationEnabled(e.target.checked)}
@@ -1681,16 +1770,16 @@ export default function OrderManagement() {
                     </label>
                   </div>
                 </div>
-                <button 
-                  className="btn btn-lg btn-success w-100 fw-bold py-3" 
-                  onClick={runFullAutomation} 
+                <button
+                  className="btn btn-lg btn-success w-100 fw-bold py-3"
+                  onClick={runFullAutomation}
                   disabled={loading || !automationEnabled}
                   style={{ fontSize: '1.1rem' }}
                 >
                   {loading ? '⟳ Starting Automation...' : '▶ ONE-CLICK: Run Full Automation'}
                 </button>
                 <small className="text-muted d-block mt-2">
-                  {automationEnabled 
+                  {automationEnabled
                     ? '✓ Auto-assigns pending orders → Auto-packs in 1 min → Dispatches riders'
                     : '✗ Automation disabled. Use manual controls below.'}
                 </small>
@@ -1711,9 +1800,9 @@ export default function OrderManagement() {
                           <span className="badge bg-warning text-dark small">{item.secondsLeft}s left</span>
                         </div>
                         <div className="progress" style={{ height: '6px' }}>
-                          <div 
-                            className="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
-                            role="progressbar" 
+                          <div
+                            className="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                            role="progressbar"
                             style={{ width: `${((60 - item.secondsLeft) / 60) * 100}%` }}
                           ></div>
                         </div>
@@ -1733,15 +1822,15 @@ export default function OrderManagement() {
               <div className="mb-4">
                 <label className="erp-label">Step 1: Start Packing</label>
                 <div className="d-flex gap-2">
-                  <select className="form-select form-select-sm" value={assignForm.orderId} onChange={e => setAssignForm({...assignForm, orderId: e.target.value})}>
+                  <select className="form-select form-select-sm" value={assignForm.orderId} onChange={e => setAssignForm({ ...assignForm, orderId: e.target.value })}>
                     <option value="">Select Order</option>
-                    {orders.filter(o=>o.status==="Pending").map(o=><option key={o.id} value={o.id}>{o.orderNumber}</option>)}
+                    {orders.filter(o => o.status === "Pending").map(o => <option key={o.id} value={o.id}>{o.orderNumber}</option>)}
                   </select>
-                  <select className="form-select form-select-sm" value={assignForm.packerId} onChange={e => setAssignForm({...assignForm, packerId: e.target.value})}>
+                  <select className="form-select form-select-sm" value={assignForm.packerId} onChange={e => setAssignForm({ ...assignForm, packerId: e.target.value })}>
                     <option value="">Select Packer</option>
-                    {packers.map(p=><option key={p.id} value={p.id}>{p.name || p.username || p.employeeId || "Packer"}</option>)}
+                    {packers.map(p => <option key={p.id} value={p.id}>{p.name || p.username || p.employeeId || "Packer"}</option>)}
                   </select>
-                  <button className="btn btn-sm btn-primary" onClick={() => handleAction('assign', {id: assignForm.orderId, pId: assignForm.packerId})}>Assign</button>
+                  <button className="btn btn-sm btn-primary" onClick={() => handleAction('assign', { id: assignForm.orderId, pId: assignForm.packerId })}>Assign</button>
                 </div>
               </div>
 
@@ -1749,11 +1838,11 @@ export default function OrderManagement() {
               <div className="mb-4">
                 <label className="erp-label">Step 2: Complete Packing</label>
                 <div className="d-flex gap-2">
-                  <select className="form-select form-select-sm" value={packerStatusForm.orderId} onChange={e => setPackerStatusForm({...packerStatusForm, orderId: e.target.value})}>
+                  <select className="form-select form-select-sm" value={packerStatusForm.orderId} onChange={e => setPackerStatusForm({ ...packerStatusForm, orderId: e.target.value })}>
                     <option value="">Select Order</option>
-                    {orders.filter(o=>o.status==="Picking").map(o=><option key={o.id} value={o.id}>{o.orderNumber}</option>)}
+                    {orders.filter(o => o.status === "Picking").map(o => <option key={o.id} value={o.id}>{o.orderNumber}</option>)}
                   </select>
-                  <button className="btn btn-sm btn-success w-100" onClick={() => handleAction('status', {id: packerStatusForm.orderId, status: 'Packed'})}>Mark Packed</button>
+                  <button className="btn btn-sm btn-success w-100" onClick={() => handleAction('status', { id: packerStatusForm.orderId, status: 'Packed' })}>Mark Packed</button>
                 </div>
               </div>
 
@@ -1761,16 +1850,16 @@ export default function OrderManagement() {
               <div>
                 <label className="erp-label">Step 3: Rider Dispatch</label>
                 <div className="d-flex gap-2 mb-2">
-                  <select className="form-select form-select-sm" value={riderForm.orderId} onChange={e => setRiderForm({...riderForm, orderId: e.target.value})}>
+                  <select className="form-select form-select-sm" value={riderForm.orderId} onChange={e => setRiderForm({ ...riderForm, orderId: e.target.value })}>
                     <option value="">Select Order</option>
-                    {orders.filter(o=>o.status==="Packed").map(o=><option key={o.id} value={o.id}>{o.orderNumber}</option>)}
+                    {orders.filter(o => o.status === "Packed").map(o => <option key={o.id} value={o.id}>{o.orderNumber}</option>)}
                   </select>
-                  <select className="form-select form-select-sm" value={riderForm.riderId} onChange={e => setRiderForm({...riderForm, riderId: e.target.value})}>
+                  <select className="form-select form-select-sm" value={riderForm.riderId} onChange={e => setRiderForm({ ...riderForm, riderId: e.target.value })}>
                     <option value="">Select Rider</option>
-                    {riders.map(r=><option key={r.riderId} value={r.riderId}>{r.riderName}</option>)}
+                    {riders.map(r => <option key={r.riderId} value={r.riderId}>{r.riderName}</option>)}
                   </select>
                 </div>
-                <button className="btn btn-sm btn-warning w-100 fw-bold" onClick={() => handleAction('dispatch', {id: riderForm.orderId, rId: riderForm.riderId})}>DISPATCH RIDER</button>
+                <button className="btn btn-sm btn-warning w-100 fw-bold" onClick={() => handleAction('dispatch', { id: riderForm.orderId, rId: riderForm.riderId })}>DISPATCH RIDER</button>
               </div>
             </div>
           </div>
@@ -1785,8 +1874,8 @@ export default function OrderManagement() {
                 </button>
               </div>
               {showPastOrders && (
-                <div className="table-responsive bg-white" style={{maxHeight: '400px'}}>
-                   <table className="table erp-table align-middle m-0 table-hover small">
+                <div className="table-responsive bg-white" style={{ maxHeight: '400px' }}>
+                  <table className="table erp-table align-middle m-0 table-hover small">
                     <thead className="table-light sticky-top">
                       <tr>
                         <th>Order #</th>
@@ -1807,7 +1896,7 @@ export default function OrderManagement() {
                         </tr>
                       ))}
                     </tbody>
-                   </table>
+                  </table>
                 </div>
               )}
             </div>
@@ -1824,7 +1913,7 @@ export default function OrderManagement() {
               <p className="mb-1"><strong>Name:</strong> {viewingRider.riderName}</p>
               <p className="mb-1"><strong>Email:</strong> {viewingRider.email}</p>
               <p className="mb-1"><strong>Device ID:</strong> {viewingRider.riderId}</p>
-              <hr/>
+              <hr />
               <div className="text-center p-3 bg-light rounded">
                 <div className="erp-label">Lifetime Successful Orders</div>
                 <div className="h2 fw-bold text-primary mb-0">{riderTotalStats[viewingRider.riderId] || 0}</div>

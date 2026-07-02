@@ -2,27 +2,90 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/apiClient';
 
 export default function Warehouses() {
-  const [warehouses, setWarehouses] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+  
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [editingLoc, setEditingLoc] = useState(null);
+  const [formData, setFormData] = useState({ code: '', name: '', location: '' });
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => { fetchWarehouses(); }, []);
+  useEffect(() => { fetchLocations(); }, []);
 
-  const fetchWarehouses = async () => {
+  const fetchLocations = async () => {
     setLoading(true);
     try {
       const res = await api.get('/warehouses');
-      setWarehouses(res.data);
+      setLocations(res.data);
     } catch (e) {
       console.error(e);
-      setMessage({ text: "Failed to load warehouses.", type: "danger" });
+      setMessage({ text: "Failed to load locations.", type: "danger" });
     } finally {
       setLoading(false);
     }
   };
 
-  const filtered = warehouses.filter((w) => w.name.toLowerCase().includes(filter.toLowerCase()));
+  const handleOpenCreate = () => {
+    setEditingLoc(null);
+    setFormData({ code: '', name: '', location: '' });
+    setShowModal(true);
+  };
+
+  const handleOpenEdit = (loc) => {
+    setEditingLoc(loc);
+    setFormData({ code: loc.code || '', name: loc.name || '', location: loc.location || '' });
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setFormData({ code: '', name: '', location: '' });
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!formData.code || !formData.name) {
+      setMessage({ text: "Code and Name are required.", type: "warning" });
+      return;
+    }
+    setSaving(true);
+    try {
+      if (editingLoc) {
+        await api.put(`/warehouses/${editingLoc.id}`, formData);
+        setMessage({ text: "Location updated successfully.", type: "success" });
+      } else {
+        await api.post('/warehouses', formData);
+        setMessage({ text: "Location created successfully.", type: "success" });
+      }
+      handleCloseModal();
+      fetchLocations();
+    } catch (e) {
+      console.error(e);
+      setMessage({ text: "Failed to save location.", type: "danger" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this location?")) return;
+    try {
+      await api.delete(`/warehouses/${id}`);
+      setMessage({ text: "Location deleted.", type: "success" });
+      fetchLocations();
+    } catch (e) {
+      console.error(e);
+      setMessage({ text: e.response?.data || "Failed to delete location.", type: "danger" });
+    }
+  };
+
+  const filtered = locations.filter((w) => 
+    w.name?.toLowerCase().includes(filter.toLowerCase()) || 
+    w.code?.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
     <div className="erp-app-wrapper min-vh-100 pb-5 pt-3">
@@ -31,17 +94,25 @@ export default function Warehouses() {
         {/* HEADER */}
         <div className="d-flex justify-content-between align-items-end border-bottom mb-4 pb-3">
           <div>
-            <h4 className="fw-bold m-0 text-dark" style={{ letterSpacing: '-0.5px' }}>Warehouse Locations</h4>
+            <h4 className="fw-bold m-0 text-dark" style={{ letterSpacing: '-0.5px' }}>Locations</h4>
             <span className="erp-text-muted small text-uppercase">Facility Master Data</span>
           </div>
-          <button 
-            className="btn btn-light border erp-btn d-flex align-items-center gap-2 text-muted fw-bold" 
-            onClick={fetchWarehouses} 
-            disabled={loading}
-          >
-            {loading ? <span className="spinner-border spinner-border-sm" /> : '↻'}
-            Refresh Data
-          </button>
+          <div className="d-flex gap-2">
+            <button 
+              className="btn btn-primary erp-btn d-flex align-items-center gap-2 shadow-sm" 
+              onClick={handleOpenCreate} 
+            >
+              + Create New Location
+            </button>
+            <button 
+              className="btn btn-light border erp-btn d-flex align-items-center gap-2 text-muted fw-bold" 
+              onClick={fetchLocations} 
+              disabled={loading}
+            >
+              {loading ? <span className="spinner-border spinner-border-sm" /> : '↻'}
+              Refresh Data
+            </button>
+          </div>
         </div>
 
         {/* ALERT */}
@@ -58,7 +129,7 @@ export default function Warehouses() {
 
         <div className="row g-4">
           
-          {/* WAREHOUSE LIST */}
+          {/* LOCATION LIST */}
           <div className="col-12">
             <div className="erp-panel d-flex flex-column shadow-sm" style={{ height: "calc(100vh - 180px)", minHeight: '400px' }}>
               <div className="erp-panel-header d-flex justify-content-between align-items-center bg-light">
@@ -68,7 +139,7 @@ export default function Warehouses() {
                   <input
                     className="form-control form-control-sm erp-input"
                     style={{ width: '200px' }}
-                    placeholder="Search by name..."
+                    placeholder="Search by code or name..."
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                   />
@@ -76,7 +147,7 @@ export default function Warehouses() {
               </div>
               
               <div className="erp-table-container flex-grow-1 overflow-auto bg-white">
-                {loading && warehouses.length === 0 ? (
+                {loading && locations.length === 0 ? (
                   <div className="d-flex flex-column align-items-center justify-content-center h-100">
                     <div className="spinner-border text-primary mb-2" style={{ width: '2rem', height: '2rem' }}></div>
                   </div>
@@ -84,10 +155,10 @@ export default function Warehouses() {
                   <table className="table erp-table table-hover mb-0 align-middle">
                     <thead>
                     <tr>
-                      <th style={{ width: '120px' }}>Facility Code</th>
-                      <th>Facility Name</th>
-                      <th>Facility Location</th>
+                      <th style={{ width: '120px' }}>Location Code</th>
+                      <th>Location Name</th>
                       <th className="text-center" style={{ width: '100px' }}>Status</th>
+                      <th className="text-end" style={{ width: '150px' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -96,16 +167,19 @@ export default function Warehouses() {
                         <tr key={w.id}>
                           <td className="fw-bold font-monospace text-dark">{w.code}</td>
                           <td className="text-dark fw-semibold">{w.name}</td>
-                          <td className="text-muted">{w.location || 'Not set'}</td>
                           <td className="text-center">
                             <span className="erp-status-tag tag-success">ACTIVE</span>
+                          </td>
+                          <td className="text-end">
+                            <button className="btn btn-sm btn-light border text-primary me-2 fw-bold" onClick={() => handleOpenEdit(w)}>Edit</button>
+                            <button className="btn btn-sm btn-light border text-danger fw-bold" onClick={() => handleDelete(w.id)}>Del</button>
                           </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="3" className="text-center py-5 text-muted">
-                            No warehouse facilities found matching your criteria.
+                          <td colSpan="4" className="text-center py-5 text-muted">
+                            No locations found matching your criteria.
                           </td>
                         </tr>
                       )}
@@ -118,6 +192,55 @@ export default function Warehouses() {
 
         </div>
       </div>
+
+      {/* CREATE / EDIT MODAL */}
+      {showModal && (
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+          <div className="modal fade show d-block" style={{ zIndex: 1050 }} tabIndex="-1">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content border-0 shadow">
+                <form onSubmit={handleSave}>
+                  <div className="modal-header bg-light border-bottom-0">
+                    <h5 className="modal-title fw-bold text-dark">{editingLoc ? 'Edit Location' : 'Create New Location'}</h5>
+                    <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+                  </div>
+                  <div className="modal-body py-4">
+                    <div className="mb-3">
+                      <label className="erp-label">Location Code *</label>
+                      <input 
+                        type="text" 
+                        className="form-control erp-input" 
+                        value={formData.code} 
+                        onChange={(e) => setFormData({...formData, code: e.target.value})} 
+                        placeholder="e.g. LOC-001"
+                        required 
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="erp-label">Location Name *</label>
+                      <input 
+                        type="text" 
+                        className="form-control erp-input" 
+                        value={formData.name} 
+                        onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                        placeholder="e.g. Main Facility"
+                        required 
+                      />
+                    </div>
+                  </div>
+                  <div className="modal-footer border-top-0 bg-light">
+                    <button type="button" className="btn btn-light border fw-bold text-muted" onClick={handleCloseModal}>Cancel</button>
+                    <button type="submit" className="btn btn-primary fw-bold px-4" disabled={saving}>
+                      {saving ? 'Saving...' : 'Save Location'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       <style>{`
         /* --- ERP THEME CSS --- */

@@ -71,6 +71,17 @@ export default function Dashboard() {
     );
   }
 
+  // Parse user context from token
+  const token = localStorage.getItem("erp_token");
+  let isMainAdminUser = false;
+  if (token) {
+    try {
+      const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      const payload = JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, "=")));
+      isMainAdminUser = payload.userType === "ADMIN" || payload["userType"] === "ADMIN";
+    } catch (e) {}
+  }
+
   const {
     salesDashboard: sales = {},
     inventoryDashboard: inventory = {},
@@ -86,7 +97,9 @@ export default function Dashboard() {
         {/* HEADER */}
         <div className="d-flex justify-content-between align-items-end border-bottom mb-4 pb-3">
           <div>
-            <h4 className="fw-bold m-0 text-dark" style={{ letterSpacing: '-0.5px' }}>Smart ERP Command Center</h4>
+            <h4 className="fw-bold m-0 text-dark" style={{ letterSpacing: '-0.5px' }}>
+              {isMainAdminUser ? "Smart ERP Command Center" : "Client Operations Portal"}
+            </h4>
             <span className="erp-text-muted small text-uppercase">Live Systems Overview</span>
           </div>
 
@@ -104,7 +117,7 @@ export default function Dashboard() {
 
         {/* TOP KPI ROW */}
         <div className="row g-3 mb-4">
-          <div className="col-md-4">
+          <div className="col-md-3">
             <div className="erp-kpi-box" style={{ borderLeftColor: '#0f4c81' }}>
               <div className="d-flex justify-content-between align-items-start">
                 <span className="erp-kpi-label">Total Orders</span>
@@ -114,7 +127,7 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <div className="col-md-4">
+          <div className="col-md-3">
             <div className="erp-kpi-box" style={{ borderLeftColor: '#059669' }}>
               <div className="d-flex justify-content-between align-items-start">
                 <span className="erp-kpi-label">Gross Revenue</span>
@@ -124,7 +137,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="col-md-4">
+          <div className="col-md-3">
             <div className="erp-kpi-box" style={{ borderLeftColor: '#1d4ed8' }}>
               <div className="d-flex justify-content-between align-items-start">
                 <span className="erp-kpi-label">Customer Sales</span>
@@ -134,7 +147,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="col-md-4">
+          <div className="col-md-3">
             <div className="erp-kpi-box" style={{ borderLeftColor: (inventory.lowStockItems ?? 0) > 0 ? '#dc2626' : '#94a3b8' }}>
               <div className="d-flex justify-content-between align-items-start">
                 <span className="erp-kpi-label">Low Stock Items</span>
@@ -149,11 +162,11 @@ export default function Dashboard() {
 
         {/* METRICS PANELS */}
         <div className="row g-4">
-          {/* Warehouse & Robotics */}
+          {/* Warehouse & Operations */}
           <div className="col-lg-6">
             <div className="erp-panel h-100 shadow-sm">
               <div className="erp-panel-header bg-light">
-                <span className="fw-bold">Warehouse & Fleet Telemetry</span>
+                <span className="fw-bold">{isMainAdminUser ? "Warehouse & Fleet Telemetry" : "Warehouse & Inventory Operations"}</span>
               </div>
               <div className="p-4 bg-white">
                 <div className="row g-4">
@@ -169,45 +182,71 @@ export default function Dashboard() {
                       <div className="erp-meta-value fs-4 fw-bold">{warehouse.storageLocations ?? 0}</div>
                     </div>
                   </div>
-                  <div className="col-sm-6">
-                    <div className="p-3 border rounded bg-light h-100">
-                      <div className="erp-meta-label">Robots Online</div>
-                      <div className="erp-meta-value fs-4 fw-bold text-primary">{robot.totalRobots ?? 0}</div>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="p-3 border rounded bg-light h-100">
-                      <div className="erp-meta-label">Fleet Utilization</div>
-                      <div className="erp-meta-value fs-4 fw-bold text-info">{robot.robotUtilization ?? 0}%</div>
-                    </div>
-                  </div>
+                  
+                  {isMainAdminUser ? (
+                    <>
+                      <div className="col-sm-6">
+                        <div className="p-3 border rounded bg-light h-100">
+                          <div className="erp-meta-label">Robots Online</div>
+                          <div className="erp-meta-value fs-4 fw-bold text-primary">{robot.totalRobots ?? 0}</div>
+                        </div>
+                      </div>
+                      <div className="col-sm-6">
+                        <div className="p-3 border rounded bg-light h-100">
+                          <div className="erp-meta-label">Fleet Utilization</div>
+                          <div className="erp-meta-value fs-4 fw-bold text-info">{robot.robotUtilization ?? 0}%</div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="col-sm-6">
+                        <div className="p-3 border rounded bg-light h-100">
+                          <div className="erp-meta-label">Total Active SKUs</div>
+                          <div className="erp-meta-value fs-4 fw-bold text-primary">{inventory.totalSkus ?? 0}</div>
+                        </div>
+                      </div>
+                      <div className="col-sm-6">
+                        <div className="p-3 border rounded bg-light h-100 border-start border-warning border-4">
+                          <div className="erp-meta-label">Low Stock Alerts</div>
+                          <div className={`erp-meta-value fs-4 fw-bold ${(inventory.lowStockItems ?? 0) > 0 ? 'text-danger' : 'text-dark'}`}>
+                            {inventory.lowStockItems ?? 0}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Inventory & Finance */}
+          {/* Financial Health */}
           <div className="col-lg-6">
             <div className="erp-panel h-100 shadow-sm">
               <div className="erp-panel-header bg-light">
-                <span className="fw-bold">Inventory & Financial Health</span>
+                <span className="fw-bold">Financial Health & Receivables</span>
               </div>
               <div className="p-4 bg-white">
                 <div className="row g-4">
-                  <div className="col-sm-6">
-                    <div className="p-3 border rounded bg-light h-100">
-                      <div className="erp-meta-label">Total Active SKUs</div>
-                      <div className="erp-meta-value fs-4 fw-bold">{inventory.totalSkus ?? 0}</div>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="p-3 border rounded bg-light h-100 border-start border-warning border-4">
-                      <div className="erp-meta-label">Low Stock Alerts</div>
-                      <div className={`erp-meta-value fs-4 fw-bold ${(inventory.lowStockItems ?? 0) > 0 ? 'text-danger' : 'text-dark'}`}>
-                        {inventory.lowStockItems ?? 0}
+                  {isMainAdminUser && (
+                    <>
+                      <div className="col-sm-6">
+                        <div className="p-3 border rounded bg-light h-100">
+                          <div className="erp-meta-label">Total Active SKUs</div>
+                          <div className="erp-meta-value fs-4 fw-bold">{inventory.totalSkus ?? 0}</div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                      <div className="col-sm-6">
+                        <div className="p-3 border rounded bg-light h-100 border-start border-warning border-4">
+                          <div className="erp-meta-label">Low Stock Alerts</div>
+                          <div className={`erp-meta-value fs-4 fw-bold ${(inventory.lowStockItems ?? 0) > 0 ? 'text-danger' : 'text-dark'}`}>
+                            {inventory.lowStockItems ?? 0}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="col-sm-6">
                     <div className="p-3 border rounded bg-light h-100">
                       <div className="erp-meta-label">Total Receivables</div>

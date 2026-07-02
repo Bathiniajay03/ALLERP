@@ -649,7 +649,8 @@ import { smartErpApi } from "../services/smartErpApi";
 export default function AdminPanel({
   allowedModulesByRole = {},
   moduleOptions = [],
-  onUpdateRoleModules
+  onUpdateRoleModules,
+  isMainAdmin = false
 }) {
 
   const [form, setForm] = useState({
@@ -1001,7 +1002,7 @@ export default function AdminPanel({
   return (
     <div className="erp-app-wrapper min-vh-100 pb-5 pt-3">
       <div className="container-fluid px-4" style={{ maxWidth: '1400px' }}>
-        
+
         {/* HEADER */}
         <div className="d-flex justify-content-between align-items-end border-bottom mb-4 pb-3">
           <div>
@@ -1043,7 +1044,7 @@ export default function AdminPanel({
                     <label className="erp-label">Email Address <span className="text-danger">*</span></label>
                     <input type="email" name="email" autoComplete="off" className="form-control erp-input" value={form.email} onChange={handleChange} required />
                   </div>
-                  
+
                   <div className="col-md-4">
                     <label className="erp-label">System Role <span className="text-danger">*</span></label>
                     <select name="role" className="form-select erp-input" value={form.role} onChange={handleChange}>
@@ -1057,14 +1058,16 @@ export default function AdminPanel({
                       <option>User</option>
                     </select>
                   </div>
-                  <div className="col-md-4">
-                    <label className="erp-label">User Type <span className="text-danger">*</span></label>
-                    <select name="userType" className="form-select erp-input" value={form.userType} onChange={handleChange}>
-                      <option value="ADMIN">ADMIN</option>
-                      <option value="WORKER">WORKER</option>
-                      <option value="CLIENT">CLIENT</option>
-                    </select>
-                  </div>
+                  {isMainAdmin && (
+                    <div className="col-md-4">
+                      <label className="erp-label">User Type <span className="text-danger">*</span></label>
+                      <select name="userType" className="form-select erp-input" value={form.userType} onChange={handleChange}>
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="WORKER">WORKER</option>
+                        <option value="CLIENT">CLIENT</option>
+                      </select>
+                    </div>
+                  )}
                   {!editingUser && (
                     <div className="col-md-4">
                       <label className="erp-label">Initial Password <span className="text-danger">*</span></label>
@@ -1099,26 +1102,30 @@ export default function AdminPanel({
                     </div>
                   </div>
 
-                  <div className="col-12 mt-4">
-                    <h6 className="erp-section-title">SMTP Configuration (Optional)</h6>
-                  </div>
-                  
-                  <div className="col-md-3">
-                    <label className="erp-label">SMTP Host</label>
-                    <input name="smtpHost" className="form-control erp-input" value={form.smtpHost} onChange={handleChange} placeholder="smtp.gmail.com" />
-                  </div>
-                  <div className="col-md-2">
-                    <label className="erp-label">SMTP Port</label>
-                    <input type="number" name="smtpPort" className="form-control erp-input" value={form.smtpPort} onChange={handleChange} placeholder="587" />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="erp-label">SMTP Email</label>
-                    <input type="email" name="smtpEmail" className="form-control erp-input" value={form.smtpEmail} onChange={handleChange} placeholder="user@company.com" />
-                  </div>
-                  <div className="col-md-3">
-                    <label className="erp-label">SMTP Password</label>
-                    <input type="password" name="smtpPassword" className="form-control erp-input" value={form.smtpPassword} onChange={handleChange} />
-                  </div>
+                  {isMainAdmin && (
+                    <>
+                      <div className="col-12 mt-4">
+                        <h6 className="erp-section-title">SMTP Configuration (Optional)</h6>
+                      </div>
+
+                      <div className="col-md-3">
+                        <label className="erp-label">SMTP Host</label>
+                        <input name="smtpHost" className="form-control erp-input" value={form.smtpHost} onChange={handleChange} placeholder="smtp.gmail.com" />
+                      </div>
+                      <div className="col-md-2">
+                        <label className="erp-label">SMTP Port</label>
+                        <input type="number" name="smtpPort" className="form-control erp-input" value={form.smtpPort} onChange={handleChange} placeholder="587" />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="erp-label">SMTP Email</label>
+                        <input type="email" name="smtpEmail" className="form-control erp-input" value={form.smtpEmail} onChange={handleChange} placeholder="user@company.com" />
+                      </div>
+                      <div className="col-md-3">
+                        <label className="erp-label">SMTP Password</label>
+                        <input type="password" name="smtpPassword" className="form-control erp-input" value={form.smtpPassword} onChange={handleChange} />
+                      </div>
+                    </>
+                  )}
 
                   <div className="col-12 mt-3 d-flex align-items-center gap-2">
                     <div className="form-check form-switch">
@@ -1160,7 +1167,7 @@ export default function AdminPanel({
                       ))}
                     </select>
                   </div>
-                  
+
                   <div className="bg-light p-3 border rounded mb-4" style={{ maxHeight: '200px', overflowY: 'auto' }}>
                     <div className="d-flex flex-column gap-2">
                       {modulePlaceholders.map((module) => (
@@ -1571,8 +1578,8 @@ function WorkerMonitor() {
                   workerData.map((worker, index) => (
                     <tr key={index}>
                       <td>
-                        <span 
-                          className="worker-link" 
+                        <span
+                          className="worker-link"
                           onClick={() => setSelectedWorkerHistory(worker.workerName)}
                           title="Click to view detailed working history"
                         >
@@ -1587,7 +1594,7 @@ function WorkerMonitor() {
                       </td>
                       <td className="text-center fw-bold">{worker.itemsScanned || 0}</td>
                       <td className="text-center">
-                        <span className="text-success fw-bold me-1">{worker.stockInCount || 0}</span> / 
+                        <span className="text-success fw-bold me-1">{worker.stockInCount || 0}</span> /
                         <span className="text-danger fw-bold ms-1">{worker.stockOutCount || 0}</span>
                       </td>
                       <td className="text-center fw-bold text-info">{worker.transfers || 0}</td>
@@ -1623,8 +1630,8 @@ function WorkerMonitor() {
                   scannerOperations.map((op, index) => (
                     <tr key={index}>
                       <td>
-                        <span 
-                          className="worker-link" 
+                        <span
+                          className="worker-link"
                           onClick={() => setSelectedWorkerHistory(op.worker)}
                           title="Click to view detailed working history"
                         >
@@ -1685,7 +1692,7 @@ function WorkerMonitor() {
                             <td><span className="erp-status-tag tag-secondary">{op.action}</span></td>
                             <td className="fw-bold font-monospace text-dark">{op.item}</td>
                             <td>{op.warehouse}</td>
-                            <td className="font-monospace small text-muted">{op.lot || '-'}<br/>{op.serialNumbers}</td>
+                            <td className="font-monospace small text-muted">{op.lot || '-'}<br />{op.serialNumbers}</td>
                             <td className={`text-end fw-bold font-monospace ${op.quantity < 0 ? 'text-danger' : 'text-success'}`}>{op.quantity}</td>
                           </tr>
                         ))

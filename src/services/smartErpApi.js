@@ -21,8 +21,23 @@ export const smartErpApi = {
   getUsers: () =>
     api.get("/admin/users"),
 
+  getSystemSettings: () =>
+    api.get("/admin/system-settings"),
+
+  updateSystemSettings: (payload) =>
+    api.post("/admin/system-settings", payload),
+
+  getClientSystemSettings: () =>
+    api.get("/client/settings/smtp"),
+
+  updateClientSystemSettings: (payload) =>
+    api.post("/client/settings/smtp", payload),
+
   getRiders: () =>
     api.get("/rider/all"),
+
+  createRider: (payload) =>
+    api.post("/rider/create", payload),
 
   getCustomers: () =>
     api.get("/customers"),
