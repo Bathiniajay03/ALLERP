@@ -242,17 +242,26 @@ export default function Operations() {
     setShowSerialModal(true);
   };
 
-  const generateSerialNumbers = () => {
+  const generateSerialNumbers = async () => {
     const qty = serialGenerationForm.quantity;
     if (qty <= 0 || qty > 1000) return showStatus('warning', 'Limit: 1-1,000 units per batch');
 
-    const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-    const serials = Array.from({ length: qty }, (_, i) => ({
-      serialNumber: `${serialGenerationForm.prefix}-${dateStr}-${String(i + 1).padStart(4, '0')}`,
-      status: 'Available'
-    }));
-
-    setSerialGenerationForm((prev) => ({ ...prev, generatedSerials: serials }));
+    try {
+      const response = await api.get('/stock/next-serials', {
+        params: {
+          itemId: txForm.itemId,
+          warehouseId: txForm.warehouseId,
+          quantity: qty
+        }
+      });
+      const serials = (response.data || []).map(sn => ({
+        serialNumber: sn,
+        status: 'Available'
+      }));
+      setSerialGenerationForm((prev) => ({ ...prev, generatedSerials: serials }));
+    } catch (err) {
+      showStatus('error', err?.response?.data || 'Failed to fetch next sequential serials');
+    }
   };
 
   const autoSelectSerials = useCallback(() => {
@@ -743,7 +752,7 @@ export default function Operations() {
               </div>
 
               {serialGenerationForm.generatedSerials.length > 0 ? (
-                <div className="border rounded overflow-hidden" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <div className="border rounded" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                   <table className="table table-sm table-striped m-0 font-monospace" style={{ fontSize: '0.8rem' }}>
                     <thead className="table-light sticky-top">
                       <tr>

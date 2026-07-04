@@ -180,12 +180,15 @@ export default function MobileScanner({
   const selectedItem = useMemo(() => {
     const matched = items.find((item) => String(item.id) === txForm.itemId);
     if (matched) {
-      return { ...matched, ...currentItem };
+      const cleanCurrent = Object.fromEntries(
+        Object.entries(currentItem || {}).filter(([_, v]) => v !== undefined && v !== null)
+      );
+      return { ...matched, ...cleanCurrent };
     }
     return currentItem || null;
   }, [currentItem, items, txForm.itemId]);
 
-  const isSerialTracked = Boolean(selectedItem?.serialPrefix);
+  const isSerialTracked = Boolean(selectedItem?.serialPrefix || selectedItem?.SerialPrefix);
   const requiresSerialSelection = isSerialTracked && trackSerials && (txMode === 'out' || txMode === 'transfer');
 
   useEffect(() => {
@@ -344,7 +347,7 @@ export default function MobileScanner({
           itemId: payload.itemId,
           itemCode: payload.itemCode,
           description: payload.itemName,
-          serialPrefix: payload.serialPrefix
+          serialPrefix: payload.serialPrefix || payload.SerialPrefix
         });
 
         setTxForm((prev) => {
@@ -538,19 +541,25 @@ export default function MobileScanner({
     setShowSerialModal(true);
   };
 
-  const generateSerialNumbers = () => {
+  const generateSerialNumbers = async () => {
     const qty = serialGenerationForm.quantity;
     if (qty <= 0 || qty > 100) {
       return showStatus('warning', 'Serial generation limited to 1-100 units per batch');
     }
 
-    const prefix = currentItem?.serialPrefix || `SN-${currentItem?.itemCode || 'ITEM'}`;
-    const timestamp = Date.now().toString().slice(-4);
-    const serials = Array.from({ length: qty }, (_, i) => ({
-      serialNumber: `${prefix}-${timestamp}-${String(i + 1).padStart(4, '0')}`
-    }));
-
-    setSerialGenerationForm(prev => ({ ...prev, generatedSerials: serials }));
+    try {
+      const response = await api.get('/stock/next-serials', {
+        params: {
+          itemId: txForm.itemId,
+          warehouseId: txForm.warehouseId,
+          quantity: qty
+        }
+      });
+      const serials = (response.data || []).map(sn => ({ serialNumber: sn }));
+      setSerialGenerationForm(prev => ({ ...prev, generatedSerials: serials }));
+    } catch (err) {
+      showStatus('error', err?.response?.data || 'Failed to fetch next sequential serials');
+    }
   };
 
   const handleManualSerialsChange = (text) => {
@@ -873,16 +882,22 @@ export default function MobileScanner({
                         </div>
                       </div>
 
-                      <form onSubmit={handleSerialSearchSubmit} className="d-flex gap-2 my-1">
+                      <div className="d-flex gap-2 my-1">
                         <input
                           type="text"
                           className="form-control form-control-sm font-monospace"
                           placeholder="Type or scan serial to select..."
                           value={serialSearchInput}
                           onChange={(e) => setSerialSearchInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleSerialSearchSubmit(e);
+                            }
+                          }}
                         />
-                        <button type="submit" className="btn btn-sm btn-primary erp-btn py-1 px-3">Select</button>
-                      </form>
+                        <button type="button" onClick={handleSerialSearchSubmit} className="btn btn-sm btn-primary erp-btn py-1 px-3">Select</button>
+                      </div>
                       {serialError && <div className="alert alert-warning py-2 small mb-2">{serialError}</div>}
                       {serialLoading ? (
                         <div className="text-muted small">Loading available serials...</div>
@@ -1158,7 +1173,7 @@ export default function MobileScanner({
                       </button>
 
                       {serialGenerationForm.generatedSerials.length > 0 ? (
-                        <div className="border rounded overflow-hidden" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        <div className="border rounded" style={{ maxHeight: '200px', overflowY: 'auto' }}>
                           <table className="table table-sm table-striped m-0 font-monospace" style={{ fontSize: '0.8rem' }}>
                             <thead className="table-light sticky-top">
                               <tr>
@@ -1187,7 +1202,7 @@ export default function MobileScanner({
                       <div className="alert alert-info py-2 small mb-3">
                         The system will automatically select the first <strong>{serialGenerationForm.quantity}</strong> available serial numbers from this lot.
                       </div>
-                      <div className="border rounded overflow-hidden" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                      <div className="border rounded" style={{ maxHeight: '200px', overflowY: 'auto' }}>
                         <table className="table table-sm table-striped m-0 font-monospace" style={{ fontSize: '0.8rem' }}>
                           <thead className="table-light sticky-top">
                             <tr>
