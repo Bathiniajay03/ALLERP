@@ -277,16 +277,16 @@ export default function Lots() {
       <div className="container-fluid px-4" style={{ maxWidth: '1400px' }}>
         
         {/* HEADER */}
-        <div className="d-flex justify-content-between align-items-end border-bottom mb-4 pb-3">
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end border-bottom mb-4 pb-3 gap-2">
           <div>
             <h4 className="fw-bold m-0 text-dark" style={{ letterSpacing: '-0.5px' }}>Lot & Batch Tracking</h4>
             <span className="erp-text-muted small text-uppercase">Granular Inventory Genealogy</span>
           </div>
-          <div className="d-flex gap-2 align-items-center">
+          <div className="d-flex gap-2 align-items-center w-100 w-md-auto">
              <span className="text-muted small fw-bold">Filter:</span>
              <input
               className="form-control form-control-sm erp-input"
-              style={{ width: '250px' }}
+              style={{ width: '100%', maxWidth: '250px' }}
               placeholder="Search product, lot, or bin..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
@@ -327,7 +327,7 @@ export default function Lots() {
         </div>
 
         {/* MASTER DATA GRID */}
-        <div className="erp-panel d-flex flex-column shadow-sm" style={{ height: "calc(100vh - 240px)", minHeight: '400px' }}>
+        <div className="erp-panel erp-panel-responsive d-flex flex-column shadow-sm" style={{ height: "calc(100vh - 240px)", minHeight: '400px' }}>
           <div className="erp-panel-header d-flex justify-content-between align-items-center bg-light">
             <span className="fw-bold">Product Lot Aggregation</span>
             <span className="badge bg-secondary">{filteredGroups.length} Products</span>
@@ -395,7 +395,7 @@ export default function Lots() {
       {/* DETAILED LOT MODAL */}
       {selectedProduct && (
         <div className="erp-modal-overlay" onClick={() => setSelectedProduct(null)}>
-          <div className="erp-dialog erp-dialog-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="erp-dialog erp-dialog-lg w-100 mx-3" onClick={(e) => e.stopPropagation()}>
             <div className="erp-dialog-header d-flex justify-content-between align-items-center">
               <div>
                 <h5 className="m-0 fw-bold">{selectedProduct.itemCode}</h5>
@@ -424,7 +424,7 @@ export default function Lots() {
 
               <div className="p-4">
                 <h6 className="erp-section-title mb-3">Individual Lot Breakdown</h6>
-                <div className="border rounded overflow-hidden shadow-sm bg-white">
+                <div className="border rounded shadow-sm bg-white table-responsive" style={{ overflowX: 'auto' }}>
                   <table className="table erp-table table-sm table-hover mb-0 align-middle">
                     <thead className="table-light">
                       <tr>
@@ -521,7 +521,7 @@ export default function Lots() {
 
       {detailSerial && (
         <div className="erp-modal-overlay" onClick={closeSerialModal}>
-          <div className="erp-dialog erp-dialog-md" onClick={(e) => e.stopPropagation()}>
+          <div className="erp-dialog erp-dialog-md w-100 mx-3" onClick={(e) => e.stopPropagation()}>
             <div className="erp-dialog-header d-flex justify-content-between align-items-center">
               <div>
                 <h5 className="m-0 fw-bold">{detailSerial.serialNumber}</h5>
@@ -772,6 +772,16 @@ export default function Lots() {
           margin-bottom: 12px;
         }
         .erp-meta-label { font-size: 0.7rem; text-transform: uppercase; color: var(--erp-text-muted); font-weight: 700; margin-bottom: 4px; }
+
+        @media (max-width: 768px) {
+          .erp-panel-responsive {
+            height: auto !important;
+            min-height: 300px !important;
+          }
+          .erp-table-container {
+            max-height: 400px;
+          }
+        }
       `}</style>
     </div>
   );

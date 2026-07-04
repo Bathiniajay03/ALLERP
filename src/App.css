@@ -510,3 +510,68 @@
     font-size: 0.85rem;
   }
 }
+
+/* --- Responsive Layout & Overflow Fixes --- */
+@media (max-width: 992px) {
+  /* Overlay Products page sidebar to prevent pushing content off-screen */
+  .d-flex.flex-grow-1.overflow-hidden {
+    position: relative;
+  }
+  .erp-sidebar {
+    position: absolute !important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 280px !important;
+    z-index: 1040;
+    height: 100%;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15) !important;
+  }
+
+  /* Make flex toolbars, header columns and button rows wrap */
+  .d-flex.flex-wrap,
+  .gap-2.flex-wrap {
+    flex-wrap: wrap !important;
+  }
+
+  /* Prevent panel header overflow */
+  .erp-panel-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .erp-panel-header > div {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  /* Make sure all inputs within headers scale */
+  .erp-panel-header input,
+  .erp-panel-header select {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Stack d-flex justify-content-between rows in page headers */
+  .d-flex.justify-content-between.align-items-end {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Handle button grids and actions wrapping */
+  .d-flex.gap-2 {
+    flex-wrap: wrap !important;
+  }
+
+  /* Ensure horizontal table containers scroll natively without stretching parents */
+  .erp-table-container,
+  .table-responsive {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+}
+

@@ -463,11 +463,11 @@ export default function Operations() {
             <div className="p-4 bg-white">
               
               {/* MODE SELECTOR */}
-              <div className="btn-group w-100 mb-4 shadow-sm flex-wrap" role="group">
-                <button type="button" className={`btn erp-btn ${txMode === 'in' ? 'btn-success fw-bold' : 'btn-light border'}`} onClick={() => { setTxMode('in'); setTxForm(p => ({...p, lotId: '', destWarehouseId: ''})); }}>📥 IN</button>
-                <button type="button" className={`btn erp-btn ${txMode === 'out' ? 'btn-danger fw-bold' : 'btn-light border'}`} onClick={() => { setTxMode('out'); setTxForm(p => ({...p, lotNumber: '', destWarehouseId: ''})); }}>📤 OUT</button>
-                <button type="button" className={`btn erp-btn ${txMode === 'transfer' ? 'btn-warning fw-bold text-dark' : 'btn-light border'}`} onClick={() => { setTxMode('transfer'); setTxForm(p => ({...p, lotNumber: ''})); }}>🔁 XFER</button>
-                <button type="button" className={`btn erp-btn ${txMode === 'bulk' ? 'btn-info fw-bold text-dark' : 'btn-light border'}`} onClick={() => { setTxMode('bulk'); setTxForm(p => ({...p, itemId: '', quantity: '', lotNumber: '', lotId: ''})); }}>🔄 BULK</button>
+              <div className="d-flex gap-2 w-100 mb-4 flex-wrap" role="group">
+                <button type="button" className={`btn erp-btn flex-grow-1 ${txMode === 'in' ? 'btn-success fw-bold' : 'btn-light border'}`} onClick={() => { setTxMode('in'); setTxForm(p => ({...p, lotId: '', destWarehouseId: ''})); }}>📥 IN</button>
+                <button type="button" className={`btn erp-btn flex-grow-1 ${txMode === 'out' ? 'btn-danger fw-bold' : 'btn-light border'}`} onClick={() => { setTxMode('out'); setTxForm(p => ({...p, lotNumber: '', destWarehouseId: ''})); }}>📤 OUT</button>
+                <button type="button" className={`btn erp-btn flex-grow-1 ${txMode === 'transfer' ? 'btn-warning fw-bold text-dark' : 'btn-light border'}`} onClick={() => { setTxMode('transfer'); setTxForm(p => ({...p, lotNumber: ''})); }}>🔁 XFER</button>
+                <button type="button" className={`btn erp-btn flex-grow-1 ${txMode === 'bulk' ? 'btn-info fw-bold text-dark' : 'btn-light border'}`} onClick={() => { setTxMode('bulk'); setTxForm(p => ({...p, itemId: '', quantity: '', lotNumber: '', lotId: ''})); }}>🔄 BULK</button>
               </div>
 
               <div className="erp-instruction-box mb-4" style={{
