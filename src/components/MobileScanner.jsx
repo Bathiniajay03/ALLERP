@@ -331,6 +331,26 @@ export default function MobileScanner({
       try {
         const response = await api.get(`/items/barcode/${encodeURIComponent(trimmed)}`);
         const payload = response.data;
+
+        if (payload.isTemporary) {
+          stopCamera();
+          showStatus('warning', 'Unknown barcode detected. Please configure item details to register.');
+          setProductForm({
+            ...createEmptyProductForm(),
+            id: payload.itemId,
+            barcode: payload.barcode || trimmed,
+            itemCode: `ITEM-${trimmed.substring(0, Math.min(10, trimmed.length)).replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`,
+            description: '',
+            price: 0,
+            category: 'General',
+            unit: 'NOS',
+            isLotTracked: false,
+            serialPrefix: ''
+          });
+          setActiveTab('create');
+          return null;
+        }
+
         const autoWarehouseId = payload.inventory?.warehouseId ?? warehouses[0]?.id ?? '';
 
         // STRICT PO VALIDATION: If in PO tab, ensure item belongs to a pending PO
@@ -394,7 +414,7 @@ export default function MobileScanner({
           setProductForm({
             ...createEmptyProductForm(),
             barcode: trimmed,
-            itemCode: `ITEM-${trimmed.substring(0, 6).toUpperCase()}`
+            itemCode: `ITEM-${trimmed.substring(0, Math.min(10, trimmed.length)).replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`
           });
           setActiveTab('create');
         } else {
@@ -465,14 +485,25 @@ export default function MobileScanner({
     e.preventDefault();
     setCreateLoading(true);
     try {
-      await api.post("/smart-erp/products", {
-        ...productForm,
-        price: Number(productForm.price),
-        maxStockLevel: Number(productForm.maxStockLevel),
-        safetyStock: Number(productForm.safetyStock),
-        leadTimeDays: Number(productForm.leadTimeDays),
-        averageDailySales: Number(productForm.averageDailySales)
-      });
+      if (productForm.id) {
+        await api.put(`/smart-erp/products/${productForm.id}`, {
+          ...productForm,
+          price: Number(productForm.price),
+          maxStockLevel: Number(productForm.maxStockLevel),
+          safetyStock: Number(productForm.safetyStock),
+          leadTimeDays: Number(productForm.leadTimeDays),
+          averageDailySales: Number(productForm.averageDailySales)
+        });
+      } else {
+        await api.post("/smart-erp/products", {
+          ...productForm,
+          price: Number(productForm.price),
+          maxStockLevel: Number(productForm.maxStockLevel),
+          safetyStock: Number(productForm.safetyStock),
+          leadTimeDays: Number(productForm.leadTimeDays),
+          averageDailySales: Number(productForm.averageDailySales)
+        });
+      }
 
       const newBarcode = productForm.barcode;
       showStatus("success", "Item Registered! Resuming stock operations...");
@@ -1069,7 +1100,7 @@ export default function MobileScanner({
                 <textarea className="form-control erp-input" rows="2" value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} required />
               </div>
 
-              <div className="row g-2 mb-4">
+              <div className="row g-2 mb-3">
                 <div className="col-6">
                   <label className="erp-label">Unit Price</label>
                   <input type="number" step="0.01" className="form-control erp-input font-monospace" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })} />
@@ -1077,6 +1108,45 @@ export default function MobileScanner({
                 <div className="col-6">
                   <label className="erp-label">Category</label>
                   <input className="form-control erp-input" placeholder="General" value={productForm.category} onChange={(e) => setProductForm({ ...productForm, category: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="row g-2 mb-3">
+                <div className="col-6">
+                  <label className="erp-label">Unit (UOM)</label>
+                  <select className="form-select erp-input" value={productForm.unit} onChange={(e) => setProductForm({ ...productForm, unit: e.target.value })}>
+                    <option value="NOS">NOS</option>
+                    <option value="BX">BX</option>
+                    <option value="KGS">KGS</option>
+                    <option value="PCS">PCS</option>
+                    <option value="LTR">LTR</option>
+                  </select>
+                </div>
+                <div className="col-6">
+                  <label className="erp-label">Warehouse Location</label>
+                  <input className="form-control erp-input" placeholder="e.g. A1-B2" value={productForm.warehouseLocation} onChange={(e) => setProductForm({ ...productForm, warehouseLocation: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="row g-2 mb-3">
+                <div className="col-6">
+                  <label className="erp-label">Safety Stock</label>
+                  <input type="number" className="form-control erp-input font-monospace" value={productForm.safetyStock} onChange={(e) => setProductForm({ ...productForm, safetyStock: Number(e.target.value) })} />
+                </div>
+                <div className="col-6">
+                  <label className="erp-label">Max Stock Level</label>
+                  <input type="number" className="form-control erp-input font-monospace" value={productForm.maxStockLevel} onChange={(e) => setProductForm({ ...productForm, maxStockLevel: Number(e.target.value) })} />
+                </div>
+              </div>
+
+              <div className="row g-2 mb-3">
+                <div className="col-6">
+                  <label className="erp-label">Lead Time (Days)</label>
+                  <input type="number" className="form-control erp-input font-monospace" value={productForm.leadTimeDays} onChange={(e) => setProductForm({ ...productForm, leadTimeDays: Number(e.target.value) })} />
+                </div>
+                <div className="col-6">
+                  <label className="erp-label">Avg Daily Sales</label>
+                  <input type="number" className="form-control erp-input font-monospace" value={productForm.averageDailySales} onChange={(e) => setProductForm({ ...productForm, averageDailySales: Number(e.target.value) })} />
                 </div>
               </div>
 

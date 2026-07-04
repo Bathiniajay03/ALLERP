@@ -797,23 +797,6 @@ export default function Automation() {
           </div>
         )}
 
-        <div className="erp-panel shadow-sm mb-4">
-          <div className="erp-panel-header bg-light d-flex justify-content-between align-items-center">
-            <span className="fw-bold">Order Automation Controls</span>
-            <span className="text-muted small">Manual workflows remain available below</span>
-          </div>
-          <div className="p-3 bg-white">
-            <div className="d-flex flex-column gap-2">
-              <button className="btn btn-sm btn-success w-100" onClick={runAutoOrderAutomation}>
-                Auto Assign Packers + Schedule Auto-Pack in 2 Min
-              </button>
-              <button className="btn btn-sm btn-warning w-100" onClick={runAutoRiderDispatch}>
-                Auto Dispatch Riders for Packed Orders
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="row g-4 mb-4">
           {/* Health Panel */}
           <div className="col-md-4 col-xl-3">
