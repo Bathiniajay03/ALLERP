@@ -2620,7 +2620,7 @@ export default function SmartERP() {
   // UI States
   const [activeTab, setActiveTab] = useState("Main");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [productForm, setProductForm] = useState(createEmptyProductForm());
   const [whAssignment, setWhAssignment] = useState({
     warehouseId: "",
