@@ -44,12 +44,12 @@ const PLANS = [
 ];
 
 const FEATURES = [
-  { emoji: '📦', title: 'Inventory Management', desc: 'Real-time stock tracking with intelligent alerts, automatic reordering, and serial/lot level tracking.' },
+  { emoji: '📦', title: 'Inventory Management', desc: 'Real-time stock tracking with intelligent alerts, automatic reordering, and lot tracking.' },
   { emoji: '🏭', title: 'Warehouse Management', desc: 'Optimize storage layouts, bin locations, put-away routing, and multiple warehouse coordination.' },
-  { emoji: '🛒', title: 'Purchase Management', desc: 'Streamline procurement workflows, automate vendor RFQs, and track order fulfillment status.' },
+  { emoji: '🛒', title: 'Purchase Management', desc: 'Streamline procurement workflows, automate vendor RFQs, and track order fulfillment.' },
   { emoji: '📈', title: 'Sales Management', desc: 'Accelerate order processing, manage customer relationships, and track sales pipelines.' },
   { emoji: '💰', title: 'Finance & Accounts', desc: 'Integrated billing, automated invoicing, real-time profit analysis, and localized tax filing.' },
-  { emoji: '🤖', title: 'AI Assistant & Automation', desc: 'Leverage predictive AI to forecast inventory demand, automate stock movement, and suggest optimization plans.' },
+  { emoji: '🤖', title: 'AI & Automation', desc: 'Leverage predictive AI to forecast inventory demand, automate stock movement, and suggest optimization plans.' },
   { emoji: '🤳', title: 'Barcode Scanner', desc: 'Turn any mobile phone into a rugged warehouse scanner with zero additional hardware requirements.' },
   { emoji: '📊', title: 'Reports & Analytics', desc: 'Instant access to beautiful dashboards, inventory age reports, sales charts, and financial statement exports.' }
 ];
@@ -217,7 +217,7 @@ export default function LandingPage() {
         }
 
         .lp-hero h1 {
-          font-size: clamp(2.5rem, 5vw, 4.5rem);
+          font-size: clamp(2rem, 5vw, 4.5rem);
           font-weight: 900;
           line-height: 1.1;
           margin-bottom: 20px;
@@ -232,7 +232,7 @@ export default function LandingPage() {
         }
 
         .lp-hero p {
-          font-size: clamp(1.05rem, 2vw, 1.25rem);
+          font-size: clamp(0.95rem, 2vw, 1.25rem);
           color: #475569;
           max-width: 650px;
           margin: 0 auto 36px;
@@ -269,7 +269,7 @@ export default function LandingPage() {
 
         /* Section layout */
         .lp-section {
-          padding: 100px 24px;
+          padding: 80px 24px;
           max-width: 1200px;
           margin: 0 auto;
         }
@@ -277,11 +277,11 @@ export default function LandingPage() {
         .lp-sec-header {
           text-align: center;
           max-width: 700px;
-          margin: 0 auto 60px;
+          margin: 0 auto 50px;
         }
 
         .lp-sec-header h2 {
-          font-size: clamp(1.8rem, 3vw, 2.5rem);
+          font-size: clamp(1.6rem, 3vw, 2.5rem);
           font-weight: 800;
           margin-bottom: 16px;
           letter-spacing: -0.01em;
@@ -342,15 +342,15 @@ export default function LandingPage() {
         .lp-preview-tabs {
           display: flex;
           justify-content: center;
-          gap: 12px;
+          gap: 8px;
           margin-bottom: 30px;
           flex-wrap: wrap;
         }
 
         .lp-tab-btn {
-          padding: 8px 18px;
+          padding: 8px 16px;
           border-radius: 30px;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           font-weight: 600;
           background: #ffffff;
           border: 1px solid #cbd5e1;
@@ -398,7 +398,7 @@ export default function LandingPage() {
           border-radius: 12px;
           overflow: hidden;
           background: #f8fafc;
-          min-height: 400px;
+          min-height: 380px;
           display: flex;
           flex-direction: column;
           color: #334155;
@@ -632,7 +632,7 @@ export default function LandingPage() {
         /* Footer */
         .lp-footer {
           border-top: 1px solid #e2e8f0;
-          padding: 80px 24px 40px;
+          padding: 60px 24px 40px;
           background: #f1f5f9;
         }
 
@@ -642,7 +642,7 @@ export default function LandingPage() {
           display: grid;
           grid-template-columns: 2fr repeat(3, 1fr);
           gap: 40px;
-          margin-bottom: 60px;
+          margin-bottom: 40px;
         }
 
         .lp-foot-brand h3 {
@@ -736,6 +736,7 @@ export default function LandingPage() {
           overflow: hidden;
         }
 
+        /* Responsive Modifications */
         @media (max-width: 992px) {
           .lp-footer-inner {
             grid-template-columns: 1fr 1fr;
@@ -748,10 +749,70 @@ export default function LandingPage() {
             display: none;
           }
           .lp-stats {
-            gap: 30px;
+            gap: 20px;
           }
           .lp-footer-inner {
             grid-template-columns: 1fr;
+          }
+          .lp-hero {
+            padding: 120px 20px 60px;
+          }
+          .lp-pricing-grid {
+            grid-template-columns: 1fr;
+          }
+          .lp-features-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .lp-nav-inner {
+            padding: 12px 16px;
+          }
+          .lp-logo {
+            font-size: 1.25rem;
+          }
+          .btn-saas {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+          }
+          .lp-actions {
+            gap: 8px;
+          }
+          .lp-hero h1 {
+            font-size: clamp(1.8rem, 8vw, 2.5rem);
+            margin-bottom: 12px;
+          }
+          .lp-hero p {
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+          }
+          .lp-stats {
+            gap: 16px;
+            margin-top: 40px;
+            padding-top: 30px;
+          }
+          .lp-stat-item h3 {
+            font-size: 1.6rem;
+          }
+          .lp-preview-tabs {
+            gap: 6px;
+          }
+          .lp-tab-btn {
+            padding: 6px 12px;
+            font-size: 0.78rem;
+          }
+          .lp-section {
+            padding: 60px 16px;
+          }
+          .lp-ind-card {
+            padding: 16px 8px;
+          }
+          .lp-ind-icon {
+            font-size: 1.8rem;
+          }
+          .lp-ind-name {
+            font-size: 0.85rem;
           }
         }
       `}</style>
@@ -840,35 +901,35 @@ export default function LandingPage() {
             {activeTab === 'dashboard' && (
               <div className="w-100 h-100 d-flex flex-column gap-3">
                 <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-3">
-                  <h4 className="m-0 text-dark fw-bold">Live Business Analytics</h4>
-                  <span className="badge bg-primary text-white">Active Plan: Enterprise</span>
+                  <h4 className="m-0 text-dark fw-bold" style={{ fontSize: '1.1rem' }}>Live Business Analytics</h4>
+                  <span className="badge bg-primary text-white" style={{ fontSize: '0.75rem' }}>Active Plan: Enterprise</span>
                 </div>
                 <div className="row g-3">
                   <div className="col-12 col-md-4">
-                    <div className="dash-widget">
+                    <div className="dash-widget shadow-sm">
                       <div className="text-muted small">Total Sales Month-to-Date</div>
-                      <h2 className="text-dark fw-bold my-2">$148,930</h2>
+                      <h2 className="text-dark fw-bold my-2" style={{ fontSize: '1.5rem' }}>$148,930</h2>
                       <div className="text-success small">▲ 14.2% from last month</div>
                     </div>
                   </div>
                   <div className="col-12 col-md-4">
-                    <div className="dash-widget">
+                    <div className="dash-widget shadow-sm">
                       <div className="text-muted small">Active Warehouses</div>
-                      <h2 className="text-dark fw-bold my-2">8 Zones</h2>
+                      <h2 className="text-dark fw-bold my-2" style={{ fontSize: '1.5rem' }}>8 Zones</h2>
                       <div className="text-info small">36 Aisle sections configured</div>
                     </div>
                   </div>
                   <div className="col-12 col-md-4">
-                    <div className="dash-widget">
+                    <div className="dash-widget shadow-sm">
                       <div className="text-muted small">AI Fulfillment Suggested</div>
-                      <h2 className="text-warning fw-bold my-2">12 Items</h2>
-                      <div className="text-muted small">Auto-generated draft POs waiting</div>
+                      <h2 className="text-warning fw-bold my-2" style={{ fontSize: '1.5rem' }}>12 Items</h2>
+                      <div className="text-muted small">Draft POs waiting</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="dash-widget mt-2">
-                  <h5 className="text-dark fw-bold mb-3">Warehouse Traffic Flow</h5>
+                <div className="dash-widget mt-2 shadow-sm">
+                  <h5 className="text-dark fw-bold mb-3" style={{ fontSize: '0.95rem' }}>Warehouse Traffic Flow</h5>
                   <div className="d-flex flex-column gap-2">
                     <div>
                       <div className="d-flex justify-content-between text-muted small mb-1">
@@ -896,7 +957,7 @@ export default function LandingPage() {
             {activeTab === 'inventory' && (
               <div className="w-100 h-100 d-flex flex-column gap-3">
                 <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-3">
-                  <h4 className="m-0 text-dark fw-bold">Stock Control Index</h4>
+                  <h4 className="m-0 text-dark fw-bold" style={{ fontSize: '1.1rem' }}>Stock Control Index</h4>
                   <button className="btn btn-sm btn-primary">+ Receive Goods</button>
                 </div>
                 <div className="table-responsive">
@@ -945,43 +1006,43 @@ export default function LandingPage() {
             {activeTab === 'warehouse' && (
               <div className="w-100 h-100 d-flex flex-column gap-3">
                 <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-3">
-                  <h4 className="m-0 text-dark fw-bold">WMS Layout Matrix</h4>
-                  <span className="text-muted small">Warehouse: Main Warehouse (MAIN)</span>
+                  <h4 className="m-0 text-dark fw-bold" style={{ fontSize: '1.1rem' }}>WMS Layout Matrix</h4>
+                  <span className="text-muted small">Warehouse: MAIN</span>
                 </div>
                 <div className="row g-2 text-center font-monospace">
-                  <div className="col-12 col-md-3">
+                  <div className="col-6 col-md-3">
                     <div className="p-3 bg-white rounded border border-light shadow-sm">
-                      <div className="small text-muted">Aisle A</div>
-                      <div className="fw-bold my-1 text-dark">Fast Moving</div>
-                      <div className="badge bg-success">85% Fill</div>
+                      <div className="small text-muted" style={{ fontSize: '0.75rem' }}>Aisle A</div>
+                      <div className="fw-bold my-1 text-dark" style={{ fontSize: '0.8rem' }}>Fast Moving</div>
+                      <div className="badge bg-success" style={{ fontSize: '0.7rem' }}>85% Fill</div>
                     </div>
                   </div>
-                  <div className="col-12 col-md-3">
+                  <div className="col-6 col-md-3">
                     <div className="p-3 bg-white rounded border border-light shadow-sm">
-                      <div className="small text-muted">Aisle B</div>
-                      <div className="fw-bold my-1 text-dark">Bulk Storage</div>
-                      <div className="badge bg-warning text-dark">92% Fill</div>
+                      <div className="small text-muted" style={{ fontSize: '0.75rem' }}>Aisle B</div>
+                      <div className="fw-bold my-1 text-dark" style={{ fontSize: '0.8rem' }}>Bulk Storage</div>
+                      <div className="badge bg-warning text-dark" style={{ fontSize: '0.7rem' }}>92% Fill</div>
                     </div>
                   </div>
-                  <div className="col-12 col-md-3">
+                  <div className="col-6 col-md-3">
                     <div className="p-3 bg-white rounded border border-light shadow-sm">
-                      <div className="small text-muted">Aisle C</div>
-                      <div className="fw-bold my-1 text-dark">Cold Chain Lot</div>
-                      <div className="badge bg-success">54% Fill</div>
+                      <div className="small text-muted" style={{ fontSize: '0.75rem' }}>Aisle C</div>
+                      <div className="fw-bold my-1 text-dark" style={{ fontSize: '0.8rem' }}>Cold Chain Lot</div>
+                      <div className="badge bg-success" style={{ fontSize: '0.7rem' }}>54% Fill</div>
                     </div>
                   </div>
-                  <div className="col-12 col-md-3">
+                  <div className="col-6 col-md-3">
                     <div className="p-3 bg-white rounded border border-light shadow-sm">
-                      <div className="small text-muted">Aisle D</div>
-                      <div className="fw-bold my-1 text-dark">Returns / Hold</div>
-                      <div className="badge bg-info text-white">12% Fill</div>
+                      <div className="small text-muted" style={{ fontSize: '0.75rem' }}>Aisle D</div>
+                      <div className="fw-bold my-1 text-dark" style={{ fontSize: '0.8rem' }}>Returns / Hold</div>
+                      <div className="badge bg-info text-white" style={{ fontSize: '0.7rem' }}>12% Fill</div>
                     </div>
                   </div>
                 </div>
-                <div className="dash-widget mt-2">
+                <div className="dash-widget mt-2 shadow-sm">
                   <div className="small text-muted mb-2">Automated Bin Assignment Recommendation:</div>
-                  <div className="p-2 text-success font-monospace rounded border border-light" style={{ background: '#f0fdf4' }}>
-                    🚀 SUGGESTED BIN: [WH-MAIN-A2-S4-B08] for Item CPU-INT-09 (Fast Picking Zone)
+                  <div className="p-2 text-success font-monospace rounded border border-light" style={{ background: '#f0fdf4', fontSize: '0.8rem' }}>
+                    🚀 SUGGESTED BIN: [WH-MAIN-A2-S4-B08] for CPU-INT-09 (Fast Picking Zone)
                   </div>
                 </div>
               </div>
@@ -989,7 +1050,7 @@ export default function LandingPage() {
 
             {activeTab === 'scanner' && (
               <div className="w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
-                <div className="bg-white p-4 rounded-3 border border-light text-center shadow-sm" style={{ maxWidth: '300px', width: '100%' }}>
+                <div className="bg-white p-4 rounded-3 border border-light text-center shadow-sm" style={{ maxWidth: '280px', width: '100%' }}>
                   <div className="text-dark small mb-3">🤳 SMART SCANNER CORE</div>
                   <div className="bg-light p-3 mb-3 rounded border border-light d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '120px' }}>
                     <div style={{ width: '80%', height: '2px', background: '#ef4444' }}></div>
@@ -1050,21 +1111,21 @@ export default function LandingPage() {
 
         <div className="row g-4 text-center">
           <div className="col-12 col-md-4">
-            <div className="p-4">
+            <div className="p-3">
               <div className="fs-1 mb-3">⚡</div>
               <h4 className="text-dark fw-bold mb-2">Ultra Fast Operations</h4>
               <p className="text-muted small">Built with optimized SQL queries and lightweight front-end components for sub-millisecond updates.</p>
             </div>
           </div>
           <div className="col-12 col-md-4">
-            <div className="p-4">
+            <div className="p-3">
               <div className="fs-1 mb-3">🛡️</div>
               <h4 className="text-dark fw-bold mb-2">Enterprise-Grade Security</h4>
               <p className="text-muted small">Standard MFA integration, secure JWT session cookies, and database schema security isolation.</p>
             </div>
           </div>
           <div className="col-12 col-md-4">
-            <div className="p-4">
+            <div className="p-3">
               <div className="fs-1 mb-3">🤖</div>
               <h4 className="text-dark fw-bold mb-2">AI-Driven Predictions</h4>
               <p className="text-muted small">Automated rules calculate lead times, average daily sales, safety levels and propose optimal reorders.</p>
@@ -1112,7 +1173,7 @@ export default function LandingPage() {
         </div>
 
         <div className="lp-testimonials-grid">
-          <div className="lp-testimonial-card">
+          <div className="lp-testimonial-card shadow-sm">
             <div className="lp-stars">★★★★★</div>
             <div className="lp-quote">
               "SmartERP Cloud changed our retail operations completely. We configured 4 warehouses and mapped all aisles in less than an hour. The mobile barcode scanner works perfectly on our workers' tablets."
@@ -1126,7 +1187,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="lp-testimonial-card">
+          <div className="lp-testimonial-card shadow-sm">
             <div className="lp-stars">★★★★★</div>
             <div className="lp-quote">
               "The AI procurement assistant auto-suggests purchase orders based on lead times and stock alert limits. We no longer run out of fast-moving processors. Highly recommended SaaS tool."
@@ -1151,7 +1212,7 @@ export default function LandingPage() {
 
         <div className="lp-faq-container">
           {FAQ_DATA.map((faq, idx) => (
-            <div className="lp-faq-item" key={idx} onClick={() => toggleFaq(idx)}>
+            <div className="lp-faq-item shadow-sm" key={idx} onClick={() => toggleFaq(idx)}>
               <div className="lp-faq-q">
                 <span>{faq.q}</span>
                 <span>{faqOpen === idx ? '−' : '+'}</span>

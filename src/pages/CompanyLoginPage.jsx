@@ -276,6 +276,30 @@ export default function CompanyLoginPage({ onLoginSuccess, initialError }) {
           .login-left-pane {
             display: none;
           }
+          .login-right-pane {
+            padding: 60px 40px;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .login-right-pane {
+            padding: 32px 16px;
+          }
+          .login-form-header h2 {
+            font-size: 1.5rem;
+          }
+          .login-form-header p {
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+          }
+          .form-control {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+          }
+          .btn-submit {
+            padding: 10px;
+            font-size: 0.9rem;
+          }
         }
       `}</style>
 

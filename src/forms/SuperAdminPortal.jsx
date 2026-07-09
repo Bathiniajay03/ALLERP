@@ -332,12 +332,12 @@ export default function SuperAdminPortal() {
       )}
 
       {/* Hero Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4 p-4 bg-white rounded-3 shadow-sm">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 p-4 bg-white rounded-3 shadow-sm">
         <div>
           <h1 className="fw-bold text-dark m-0">SaaS Command Center</h1>
           <p className="text-muted m-0">Manage global tenants, system resources, and service plans.</p>
         </div>
-        <button className="btn btn-primary px-4 py-2 fw-bold shadow-sm" onClick={() => setShowWizard(true)}>
+        <button className="btn btn-primary px-4 py-2 fw-bold shadow-sm w-100 w-md-auto" onClick={() => setShowWizard(true)}>
           + Onboard Company Wizard
         </button>
       </div>
@@ -345,48 +345,48 @@ export default function SuperAdminPortal() {
       {/* Metrics Cards Grid */}
       {metrics && (
         <div className="row g-3 mb-4">
-          <div className="col-md-3">
-            <div className="card border-0 shadow-sm p-4 bg-white">
-              <span className="text-uppercase text-muted fw-bold small">Total Tenants</span>
-              <h2 className="fw-bold mt-2 text-primary">{metrics.totalCompanies}</h2>
-              <span className="text-success small fw-bold">● {metrics.activeCompanies} Active</span>
+          <div className="col-6 col-md-3">
+            <div className="card border-0 shadow-sm p-3 p-md-4 bg-white h-100">
+              <span className="text-uppercase text-muted fw-bold small" style={{ fontSize: '0.75rem' }}>Total Tenants</span>
+              <h2 className="fw-bold mt-2 text-primary fs-3">{metrics.totalCompanies}</h2>
+              <span className="text-success small fw-bold" style={{ fontSize: '0.75rem' }}>● {metrics.activeCompanies} Active</span>
             </div>
           </div>
-          <div className="col-md-3">
-            <div className="card border-0 shadow-sm p-4 bg-white">
-              <span className="text-uppercase text-muted fw-bold small">Storage Allocated</span>
-              <h2 className="fw-bold mt-2 text-success">
+          <div className="col-6 col-md-3">
+            <div className="card border-0 shadow-sm p-3 p-md-4 bg-white h-100">
+              <span className="text-uppercase text-muted fw-bold small" style={{ fontSize: '0.75rem' }}>Storage Allocated</span>
+              <h2 className="fw-bold mt-2 text-success fs-3">
                 {(metrics.storageUsedBytes / (1024 * 1024)).toFixed(2)} MB
               </h2>
-              <span className="text-muted small">System-wide file storage</span>
+              <span className="text-muted small" style={{ fontSize: '0.75rem' }}>System-wide storage</span>
             </div>
           </div>
-          <div className="col-md-3">
-            <div className="card border-0 shadow-sm p-4 bg-white">
-              <span className="text-uppercase text-muted fw-bold small">API Invocations</span>
-              <h2 className="fw-bold mt-2 text-warning">{metrics.apiCalls}</h2>
-              <span className="text-muted small">Requests logged in audits</span>
+          <div className="col-6 col-md-3">
+            <div className="card border-0 shadow-sm p-3 p-md-4 bg-white h-100">
+              <span className="text-uppercase text-muted fw-bold small" style={{ fontSize: '0.75rem' }}>API Calls</span>
+              <h2 className="fw-bold mt-2 text-warning fs-3">{metrics.apiCalls}</h2>
+              <span className="text-muted small" style={{ fontSize: '0.75rem' }}>Requests logged</span>
             </div>
           </div>
-          <div className="col-md-3">
-            <div className="card border-0 shadow-sm p-4 bg-white">
-              <span className="text-uppercase text-muted fw-bold small">Total Active Users</span>
-              <h2 className="fw-bold mt-2 text-danger">{metrics.activeUsers}</h2>
-              <span className="text-muted small">Across all organizations</span>
+          <div className="col-6 col-md-3">
+            <div className="card border-0 shadow-sm p-3 p-md-4 bg-white h-100">
+              <span className="text-uppercase text-muted fw-bold small" style={{ fontSize: '0.75rem' }}>Active Users</span>
+              <h2 className="fw-bold mt-2 text-danger fs-3">{metrics.activeUsers}</h2>
+              <span className="text-muted small" style={{ fontSize: '0.75rem' }}>All organizations</span>
             </div>
           </div>
         </div>
       )}
 
       {/* Tab Navigation */}
-      <ul className="nav nav-pills mb-4 bg-white p-2 rounded-3 shadow-sm">
+      <ul className="nav nav-pills mb-4 bg-white p-2 rounded-3 shadow-sm flex-column flex-sm-row gap-2 gap-sm-0">
         <li className="nav-item">
-          <button className={`nav-link fw-bold px-4 ${activeTab === "companies" ? "active" : "text-dark"}`} onClick={() => setActiveTab("companies")}>
+          <button className={`nav-link fw-bold px-4 w-100 ${activeTab === "companies" ? "active" : "text-dark"}`} onClick={() => setActiveTab("companies")}>
             Companies & Subscription Tiers
           </button>
         </li>
         <li className="nav-item">
-          <button className={`nav-link fw-bold px-4 ${activeTab === "audit" ? "active" : "text-dark"}`} onClick={() => setActiveTab("audit")}>
+          <button className={`nav-link fw-bold px-4 w-100 ${activeTab === "audit" ? "active" : "text-dark"}`} onClick={() => setActiveTab("audit")}>
             System Audit Trail
           </button>
         </li>
@@ -396,11 +396,12 @@ export default function SuperAdminPortal() {
       <div className="bg-white p-4 rounded-3 shadow-sm border-0">
         {activeTab === "companies" ? (
           <div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h4 className="fw-bold">Active Tenants Directory</h4>
+            <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+              <h4 className="fw-bold m-0">Active Tenants Directory</h4>
               <input
                 type="text"
-                className="form-control w-25 shadow-sm"
+                className="form-control w-100 w-sm-25 shadow-sm"
+                style={{ maxWidth: '300px' }}
                 placeholder="Search by Code or Name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

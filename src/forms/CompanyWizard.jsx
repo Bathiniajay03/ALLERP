@@ -258,19 +258,19 @@ export default function CompanyWizard({ onFinish }) {
       <div className="card-header bg-light border-0 py-3">
         <div className="d-flex justify-content-between text-center">
           <div className={`fw-bold small flex-grow-1 ${step === 1 ? "text-primary" : "text-muted"}`}>
-            1. Company Info
+            <span>1</span><span className="d-none d-sm-inline">. Company Info</span>
           </div>
           <div className={`fw-bold small flex-grow-1 ${step === 2 ? "text-primary" : "text-muted"}`}>
-            2. Admin User
+            <span>2</span><span className="d-none d-sm-inline">. Admin User</span>
           </div>
           <div className={`fw-bold small flex-grow-1 ${step === 3 ? "text-primary" : "text-muted"}`}>
-            3. Warehouse
+            <span>3</span><span className="d-none d-sm-inline">. Warehouse</span>
           </div>
           <div className={`fw-bold small flex-grow-1 ${step === 4 ? "text-primary" : "text-muted"}`}>
-            4. Settings
+            <span>4</span><span className="d-none d-sm-inline">. Settings</span>
           </div>
           <div className={`fw-bold small flex-grow-1 ${step === 5 ? "text-primary" : "text-muted"}`}>
-            5. Finish
+            <span>5</span><span className="d-none d-sm-inline">. Finish</span>
           </div>
         </div>
         <div className="progress mt-2" style={{ height: 6 }}>
