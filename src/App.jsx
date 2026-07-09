@@ -1,12 +1,9 @@
-
-
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
 
 // Form Imports
 import Dashboard from "./forms/Dashboard";
-
 import Products from "./forms/Products";
 import Operations from "./forms/Operations";
 import CreateSalesOrder from "./forms/CreateSalesOrder";
@@ -30,6 +27,20 @@ import ScannerDevicePage from "./pages/ScannerDevicePage";
 import SerialScanPage from "./pages/SerialScanPage";
 import SystemSettings from "./forms/SystemSettings";
 import ClientSettings from "./forms/ClientSettings";
+
+// SaaS Tenant Modules
+import CompanyDashboard from "./forms/CompanyDashboard";
+import CompanySettings from "./forms/CompanySettings";
+import SubscriptionPage from "./forms/SubscriptionPage";
+import UsageAnalytics from "./forms/UsageAnalytics";
+
+// Super Admin Portal
+import SuperAdminPortal from "./forms/SuperAdminPortal";
+
+import LandingPage from "./pages/LandingPage";
+import SignupWizard from "./pages/SignupWizard";
+import RegistrationSuccess from "./pages/RegistrationSuccess";
+import CompanyLoginPage from "./pages/CompanyLoginPage";
 
 import { LocalAIProvider } from "./context/LocalAIContext";
 import { smartErpApi } from "./services/smartErpApi";
@@ -99,15 +110,33 @@ const MODULE_CONFIG = [
   { id: "notifications", label: "Notifications", path: "/notifications" },
   { id: "admin", label: "Admin", path: "/admin" },
   { id: "systemSettings", label: "System Settings", path: "/system-settings" },
-  { id: "clientSettings", label: "Tenant Settings", path: "/tenant-settings" }
+  { id: "clientSettings", label: "Tenant Settings", path: "/tenant-settings" },
+
+  // SaaS Tenant Modules
+  {
+    id: "companyGroup",
+    label: "My Company",
+    isGroup: true,
+    subModules: [
+      { id: "companyDashboard", label: "Company Dashboard", path: "/company/dashboard" },
+      { id: "companySettings", label: "Company Settings", path: "/company/settings" },
+      { id: "subscriptionPage", label: "Subscription", path: "/company/subscription" },
+      { id: "usageAnalytics", label: "Usage Analytics", path: "/company/usage" },
+    ]
+  },
+
+  // Super Admin Module
+  { id: "superAdmin", label: "⚡ Super Admin", path: "/super-admin" }
 ];
 
+const COMPANY_MODULES = ["companyDashboard", "companySettings", "subscriptionPage", "usageAnalytics"];
+
 const DEFAULT_ROLE_MODULES = {
-  Admin: MODULE_CONFIG.flatMap((module) => module.isGroup ? module.subModules.map((subModule) => subModule.id) : [module.id]),
+  Admin: [...MODULE_CONFIG.flatMap((module) => module.isGroup ? module.subModules.map((subModule) => subModule.id) : [module.id])],
   Manager: [
     "dashboard", "products", "orderManagement", "salesOrderList", "createSalesOrder", "customers", "vendors",
     "purchaseOrders", "vendorReturns", "inventory", "lots", "warehouses", "operations", "finance", "reports",
-    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications"
+    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", ...COMPANY_MODULES
   ],
   Operator: ["operations", "scannerDevice", "serialScan"],
   OperationsWorker: [
@@ -132,27 +161,33 @@ export default function App() {
     <LocalAIProvider>
       <Router>
         <style>{`
+          :root {
+            --brand-color: #38bdf8;
+            --sidebar-bg: #0f172a;
+            --sidebar-color: #f8fafc;
+            --sidebar-border: #1e293b;
+          }
           body { margin: 0; padding: 0; background: #f1f5f9; overflow-x: hidden; font-family: 'Inter', sans-serif; }
           .erp-container { display: flex; min-height: 100vh; }
           .sidebar-wrapper {
-            width: 260px; background: #0f172a; color: #f8fafc;
+            width: 260px; background: var(--sidebar-bg); color: var(--sidebar-color);
             display: flex; flex-direction: column; position: fixed;
             height: 100vh; left: 0; top: 0; z-index: 2000;
             transition: transform 0.3s ease;
           }
-          .sidebar-brand { padding: 25px 20px; border-bottom: 1px solid #1e293b; }
-          .sidebar-brand h3 { color: #38bdf8; font-weight: 800; margin: 0; font-size: 1.1rem; }
+          .sidebar-brand { padding: 25px 20px; border-bottom: 1px solid var(--sidebar-border); }
+          .sidebar-brand h3 { color: var(--brand-color); font-weight: 800; margin: 0; font-size: 1.1rem; }
           .sidebar-nav-container { flex-grow: 1; overflow-y: auto; padding: 15px 10px; }
           .nav-group-header, .main-link {
-            padding: 10px 15px; color: #d8dfea; cursor: pointer; display: flex;
+            padding: 10px 15px; color: var(--sidebar-color); opacity: 0.85; cursor: pointer; display: flex;
             justify-content: space-between; align-items: center; border-radius: 8px;
             text-decoration: none; font-size: 0.9rem; margin-bottom: 2px;
           }
-          .main-link.active, .nav-group-header.active { background: #1e293b; color: #ffffff; }
-          .sidebar-submenu { padding-left: 10px; margin-top: 5px; border-left: 1px solid #334155; margin-left: 20px; }
-          .submenu-link { display: block; padding: 6px 15px; color: #beccdf; font-size: 0.85rem; text-decoration: none; }
-          .submenu-link.active { color: #38bdf8; font-weight: bold; }
-          .sidebar-footer { padding: 15px; border-top: 1px solid #1e293b; background: #0f172a; }
+          .main-link.active, .nav-group-header.active { background: rgba(255,255,255,0.15); color: #ffffff; opacity: 1; }
+          .sidebar-submenu { padding-left: 10px; margin-top: 5px; border-left: 1px solid var(--sidebar-border); margin-left: 20px; }
+          .submenu-link { display: block; padding: 6px 15px; color: var(--sidebar-color); opacity: 0.75; font-size: 0.85rem; text-decoration: none; }
+          .submenu-link.active { color: var(--brand-color); font-weight: bold; opacity: 1; }
+          .sidebar-footer { padding: 15px; border-top: 1px solid var(--sidebar-border); background: var(--sidebar-bg); }
           .erp-main-content { margin-left: 260px; flex-grow: 1; padding: 20px; width: 100%; transition: 0.3s; }
           .login-page {
             width: 100vw; height: 100vh;
@@ -201,6 +236,10 @@ function AppContent() {
       return JSON.parse(window.localStorage.getItem("erp_assigned_pages") || "[]");
     } catch { return []; }
   });
+  const [companyBrand, setCompanyBrand] = useState(() => {
+    if (!isClient) return {};
+    try { return JSON.parse(window.localStorage.getItem("erp_company_brand") || "{}"); } catch { return {}; }
+  });
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -227,7 +266,22 @@ function AppContent() {
     return normalized;
   }, [isClient, normalizeRoleModules]);
 
+  const [authError, setAuthError] = useState("");
   const [allowedModulesByRole, setAllowedModulesByRole] = useState(initialRoleModules);
+
+  const [companyFeatures, setCompanyFeatures] = useState(() => {
+    const cached = window.localStorage.getItem("erp_company_features");
+    return cached ? JSON.parse(cached) : {
+      enableFinance: true,
+      enableAI: true,
+      enableReports: true,
+      enableWarehouse: true,
+      enableAutomation: true,
+      enableScanner: true,
+      enablePurchaseOrders: true,
+      enableSales: true
+    };
+  });
 
   const persistRoleModules = useCallback((modules) => {
     const normalized = normalizeRoleModules(modules);
@@ -261,11 +315,33 @@ function AppContent() {
     const normalizedUserType = String(userType || "").trim().toUpperCase();
     const tokenPayload = parseJwtPayload(authToken);
     const tokenUserType = String(tokenPayload.userType || "").trim().toUpperCase();
-    return normalizedUserType === "ADMIN" || tokenUserType === "ADMIN";
+    return normalizedUserType === "ADMIN" || tokenUserType === "ADMIN" || normalizedUserType === "SUPERADMIN" || tokenUserType === "SUPERADMIN";
   }, [authToken, parseJwtPayload, userType]);
 
+  const isSuperAdmin = useMemo(() => {
+    const normalizedUserType = String(userType || "").trim().toUpperCase();
+    const tokenPayload = parseJwtPayload(authToken);
+    const tokenUserType = String(tokenPayload.userType || "").trim().toUpperCase();
+    return normalizedUserType === "SUPERADMIN" || tokenUserType === "SUPERADMIN";
+  }, [authToken, parseJwtPayload, userType]);
+
+  // Apply dynamic branding from company
+  useEffect(() => {
+    if (companyBrand?.primaryColor) {
+      document.documentElement.style.setProperty("--brand-color", companyBrand.primaryColor);
+    }
+    if (companyBrand?.companyName) {
+      document.title = `${companyBrand.companyName} | ERP`;
+    }
+  }, [companyBrand]);
+
   // --- LOGOUT LOGIC ---
-  const handleLogout = useCallback(async () => {
+  const handleLogout = useCallback(async (message = "") => {
+    if (message && typeof message === "string") {
+      setAuthError(message);
+    } else {
+      setAuthError("");
+    }
     const loginLogId = window.localStorage.getItem("erp_login_log_id");
     if (loginLogId) {
       try {
@@ -278,12 +354,15 @@ function AppContent() {
     window.localStorage.removeItem("erp_user_type");
     window.localStorage.removeItem("erp_assigned_pages");
     window.localStorage.removeItem("erp_login_log_id");
+    window.localStorage.removeItem("erp_company_brand");
+    window.localStorage.removeItem("erp_company_features");
 
     setIsAuthenticated(false);
     setAuthToken("");
     setRole("");
     setUserType("");
     setUserAssignedPages([]);
+    setCompanyBrand({});
   }, []);
 
   // --- INACTIVITY TRACKER (Auto Logout) ---
@@ -313,17 +392,20 @@ function AppContent() {
   }, [isAuthenticated, handleLogout]);
 
   // --- Auth & Access Sync ---
-  const handleLoginSuccess = useCallback(({ accessToken, role, loginLogId, userType, assignedPages }) => {
+  const handleLoginSuccess = useCallback(({ accessToken, role, loginLogId, userType, assignedPages, companyName, primaryColor, logo, companyCode }) => {
     window.localStorage.setItem("erp_token", accessToken);
     window.localStorage.setItem("erp_role", String(role).trim());
     window.localStorage.setItem("erp_user_type", String(userType).trim().toUpperCase());
     if (loginLogId) window.localStorage.setItem("erp_login_log_id", loginLogId.toString());
     window.localStorage.setItem("erp_assigned_pages", JSON.stringify(assignedPages || []));
+    const brand = { companyName, primaryColor, logo, companyCode };
+    window.localStorage.setItem("erp_company_brand", JSON.stringify(brand));
 
     setAuthToken(accessToken);
     setRole(role || "Admin");
     setUserType(userType || "");
     setUserAssignedPages(Array.isArray(assignedPages) ? assignedPages : []);
+    setCompanyBrand(brand);
     setIsAuthenticated(true);
   }, []);
 
@@ -343,8 +425,36 @@ function AppContent() {
       const nextPages = Array.isArray(access.assignedPages) ? access.assignedPages : [];
       setUserAssignedPages(nextPages);
       window.localStorage.setItem("erp_assigned_pages", JSON.stringify(nextPages));
+
+      if (access.companyName) {
+        const brand = {
+          companyName: access.companyName,
+          primaryColor: access.primaryColor,
+          logo: access.logo,
+          companyCode: access.companyCode,
+          sidebarBgColor: access.sidebarBgColor,
+          sidebarTextColor: access.sidebarTextColor
+        };
+        window.localStorage.setItem("erp_company_brand", JSON.stringify(brand));
+        setCompanyBrand(brand);
+
+        const features = {
+          enableFinance: access.enableFinance !== false,
+          enableAI: access.enableAI !== false,
+          enableReports: access.enableReports !== false,
+          enableWarehouse: access.enableWarehouse !== false,
+          enableAutomation: access.enableAutomation !== false,
+          enableScanner: access.enableScanner !== false,
+          enablePurchaseOrders: access.enablePurchaseOrders !== false,
+          enableSales: access.enableSales !== false,
+        };
+        window.localStorage.setItem("erp_company_features", JSON.stringify(features));
+        setCompanyFeatures(features);
+      }
     } catch (error) {
-      if (error?.response?.status === 401 || error?.response?.status === 403) handleLogout();
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        handleLogout("Your company registry or user account has been deleted, suspended, or does not have access anymore.");
+      }
     }
   }, [handleLogout]);
 
@@ -357,48 +467,118 @@ function AppContent() {
 
   // --- Routing Logic ---
   const allModuleIds = useMemo(() => MODULE_CONFIG.flatMap(i => i.isGroup ? i.subModules.map(s => s.id) : [i.id]), []);
+  const isModuleEnabledByCompany = useCallback((moduleId) => {
+    if (isSuperAdmin) return true;
+    switch (moduleId) {
+      case "finance":
+        return companyFeatures.enableFinance;
+      case "localAI":
+        return companyFeatures.enableAI;
+      case "reports":
+        return companyFeatures.enableReports;
+      case "warehouses":
+      case "inventory":
+      case "lots":
+        return companyFeatures.enableWarehouse;
+      case "automation":
+        return companyFeatures.enableAutomation;
+      case "scannerDevice":
+      case "serialScan":
+        return companyFeatures.enableScanner;
+      case "purchaseOrders":
+      case "vendorReturns":
+        return companyFeatures.enablePurchaseOrders;
+      case "salesOrderList":
+      case "createSalesOrder":
+      case "customers":
+      case "vendors":
+        return companyFeatures.enableSales;
+      default:
+        return true;
+    }
+  }, [companyFeatures, isSuperAdmin]);
+
   const allowedIds = useMemo(() => {
-    if (isAdminUser) return allModuleIds;
-    if (userAssignedPages.length) return userAssignedPages;
-    return allowedModulesByRole[role] || DEFAULT_ROLE_MODULES.Admin;
-  }, [allModuleIds, userAssignedPages, role, allowedModulesByRole, isAdminUser]);
+    let baseAllowed = [];
+    if (isSuperAdmin) {
+      baseAllowed = [...allModuleIds, "superAdmin"];
+    } else if (isAdminUser) {
+      baseAllowed = [...allModuleIds.filter(id => id !== "superAdmin"), ...COMPANY_MODULES];
+    } else if (userAssignedPages.length) {
+      baseAllowed = userAssignedPages;
+    } else {
+      baseAllowed = allowedModulesByRole[role] || DEFAULT_ROLE_MODULES.Admin;
+    }
+    return baseAllowed.filter(id => isModuleEnabledByCompany(id));
+  }, [allModuleIds, userAssignedPages, role, allowedModulesByRole, isAdminUser, isSuperAdmin, isModuleEnabledByCompany]);
 
   const fallbackPath = useMemo(() => {
+    if (isSuperAdmin) return "/super-admin";
     const firstAllowed = MODULE_CONFIG.flatMap(i => i.isGroup ? i.subModules : [i]).find(i => allowedIds.includes(i.id));
     return firstAllowed?.path || "/dashboard";
-  }, [allowedIds]);
+  }, [allowedIds, isSuperAdmin]);
 
   const navItems = useMemo(() => {
     return MODULE_CONFIG
       .filter(item => {
         if (item.id === "systemSettings" && !isMainAdminUser) return false;
         if (item.id === "clientSettings" && isMainAdminUser) return false;
+        if (item.id === "superAdmin" && !isSuperAdmin) return false;
+        if (item.id === "companyGroup" && isSuperAdmin) return false;
         return item.isGroup ? item.subModules.some(s => allowedIds.includes(s.id)) : allowedIds.includes(item.id);
       })
       .map(item => item.isGroup ? { ...item, subModules: item.subModules.filter(s => allowedIds.includes(s.id)) } : item);
-  }, [allowedIds, isMainAdminUser]);
+  }, [allowedIds, isMainAdminUser, isSuperAdmin]);
 
   const renderProtectedRoute = useCallback((moduleId, element) => allowedIds.includes(moduleId) ? element : <AccessDenied moduleId={moduleId} />, [allowedIds]);
 
-  // 2. UPDATED: If not authenticated, always show Login. No dashboard will render.
+  // 2. UPDATED: If not authenticated, show landing, custom login wizard, signup wizard, or success pages.
   if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+    return (
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<CompanyLoginPage onLoginSuccess={handleLoginSuccess} initialError={authError} />} />
+        <Route path="/signup" element={<SignupWizard />} />
+        <Route path="/signup/success" element={<RegistrationSuccess />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
   }
 
+  const brandName = companyBrand?.companyName || "ERP PRO";
+  const brandColor = companyBrand?.primaryColor || "#38bdf8";
+  const brandLogo = companyBrand?.logo || null;
+  const sidebarBgColor = companyBrand?.sidebarBgColor || "#0f172a";
+  const sidebarTextColor = companyBrand?.sidebarTextColor || "#f8fafc";
+  const sidebarBorderColor = sidebarBgColor === "#0f172a" ? "#1e293b" : "rgba(255, 255, 255, 0.1)";
+
   return (
-    <div className="erp-container">
+    <div className="erp-container" style={{
+      "--brand-color": brandColor,
+      "--sidebar-bg": sidebarBgColor,
+      "--sidebar-color": sidebarTextColor,
+      "--sidebar-border": sidebarBorderColor
+    }}>
       {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
-      <Sidebar navItems={navItems} role={role} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
+      <Sidebar
+        navItems={navItems} role={role} isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)} onLogout={handleLogout}
+        brandName={brandName} brandColor={brandColor} brandLogo={brandLogo}
+        isSuperAdmin={isSuperAdmin}
+      />
 
       <div className="erp-main-content">
         <header className="mobile-header">
           <button className="btn btn-dark btn-sm" onClick={() => setSidebarOpen(true)}>Menu</button>
-          <span className="fw-bold">ERP PRO</span>
+          <span className="fw-bold">{brandName}</span>
           <div style={{ width: '45px' }}></div>
         </header>
 
         <Routes>
           <Route path="/" element={<Navigate to={fallbackPath} replace />} />
+          <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/signup" element={<Navigate to="/" replace />} />
+          <Route path="/signup/success" element={<Navigate to="/" replace />} />
           <Route path="/dashboard" element={renderProtectedRoute("dashboard", <Dashboard />)} />
           <Route path="/products" element={renderProtectedRoute("products", <Products />)} />
           <Route path="/order-management" element={renderProtectedRoute("orderManagement", <OrderManagement />)} />
@@ -423,6 +603,15 @@ function AppContent() {
           <Route path="/admin" element={isAdminUser && allowedIds.includes("admin") ? <AdminPanel allowedModulesByRole={allowedModulesByRole} moduleOptions={MODULE_CONFIG} onUpdateRoleModules={persistRoleModules} isMainAdmin={isMainAdminUser} /> : <Navigate to="/" />} />
           <Route path="/system-settings" element={isMainAdminUser ? <SystemSettings /> : <Navigate to="/" />} />
           <Route path="/tenant-settings" element={isAdminUser && !isMainAdminUser ? <ClientSettings /> : <Navigate to="/" />} />
+
+          {/* SaaS Tenant Routes */}
+          <Route path="/company/dashboard" element={renderProtectedRoute("companyDashboard", <CompanyDashboard />)} />
+          <Route path="/company/settings" element={renderProtectedRoute("companySettings", <CompanySettings />)} />
+          <Route path="/company/subscription" element={renderProtectedRoute("subscriptionPage", <SubscriptionPage />)} />
+          <Route path="/company/usage" element={renderProtectedRoute("usageAnalytics", <UsageAnalytics />)} />
+
+          {/* Super Admin Route */}
+          <Route path="/super-admin" element={isSuperAdmin ? <SuperAdminPortal /> : <Navigate to="/" />} />
         </Routes>
       </div>
     </div>
@@ -442,14 +631,23 @@ function AccessDenied({ moduleId }) {
   );
 }
 
-function Sidebar({ navItems, role, isOpen, onClose, onLogout }) {
+function Sidebar({ navItems, role, isOpen, onClose, onLogout, brandName, brandColor, brandLogo, isSuperAdmin }) {
   const [openGroup, setOpenGroup] = useState(null);
   const location = useLocation();
 
   return (
     <aside className={`sidebar-wrapper ${isOpen ? 'mobile-open' : ''}`}>
-      <div className="sidebar-brand d-flex justify-content-between">
-        <h3>ERP PRO</h3>
+      <div className="sidebar-brand d-flex justify-content-between align-items-center">
+        <div className="d-flex align-items-center gap-2">
+          {brandLogo ? (
+            <img src={brandLogo} alt="logo" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" }} />
+          ) : (
+            <div style={{ width: 28, height: 28, borderRadius: 6, background: brandColor || "#38bdf8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#fff", fontWeight: 800, fontSize: 13 }}>{(brandName || "E")[0]}</span>
+            </div>
+          )}
+          <h3 style={{ color: "var(--brand-color)" }} className="m-0">{brandName || "ERP PRO"}</h3>
+        </div>
         <button className="btn btn-link text-white d-lg-none p-0" onClick={onClose}>✕</button>
       </div>
       <div className="sidebar-nav-container">
@@ -484,25 +682,40 @@ function Sidebar({ navItems, role, isOpen, onClose, onLogout }) {
         </ul>
       </div>
       <div className="sidebar-footer">
+        <div className="d-flex align-items-center gap-2 mb-2 px-1">
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: brandColor || "#38bdf8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ color: "#fff", fontWeight: 700, fontSize: 12 }}>{(role || "U")[0]}</span>
+          </div>
+          <div>
+            <div className="text-white small fw-bold" style={{ lineHeight: 1.2 }}>{role}</div>
+            {isSuperAdmin && <div className="text-warning" style={{ fontSize: "0.7rem" }}>Super Admin</div>}
+          </div>
+        </div>
         <button className="btn btn-danger btn-sm w-100 fw-bold" onClick={onLogout}>LOGOUT</button>
       </div>
     </aside>
   );
 }
 
-function LoginPage({ onLoginSuccess }) {
+function LoginPage({ onLoginSuccess, initialError }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [requiresMfa, setRequiresMfa] = useState(false);
   const [mfaMessage, setMfaMessage] = useState("");
   const [devOtp, setDevOtp] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError || "");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     smartErpApi.initialize().catch(() => { });
   }, []);
+
+  useEffect(() => {
+    if (initialError) {
+      setError(initialError);
+    }
+  }, [initialError]);
 
   const handleLogin = async (event) => {
     event.preventDefault();

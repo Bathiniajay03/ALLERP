@@ -178,7 +178,7 @@ export default function Inventory() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
   const [filter, setFilter] = useState("");
-  
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [movementItem, setMovementItem] = useState(null);
   const [movementMode, setMovementMode] = useState("IN");
@@ -227,10 +227,10 @@ export default function Inventory() {
           uniqueWarehouses: new Set()
         };
       }
-      
+
       const qty = Number(item.quantity) || 0;
       const cost = Number(item.unitCost) || 0;
-      
+
       map[code].totalQuantity += qty;
       map[code].totalValue += (qty * cost);
       map[code].uniqueWarehouses.add(item.warehouseName || `WH-${item.warehouseId}`);
@@ -323,16 +323,16 @@ export default function Inventory() {
   return (
     <div className="erp-app-wrapper min-vh-100 pb-4 pt-3">
       <div className="container-fluid px-4">
-        
+
         {/* HEADER */}
         <div className="d-flex justify-content-between align-items-end border-bottom mb-4 pb-3">
           <div>
             <h4 className="fw-bold m-0 text-dark" style={{ letterSpacing: '-0.5px' }}>Inventory Ledger</h4>
             <span className="erp-text-muted small text-uppercase">Global Stock & Valuation</span>
           </div>
-          <button 
-            className="btn btn-primary erp-btn d-flex align-items-center gap-2" 
-            onClick={fetchInventory} 
+          <button
+            className="btn btn-primary erp-btn d-flex align-items-center gap-2"
+            onClick={fetchInventory}
             disabled={loading}
           >
             {loading ? <span className="spinner-border spinner-border-sm" /> : '↻'}
@@ -399,7 +399,7 @@ export default function Inventory() {
               />
             </div>
           </div>
-          
+
           <div className="erp-table-container flex-grow-1 overflow-auto bg-white">
             {loading ? (
               <div className="d-flex flex-column align-items-center justify-content-center h-100">
@@ -435,13 +435,13 @@ export default function Inventory() {
                       const isLowStock = group.totalQuantity < group.minStock;
                       const isOut = group.totalQuantity === 0;
                       const isOver = group.totalQuantity > group.maxStock;
-                      
+
                       const whArray = Array.from(group.uniqueWarehouses);
                       const warehouseDisplay = whArray.length > 1 ? "Multiple Locations" : whArray[0];
 
                       return (
-                        <tr 
-                          key={group.itemCode} 
+                        <tr
+                          key={group.itemCode}
                           className={isOut ? "table-danger" : isLowStock ? "table-warning" : ""}
                           onClick={() => setSelectedItem(group)}
                           style={{ cursor: 'pointer' }}
@@ -451,16 +451,16 @@ export default function Inventory() {
                           <td><span className="text-truncate d-block" style={{ maxWidth: '250px' }} title={group.itemName}>{group.itemName}</span></td>
                           <td>{warehouseDisplay}</td>
                           <td className="font-monospace text-muted">{group.lots.length} active lots</td>
-                          
+
                           <td className={`text-end font-monospace fw-bold ${isOut ? 'text-danger' : isLowStock ? 'text-danger' : 'text-dark'}`}>
                             {group.totalQuantity}
                           </td>
                           <td className="text-end font-monospace text-muted">{Number(group.unitCost)?.toFixed(2)}</td>
                           <td className="text-end font-monospace fw-semibold">{group.totalValue.toFixed(2)}</td>
-                          
+
                           <td className="text-end text-muted small">{group.minStock}</td>
                           <td className="text-end text-muted small">{group.maxStock}</td>
-                          
+
                           <td className="text-center">
                             {isOut ? (
                               <span className="erp-status-tag tag-danger">OUT OF STOCK</span>
@@ -518,7 +518,7 @@ export default function Inventory() {
               </div>
               <button className="btn-close btn-close-white" onClick={() => setSelectedItem(null)}></button>
             </div>
-            
+
             <div className="erp-dialog-body">
               {/* Top Summary Info */}
               <div className="row g-3 mb-4 p-3 bg-light border rounded">
@@ -539,7 +539,7 @@ export default function Inventory() {
                 <div className="col-sm-3">
                   <div className="erp-meta-label">Overall Status</div>
                   <div className="mt-2">
-                   {selectedItem.totalQuantity === 0 ? (
+                    {selectedItem.totalQuantity === 0 ? (
                       <span className="erp-status-tag tag-danger">OUT OF STOCK</span>
                     ) : selectedItem.totalQuantity < selectedItem.minStock ? (
                       <span className="erp-status-tag tag-warning">LOW STOCK</span>

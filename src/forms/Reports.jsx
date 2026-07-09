@@ -14,6 +14,7 @@ export default function Reports() {
   const [filterWarehouseId, setFilterWarehouseId] = useState('');
   
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [errorMessage, setErrorMessage] = useState('');
 
   // --- IMPROVED DATE PARSER ---

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { smartErpApi } from '../services/smartErpApi';
+import api from '../services/apiClient';
 // import DocumentAttachments from '../components/DocumentAttachments';
 
 export default function PurchaseOrders() {
@@ -32,6 +33,17 @@ export default function PurchaseOrders() {
     scannerDeviceId: 'PO-SCN-01',
     generateSerials: false
   });
+
+  const [serialGenerationForm, setSerialGenerationForm] = useState({
+    quantity: 0,
+    prefix: '',
+    generatedSerials: []
+  });
+  const [serialGenerationMode, setSerialGenerationMode] = useState('auto'); // 'auto' or 'manual'
+  const [manualSerialsText, setManualSerialsText] = useState('');
+  const [serialLoading, setSerialLoading] = useState(false);
+  const [allocatedSerials, setAllocatedSerials] = useState([]);
+  const [serialError, setSerialError] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -70,6 +82,7 @@ export default function PurchaseOrders() {
 
           return {
             ...line,
+            lineId: line.lineId || line.id || line.Id,
             quantity,
             receivedQuantity,
             pendingQuantity,
@@ -122,6 +135,68 @@ export default function PurchaseOrders() {
     () => (selectedReceivePo?.lines || []).filter((line) => Number(line.pendingQuantity) > 0),
     [selectedReceivePo]
   );
+
+  const selectedLine = useMemo(() => {
+    return pendingLines.find(l => Number(l.lineId) === Number(receiveForm.purchaseOrderLineId)) || null;
+  }, [pendingLines, receiveForm.purchaseOrderLineId]);
+
+  const selectedItemDetails = useMemo(() => {
+    if (!selectedLine) return null;
+    return items.find(i => i.id === selectedLine.itemId) || null;
+  }, [items, selectedLine]);
+
+  const isSerialTracked = Boolean(selectedItemDetails?.serialPrefix);
+
+
+
+  const generateSerialSequence = async () => {
+    if (!selectedLine) return;
+    setSerialLoading(true);
+    setSerialError('');
+    try {
+      const response = await api.get('/stock/next-serials', {
+        params: {
+          itemId: selectedLine.itemId,
+          warehouseId: selectedLine.warehouseId,
+          quantity: serialGenerationForm.quantity
+        }
+      });
+      let serials = Array.isArray(response.data) ? response.data : [];
+      if (serialGenerationForm.prefix) {
+        serials = serials.map(s => {
+          const parts = s.split('-');
+          const suffix = parts.length > 1 ? parts[parts.length - 1] : s;
+          return `${serialGenerationForm.prefix}-${suffix}`;
+        });
+      }
+      setSerialGenerationForm(prev => ({
+        ...prev,
+        generatedSerials: serials
+      }));
+      setAllocatedSerials(serials);
+    } catch (err) {
+      setSerialError(err.response?.data?.message || err.response?.data || 'Failed to generate serials.');
+    } finally {
+      setSerialLoading(false);
+    }
+  };
+
+  const handleManualSerialsSubmit = () => {
+    const lines = manualSerialsText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+    if (lines.length !== serialGenerationForm.quantity) {
+      setSerialError(`Please enter exactly ${serialGenerationForm.quantity} serial numbers (one per line). Entered: ${lines.length}`);
+      return;
+    }
+    setSerialGenerationForm(prev => ({
+      ...prev,
+      generatedSerials: lines
+    }));
+    setAllocatedSerials(lines);
+    setSerialError('');
+  };
 
   const addPoLine = () => {
     setPoForm((prev) => ({
@@ -222,23 +297,50 @@ export default function PurchaseOrders() {
   };
 
   const receivePoLine = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setMessage('');
-    setLoading(true);
-    try {
-      if (!receiveForm.poId || !receiveForm.purchaseOrderLineId) {
-        setMessage('⚠ Select PO and PO line.');
-        setLoading(false);
+    
+    if (!receiveForm.poId || !receiveForm.purchaseOrderLineId) {
+      setMessage('⚠ Select PO and PO line.');
+      return;
+    }
+
+    const selectedLine = pendingLines.find(l => Number(l.lineId) === Number(receiveForm.purchaseOrderLineId));
+    if (!selectedLine) {
+      setMessage('⚠ Selected PO line is not valid.');
+      return;
+    }
+
+    const qty = Number(receiveForm.quantity) > 0 ? Number(receiveForm.quantity) : Number(selectedLine.pendingQuantity);
+
+    if (isSerialTracked && receiveForm.generateSerials) {
+      if (!Number.isFinite(qty) || qty <= 0 || !Number.isInteger(qty)) {
+        setMessage('⚠ Serial tracked transactions require a whole number quantity.');
         return;
       }
+      if (allocatedSerials.length !== qty) {
+        setMessage(`⚠ Please allocate/generate exactly ${qty} serial numbers.`);
+        return;
+      }
+    }
 
-      const res = await smartErpApi.receivePurchaseOrder(Number(receiveForm.poId), {
+    setLoading(true);
+    try {
+      const payload = {
         purchaseOrderLineId: Number(receiveForm.purchaseOrderLineId),
-        quantity: Number(receiveForm.quantity),
+        itemId: selectedLine.itemId,
+        warehouseId: selectedLine.warehouseId,
+        quantity: qty,
         lotNumber: receiveForm.lotNumber || null,
         scannerDeviceId: receiveForm.scannerDeviceId,
         generateSerials: receiveForm.generateSerials
-      });
+      };
+
+      if (isSerialTracked && receiveForm.generateSerials) {
+        payload.serialNumbers = allocatedSerials;
+      }
+
+      const res = await smartErpApi.receivePurchaseOrder(Number(receiveForm.poId), payload);
 
       setMessage(`✓ ${res?.data?.message || 'Received'} (${res?.data?.poNumber || ''})`);
       setReceiveForm({
@@ -249,6 +351,8 @@ export default function PurchaseOrders() {
         scannerDeviceId: 'PO-SCN-01',
         generateSerials: false
       });
+      setSerialGenerationForm({ quantity: 0, prefix: '', generatedSerials: [] });
+      setAllocatedSerials([]);
       await loadData();
     } catch (err) {
       setMessage(err?.response?.data || '⚠ PO receiving failed.');
@@ -471,18 +575,108 @@ export default function PurchaseOrders() {
                       <label className="erp-label">Scanner Device ID</label>
                       <input className="form-control erp-input font-monospace text-muted" value={receiveForm.scannerDeviceId} onChange={(e) => setReceiveForm((prev) => ({ ...prev, scannerDeviceId: e.target.value }))} />
                     </div>
-                    <div className="col-md-12 mt-2 d-flex align-items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="generateSerialsCheck"
-                        className="form-check-input mt-0"
-                        checked={receiveForm.generateSerials}
-                        onChange={(e) => setReceiveForm((prev) => ({ ...prev, generateSerials: e.target.checked }))}
-                      />
-                      <label htmlFor="generateSerialsCheck" className="form-check-label fw-bold small text-dark" style={{ cursor: 'pointer' }}>
-                        Generate Serial Numbers
-                      </label>
-                    </div>
+                    {isSerialTracked && (
+                      <div className="col-md-12 mt-2 border-top pt-3">
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <input
+                            type="checkbox"
+                            id="generateSerialsCheck"
+                            className="form-check-input mt-0"
+                            checked={receiveForm.generateSerials}
+                            onChange={(e) => setReceiveForm((prev) => ({ ...prev, generateSerials: e.target.checked }))}
+                          />
+                          <label htmlFor="generateSerialsCheck" className="form-check-label fw-bold small text-dark" style={{ cursor: 'pointer' }}>
+                            Enable Serial Tracking for this Receipt
+                          </label>
+                        </div>
+                        {receiveForm.generateSerials && (
+                          <div className="p-3 bg-white border rounded mt-2">
+                            <div className="d-flex border-bottom mb-3 bg-light rounded-top">
+                              <button
+                                type="button"
+                                className={`flex-fill py-1 btn btn-link text-decoration-none text-dark fw-bold small ${serialGenerationMode === 'auto' ? 'border-bottom border-primary text-primary' : ''}`}
+                                onClick={() => { setSerialGenerationMode('auto'); setSerialError(''); }}
+                              >
+                                Auto-Gen
+                              </button>
+                              <button
+                                type="button"
+                                className={`flex-fill py-1 btn btn-link text-decoration-none text-dark fw-bold small ${serialGenerationMode === 'manual' ? 'border-bottom border-primary text-primary' : ''}`}
+                                onClick={() => { setSerialGenerationMode('manual'); setSerialError(''); }}
+                              >
+                                Manual / Scan
+                              </button>
+                            </div>
+
+                            {serialError && (
+                              <div className="alert alert-danger py-1 small mb-2">{serialError}</div>
+                            )}
+
+                            {serialGenerationMode === 'auto' ? (
+                              <div className="mb-2">
+                                <label className="erp-label small text-muted">Prefix (Optional)</label>
+                                <div className="d-flex gap-2">
+                                  <input
+                                    className="form-control erp-input form-control-sm font-monospace"
+                                    placeholder={`e.g. ${selectedItemDetails?.serialPrefix || 'SN'}`}
+                                    value={serialGenerationForm.prefix}
+                                    onChange={(e) => {
+                                      const val = e.target.value.toUpperCase();
+                                      setSerialGenerationForm(prev => ({ ...prev, prefix: val }));
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-primary fw-bold"
+                                    onClick={() => {
+                                      const calculatedQty = Number(receiveForm.quantity) > 0 ? Number(receiveForm.quantity) : Number(selectedLine?.pendingQuantity || 0);
+                                      setSerialGenerationForm(prev => ({ ...prev, quantity: calculatedQty }));
+                                      generateSerialSequence();
+                                    }}
+                                    disabled={serialLoading}
+                                  >
+                                    {serialLoading ? '...' : 'Gen'}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="mb-2">
+                                <label className="erp-label small text-muted">Serials (One Per Line)</label>
+                                <textarea
+                                  rows="3"
+                                  className="form-control erp-input font-monospace small"
+                                  placeholder={`Enter exactly ${Number(receiveForm.quantity) > 0 ? Number(receiveForm.quantity) : Number(selectedLine?.pendingQuantity || 0)} serials...`}
+                                  value={manualSerialsText}
+                                  onChange={(e) => setManualSerialsText(e.target.value)}
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-primary w-100 fw-bold mt-2"
+                                  onClick={() => {
+                                    const calculatedQty = Number(receiveForm.quantity) > 0 ? Number(receiveForm.quantity) : Number(selectedLine?.pendingQuantity || 0);
+                                    setSerialGenerationForm(prev => ({ ...prev, quantity: calculatedQty }));
+                                    handleManualSerialsSubmit();
+                                  }}
+                                >
+                                  Apply List
+                                </button>
+                              </div>
+                            )}
+
+                            <div className="mt-2 border-top pt-2">
+                              <span className="small fw-bold text-secondary d-block mb-1">
+                                Allocated: {allocatedSerials.length} / {Number(receiveForm.quantity) > 0 ? Number(receiveForm.quantity) : Number(selectedLine?.pendingQuantity || 0)}
+                              </span>
+                              {allocatedSerials.length > 0 && (
+                                <div className="bg-light p-2 border rounded font-monospace small" style={{ maxHeight: '80px', overflowY: 'auto' }}>
+                                  {allocatedSerials.join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <button type="submit" className="btn btn-success erp-btn w-100 fw-bold py-2" disabled={loading || !receiveForm.poId}>
@@ -581,6 +775,8 @@ export default function PurchaseOrders() {
             </table>
           </div>
         </div>
+
+
 
       </div>
 

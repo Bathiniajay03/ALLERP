@@ -19,6 +19,7 @@ export default function Lots() {
   const [detailSerial, setDetailSerial] = useState(null);
   const [serialModalStatus, setSerialModalStatus] = useState({ type: "", text: "" });
   const [modalDispatching, setModalDispatching] = useState(false);
+  const [expandedWarehouse, setExpandedWarehouse] = useState(null);
   const barcodeRef = useRef(null);
 
   useEffect(() => {
@@ -202,6 +203,32 @@ export default function Lots() {
       itemCode: selectedProduct?.itemCode
     });
     setSerialModalStatus({ type: "", text: "" });
+  }, [selectedProduct]);
+
+  // Group lots by warehouse
+  const lotsByWarehouse = useMemo(() => {
+    if (!selectedProduct) return {};
+    const groups = {};
+    selectedProduct.lots.forEach(lot => {
+      const wh = lot.warehouseName || 'General Warehouse';
+      if (!groups[wh]) {
+        groups[wh] = {
+          warehouseName: wh,
+          totalQuantity: 0,
+          lots: []
+        };
+      }
+      groups[wh].lots.push(lot);
+      groups[wh].totalQuantity += lot.quantity;
+    });
+    return groups;
+  }, [selectedProduct]);
+
+  useEffect(() => {
+    if (!selectedProduct) {
+      setExpandedWarehouse(null);
+      setOpenLotForSerials(null);
+    }
   }, [selectedProduct]);
 
   const closeSerialModal = useCallback(() => {
@@ -423,91 +450,113 @@ export default function Lots() {
               </div>
 
               <div className="p-4">
-                <h6 className="erp-section-title mb-3">Individual Lot Breakdown</h6>
-                <div className="border rounded shadow-sm bg-white table-responsive" style={{ overflowX: 'auto' }}>
-                  <table className="table erp-table table-sm table-hover mb-0 align-middle">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Lot / Batch #</th>
-                        <th>Warehouse</th>
-                        <th>Storage / Bin</th>
-                        <th className="text-end">Quantity</th>
-                        <th className="text-center">Serials</th>
-                        <th className="text-center">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedProduct.lots.map((lot) => (
-                        <React.Fragment key={`${lot.id}-${lot.lotNumber}`}>
-                          <tr>
-                            <td className="fw-bold font-monospace text-dark">{lot.lotNumber}</td>
-                            <td className="text-muted">{lot.warehouseName}</td>
-                            <td className="text-muted">
-                              <span className="d-block">{lot.storage}</span>
-                              {lot.locationCode !== 'N/A' && <span className="small text-secondary">Bin: {lot.locationCode}</span>}
-                            </td>
-                            <td className="text-end fw-bold font-monospace">
-                              {lot.quantity.toFixed(2)}
-                            </td>
-                            <td className="text-center">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-secondary"
-                              onClick={() => toggleLotSerials(lot)}
-                              disabled={!lot.lotId}
-                              title={!lot.lotId ? "Lot not assigned" : undefined}
-                            >
-                              {openLotForSerials === lot.lotId ? 'Hide Serials' : 'View Serials'}
-                            </button>
-                            </td>
-                            <td className="text-center">
-                              <span className={`erp-status-tag ${lot.quantity > 0 ? 'tag-success' : 'tag-danger'}`}>
-                                {lot.quantity > 0 ? 'AVAILABLE' : 'DEPLETED'}
-                              </span>
-                            </td>
-                          </tr>
-                          {openLotForSerials === lot.lotId && (
-                            <tr>
-                              <td colSpan="6" className="bg-light serial-detail">
-                                {serialsLoadingLot === lot.lotId ? (
-                                  <div className="text-muted small py-2">Loading serial numbers...</div>
-                                ) : serialsErrorLot ? (
-                                  <div className="text-danger small py-2">{serialsErrorLot}</div>
-                                ) : lotSerials[lot.lotId]?.length ? (
-                                  <div className="d-flex flex-wrap gap-2">
-                                {lotSerials[lot.lotId].map((serial) => (
-                                  <div
-                                    key={serial.id}
-                                    className="serial-chip"
-                                    role="button"
-                                    tabIndex={0}
-                                    title="Click to view serial details and actions"
-                                    onClick={() => showSerialDetails(serial, lot)}
-                                    onKeyDown={(event) => {
-                                      if (event.key === "Enter" || event.key === " ") {
-                                        event.preventDefault();
-                                        showSerialDetails(serial, lot);
-                                      }
-                                    }}
-                                  >
-                                    <div className="fw-bold">{serial.serialNumber}</div>
-                                    <div className="text-muted small">{serial.status}</div>
-                                    {serial.purchaseOrderNumber && (
-                                      <div className="text-muted small">PO: {serial.purchaseOrderNumber}</div>
-                                    )}
-                                  </div>
-                                ))}
-                                  </div>
-                                ) : (
-                                  <div className="text-muted small py-2">No serial numbers linked to this lot.</div>
-                                )}
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
+                <h6 className="erp-section-title mb-3">Item Storage Locations & Lots</h6>
+                <div className="d-flex flex-column gap-3">
+                  {Object.values(lotsByWarehouse).map(group => {
+                    const isWhExpanded = expandedWarehouse === group.warehouseName;
+                    return (
+                      <div key={group.warehouseName} className="border rounded bg-white shadow-sm overflow-hidden">
+                        <div 
+                          className="p-3 d-flex justify-content-between align-items-center cursor-pointer hover-bg-light"
+                          onClick={() => setExpandedWarehouse(isWhExpanded ? null : group.warehouseName)}
+                          style={{ backgroundColor: '#f8f9fa' }}
+                        >
+                          <div>
+                            <span className="fw-bold text-dark fs-6">📍 {group.warehouseName}</span>
+                          </div>
+                          <div className="d-flex align-items-center gap-3">
+                            <span className="badge bg-primary fs-6 font-monospace">{group.totalQuantity.toFixed(2)} units</span>
+                            <span className="text-muted">{isWhExpanded ? '▼' : '▶'}</span>
+                          </div>
+                        </div>
+                        
+                        {isWhExpanded && (
+                          <div className="p-3 border-top table-responsive">
+                            <table className="table erp-table table-sm table-hover mb-0 align-middle">
+                              <thead className="table-light">
+                                <tr>
+                                  <th>Lot / Batch #</th>
+                                  <th>Storage / Bin</th>
+                                  <th className="text-end">Quantity</th>
+                                  <th className="text-center">Serials</th>
+                                  <th className="text-center">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {group.lots.map(lot => {
+                                  const isLotExpanded = openLotForSerials === lot.lotId;
+                                  return (
+                                    <React.Fragment key={`${lot.id}-${lot.lotNumber}`}>
+                                      <tr 
+                                        className="cursor-pointer"
+                                        onClick={() => toggleLotSerials(lot)}
+                                      >
+                                        <td className="fw-bold font-monospace text-primary">📦 {lot.lotNumber}</td>
+                                        <td className="text-muted">
+                                          <span className="d-block">{lot.storage}</span>
+                                          {lot.locationCode !== 'N/A' && <span className="small text-secondary">Bin: {lot.locationCode}</span>}
+                                        </td>
+                                        <td className="text-end fw-bold font-monospace">{lot.quantity.toFixed(2)}</td>
+                                        <td className="text-center">
+                                          <button
+                                            type="button"
+                                            className="btn btn-xs btn-outline-secondary py-0 px-2"
+                                            disabled={!lot.lotId}
+                                          >
+                                            {isLotExpanded ? 'Hide Serials' : 'View Serials'}
+                                          </button>
+                                        </td>
+                                        <td className="text-center">
+                                          <span className={`erp-status-tag ${lot.quantity > 0 ? 'tag-success' : 'tag-danger'}`}>
+                                            {lot.quantity > 0 ? 'AVAILABLE' : 'DEPLETED'}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                      {isLotExpanded && (
+                                        <tr>
+                                          <td colSpan="5" className="bg-light serial-detail p-3">
+                                            {serialsLoadingLot === lot.lotId ? (
+                                              <div className="text-muted small py-2">Loading serial numbers...</div>
+                                            ) : serialsErrorLot ? (
+                                              <div className="text-danger small py-2">{serialsErrorLot}</div>
+                                            ) : lotSerials[lot.lotId]?.length ? (
+                                              <div className="d-flex flex-wrap gap-2">
+                                                {lotSerials[lot.lotId].map(serial => (
+                                                  <div
+                                                    key={serial.id}
+                                                    className="serial-chip"
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    title="Click to view serial details and actions"
+                                                    onClick={(e) => { e.stopPropagation(); showSerialDetails(serial, lot); }}
+                                                    onKeyDown={(event) => {
+                                                      if (event.key === "Enter" || event.key === " ") {
+                                                        event.preventDefault();
+                                                        showSerialDetails(serial, lot);
+                                                      }
+                                                    }}
+                                                  >
+                                                    <div className="fw-bold">{serial.serialNumber}</div>
+                                                    <div className="text-muted small">{serial.status}</div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ) : (
+                                              <div className="text-muted small py-2">No serial numbers linked to this lot.</div>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

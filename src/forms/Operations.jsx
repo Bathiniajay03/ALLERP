@@ -341,6 +341,18 @@ export default function Operations() {
         }
       }
 
+      if (isSerialTracked && txMode === 'in') {
+        if (!Number.isFinite(numericQuantity) || numericQuantity <= 0 || !Number.isInteger(numericQuantity)) {
+          setLoading(false);
+          return showStatus('error', 'Serial tracked transactions require a whole number quantity.');
+        }
+        if (serialGenerationForm.generatedSerials.length !== numericQuantity) {
+          setLoading(false);
+          setShowSerialModal(true);
+          return showStatus('warning', `Please assign/verify ${numericQuantity} serial numbers before executing the receipt.`);
+        }
+      }
+
       let endpoint = `/stock/${txMode}`;
       let payload = {
         itemId,
@@ -351,6 +363,10 @@ export default function Operations() {
       // Add mode-specific payload data
       if (txMode === 'in') {
         payload.lotNumber = lotNumberValue || null;
+        if (isSerialTracked) {
+          payload.serialNumbers = serialGenerationForm.generatedSerials.map(s => s.serialNumber || s);
+          payload.generateSerials = true;
+        }
       } 
       else if (txMode === 'out') {
         if (!lotIdNumber) {

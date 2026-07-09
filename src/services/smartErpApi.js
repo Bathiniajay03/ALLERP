@@ -12,6 +12,12 @@ export const smartErpApi = {
   verifyMfa: (payload) =>
     api.post("/smart-erp/auth/verify-mfa", payload),
 
+  companyLogin: (payload) =>
+    api.post("/smart-erp/auth/company-login", payload),
+
+  publicOnboard: (payload) =>
+    api.post("/smart-erp/public/onboard", payload),
+
   registerUser: (payload) =>
     api.post("/admin/create-user", payload),
 
@@ -270,8 +276,90 @@ export const smartErpApi = {
     const baseUrl = api.defaults.baseURL || "";
     const base = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
     return `${base}/documents/${documentId}/download`;
-  }
+  },
+
+  // =============================
+  // Super Admin APIs
+  // =============================
+  getSuperAdminMetrics: () =>
+    api.get("/super-admin/metrics"),
+
+  getCompanies: () =>
+    api.get("/super-admin/companies"),
+
+  getCompany: (id) =>
+    api.get(`/super-admin/companies/${id}`),
+
+  getCompanyUsers: (id) =>
+    api.get(`/super-admin/companies/${id}/users`),
+
+  updateCompany: (id, payload) =>
+    api.put(`/super-admin/companies/${id}`, payload),
+
+  suspendCompany: (id) =>
+    api.post(`/super-admin/companies/${id}/suspend`),
+
+  activateCompany: (id) =>
+    api.post(`/super-admin/companies/${id}/activate`),
+
+  extendTrialHour: (id) =>
+    api.post(`/super-admin/companies/${id}/extend-trial-hour`),
+
+  deleteCompany: (id) =>
+    api.delete(`/super-admin/companies/${id}`),
+
+  resetCompanyData: (id) =>
+    api.post(`/super-admin/companies/${id}/reset-data`),
+
+  resetCompanyAdminPassword: (id, payload) =>
+    api.post(`/super-admin/companies/${id}/reset-admin-password`, payload),
+
+  wizardOnboard: (payload) =>
+    api.post("/super-admin/wizard/onboard", payload),
+
+  // =============================
+  // Company Dashboard (Tenant)
+  // =============================
+  getCompanyDashboard: () =>
+    api.get("/company/dashboard/stats"),
+
+  getCompanySettings: () =>
+    api.get("/company/dashboard/settings"),
+
+  updateCompanySettings: (payload) =>
+    api.put("/company/dashboard/settings", payload),
+
+  initializeWmsLayout: (warehouseId) =>
+    api.post(`/wms/initialize-layout?warehouseId=${warehouseId}`),
+
+  getWmsLayout: (warehouseId) =>
+    api.get(`/wms/layout?warehouseId=${warehouseId}`),
+
+  getWmsHeatmap: (warehouseId) =>
+    api.get(`/wms/heatmap?warehouseId=${warehouseId}`),
+
+  // =============================
+  // WMS APIs
+  // =============================
+
+
+  recommendWmsPutaway: (payload) =>
+    api.post("/wms/putaway/recommend", payload),
+
+  generateWmsPickList: (payload) =>
+    api.post("/wms/picklists/generate", payload),
+
+  transferWmsBin: (payload) =>
+    api.post("/wms/bin-transfers", payload),
+
+  getWmsReplenishments: (warehouseId) =>
+    api.get(`/wms/replenishments?warehouseId=${warehouseId}`),
+
+  createWmsCycleCount: (payload) =>
+    api.post("/wms/cycle-counts", payload),
 };
+
+
 
 //   shipOrder: (orderId) =>
 //     api.post(`/smart-erp/orders/${orderId}/ship`),

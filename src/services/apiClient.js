@@ -74,15 +74,19 @@
 
 import axios from 'axios';
 
-// ✅ Single API Base URL (Ngrok only)
-const baseURL = 'https://intermetameric-codi-unexasperating.ngrok-free.dev/api';
-// const baseURL = 'http://localhost:5157/api';
+// ✅ Dynamic API Base URL resolver (localhost vs ngrok)
+const isLocalhost = typeof window !== 'undefined' && 
+  ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
-console.log('Using API Base URL:', baseURL);
+const baseURL = isLocalhost 
+  ? 'http://localhost:5157/api' 
+  : 'https://intermetameric-codi-unexasperating.ngrok-free.dev/api';
+
+console.log('Resolved API Base URL:', baseURL);
 
 const apiClient = axios.create({
   baseURL,
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'

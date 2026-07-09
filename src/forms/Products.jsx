@@ -2639,6 +2639,20 @@ export default function SmartERP() {
   const [itemCodeSuggestions, setItemCodeSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const [allocatedSerials, setAllocatedSerials] = useState([]);
+  const [serialGenerationForm, setSerialGenerationForm] = useState({
+    quantity: 0,
+    prefix: '',
+    generatedSerials: []
+  });
+  const [serialGenerationMode, setSerialGenerationMode] = useState('auto'); // 'auto' or 'manual'
+  const [manualSerialsText, setManualSerialsText] = useState('');
+  const [serialLoading, setSerialLoading] = useState(false);
+  const [serialError, setSerialError] = useState('');
+  const [enableSerialTracking, setEnableSerialTracking] = useState(false);
+
+  const isSerialTracked = Boolean(productForm.serialPrefix);
+
   // Load Everything from Backend
   const loadAllData = async () => {
     setLoading(true);
@@ -2982,20 +2996,99 @@ export default function SmartERP() {
     setShowSuggestions(false);
   };
 
+  const generateSerialSequence = async () => {
+    if (!productForm.id) return;
+    setSerialLoading(true);
+    setSerialError('');
+    try {
+      const response = await api.get('/stock/next-serials', {
+        params: {
+          itemId: productForm.id,
+          warehouseId: Number(whAssignment.warehouseId),
+          quantity: serialGenerationForm.quantity
+        }
+      });
+      let serials = Array.isArray(response.data) ? response.data : [];
+      if (serialGenerationForm.prefix) {
+        serials = serials.map(s => {
+          const parts = s.split('-');
+          const suffix = parts.length > 1 ? parts[parts.length - 1] : s;
+          return `${serialGenerationForm.prefix}-${suffix}`;
+        });
+      }
+      setSerialGenerationForm(prev => ({
+        ...prev,
+        generatedSerials: serials
+      }));
+      setAllocatedSerials(serials);
+    } catch (err) {
+      setSerialError(err.response?.data?.message || err.response?.data || 'Failed to generate serials.');
+    } finally {
+      setSerialLoading(false);
+    }
+  };
+
+  const handleManualSerialsSubmit = () => {
+    const lines = manualSerialsText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+    if (lines.length !== serialGenerationForm.quantity) {
+      setSerialError(`Please enter exactly ${serialGenerationForm.quantity} serial numbers (one per line). Entered: ${lines.length}`);
+      return;
+    }
+    setSerialGenerationForm(prev => ({
+      ...prev,
+      generatedSerials: lines
+    }));
+    setAllocatedSerials(lines);
+    setSerialError('');
+  };
+
   const postStock = async () => {
     if (!productForm.id) return setMessage({ text: "Save product details first", type: "warning" });
+    if (!whAssignment.warehouseId) return setMessage({ text: "Please select a warehouse", type: "warning" });
+    
+    const qty = Number(whAssignment.quantity);
+    if (qty <= 0) return setMessage({ text: "Please enter a valid receipt quantity", type: "warning" });
+
+    if (isSerialTracked && enableSerialTracking) {
+      if (!Number.isFinite(qty) || !Number.isInteger(qty)) {
+        return setMessage({ text: "Serial tracked receipts require a whole number quantity.", type: "warning" });
+      }
+      if (allocatedSerials.length !== qty) {
+        return setMessage({ text: `Please allocate/generate exactly ${qty} serial numbers before posting.`, type: "warning" });
+      }
+    }
+
     try {
-      await api.post("/stock/in", {
+      const payload = {
         itemId: productForm.id,
         warehouseId: Number(whAssignment.warehouseId),
-        quantity: Number(whAssignment.quantity),
+        quantity: qty,
         lotNumber: productForm.isLotTracked ? whAssignment.lotNumber : null,
-        scannerDeviceId: whAssignment.scannerDeviceId
-      });
+        scannerDeviceId: whAssignment.scannerDeviceId,
+        generateSerials: enableSerialTracking
+      };
+
+      if (isSerialTracked && enableSerialTracking) {
+        payload.serialNumbers = allocatedSerials;
+      }
+
+      await api.post("/stock/in", payload);
       setMessage({ text: "Inventory transaction successful", type: "success" });
+      setWhAssignment({
+        warehouseId: "",
+        quantity: 0,
+        lotNumber: "",
+        scannerDeviceId: "WEB-APP-01"
+      });
+      setSerialGenerationForm({ quantity: 0, prefix: '', generatedSerials: [] });
+      setAllocatedSerials([]);
+      setEnableSerialTracking(false);
       loadAllData();
     } catch (err) {
-      setMessage({ text: "Failed to post inventory", type: "danger" });
+      setMessage({ text: err.response?.data || "Failed to post inventory", type: "danger" });
     }
   };
 
@@ -3203,7 +3296,111 @@ export default function SmartERP() {
                       </select>
                     </div>
                     <div className="field-row mb-3"><label className="fw-bold">Receipt Qty:</label> <input type="number" className="text-end fw-bold" value={whAssignment.quantity} onChange={e => setWhAssignment({ ...whAssignment, quantity: e.target.value })} /></div>
-                    <div className="field-row mb-4"><label className="fw-bold">Lot Number:</label> <input placeholder={productForm.isLotTracked ? "REQUIRED" : "N/A"} value={whAssignment.lotNumber} onChange={e => setWhAssignment({ ...whAssignment, lotNumber: e.target.value })} disabled={!productForm.isLotTracked} /></div>
+                    <div className="field-row mb-3"><label className="fw-bold">Lot Number:</label> <input placeholder={productForm.isLotTracked ? "REQUIRED" : "N/A"} value={whAssignment.lotNumber} onChange={e => setWhAssignment({ ...whAssignment, lotNumber: e.target.value })} disabled={!productForm.isLotTracked} /></div>
+                    
+                    {isSerialTracked && (
+                      <div className="border-top pt-3 mt-3 mb-3">
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <input
+                            type="checkbox"
+                            id="enableSerialTrackingProducts"
+                            className="form-check-input mt-0"
+                            checked={enableSerialTracking}
+                            onChange={(e) => setEnableSerialTracking(e.target.checked)}
+                          />
+                          <label htmlFor="enableSerialTrackingProducts" className="form-check-label fw-bold small text-dark" style={{ cursor: 'pointer' }}>
+                            Enable Serial Tracking for this Receipt
+                          </label>
+                        </div>
+                        {enableSerialTracking && (
+                          <div className="p-3 bg-light border rounded">
+                            <div className="d-flex border-bottom mb-3 bg-white rounded-top">
+                              <button
+                                type="button"
+                                className={`flex-fill py-1 btn btn-link text-decoration-none text-dark fw-bold small ${serialGenerationMode === 'auto' ? 'border-bottom border-primary text-primary' : ''}`}
+                                onClick={() => { setSerialGenerationMode('auto'); setSerialError(''); }}
+                              >
+                                Auto-Gen
+                              </button>
+                              <button
+                                type="button"
+                                className={`flex-fill py-1 btn btn-link text-decoration-none text-dark fw-bold small ${serialGenerationMode === 'manual' ? 'border-bottom border-primary text-primary' : ''}`}
+                                onClick={() => { setSerialGenerationMode('manual'); setSerialError(''); }}
+                              >
+                                Manual / Scan
+                              </button>
+                            </div>
+
+                            {serialError && (
+                              <div className="alert alert-danger py-1 small mb-2">{serialError}</div>
+                            )}
+
+                            {serialGenerationMode === 'auto' ? (
+                              <div className="mb-2">
+                                <label className="small text-muted fw-bold d-block mb-1">Prefix (Optional)</label>
+                                <div className="d-flex gap-2">
+                                  <input
+                                    className="form-control erp-input form-control-sm font-monospace"
+                                    placeholder={`e.g. ${productForm.serialPrefix || 'SN'}`}
+                                    value={serialGenerationForm.prefix}
+                                    onChange={(e) => {
+                                      const val = e.target.value.toUpperCase();
+                                      setSerialGenerationForm(prev => ({ ...prev, prefix: val }));
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-primary fw-bold"
+                                    onClick={() => {
+                                      const calculatedQty = Number(whAssignment.quantity);
+                                      setSerialGenerationForm(prev => ({ ...prev, quantity: calculatedQty }));
+                                      generateSerialSequence();
+                                    }}
+                                    disabled={serialLoading}
+                                  >
+                                    {serialLoading ? '...' : 'Gen'}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="mb-2">
+                                <label className="small text-muted fw-bold d-block mb-1">Serials (One Per Line)</label>
+                                <textarea
+                                  rows="3"
+                                  className="form-control erp-input font-monospace small"
+                                  placeholder={`Enter exactly ${Number(whAssignment.quantity)} serials...`}
+                                  value={manualSerialsText}
+                                  onChange={(e) => setManualSerialsText(e.target.value)}
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-primary w-100 fw-bold mt-2"
+                                  onClick={() => {
+                                    const calculatedQty = Number(whAssignment.quantity);
+                                    setSerialGenerationForm(prev => ({ ...prev, quantity: calculatedQty }));
+                                    handleManualSerialsSubmit();
+                                  }}
+                                >
+                                  Apply List
+                                </button>
+                              </div>
+                            )}
+
+                            <div className="mt-2 border-top pt-2">
+                              <span className="small fw-bold text-secondary d-block mb-1">
+                                Allocated: {allocatedSerials.length} / {Number(whAssignment.quantity)}
+                              </span>
+                              {allocatedSerials.length > 0 && (
+                                <div className="bg-white p-2 border rounded font-monospace small" style={{ maxHeight: '80px', overflowY: 'auto' }}>
+                                  {allocatedSerials.join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <button className="btn btn-primary w-100 fw-bold" onClick={postStock}>POST TO INVENTORY</button>
                   </div>
                 </div>

@@ -642,6 +642,11 @@ export default function MobileScanner({
       // --- Serial handling logic ---
       if (isSerialTracked && trackSerials) {
         if (activeTab === 'po' || txMode === 'in') {
+          if (serialGenerationForm.generatedSerials.length !== payload.quantity) {
+            setLoading(false);
+            setShowSerialModal(true);
+            return showStatus('warning', `Please assign/verify ${payload.quantity} serial numbers before executing the receipt.`);
+          }
           // IN / PO Receive: generate new serials using backend auto-generation
           if (serialGenerationForm.generatedSerials.length > 0) {
             // User explicitly typed/generated serials via modal
