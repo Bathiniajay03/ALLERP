@@ -49,6 +49,24 @@ import BarcodeDashboard from "./forms/BarcodeDashboard";
 import WmsBarcodeLabels from "./forms/WmsBarcodeLabels";
 import WmsScannerApp from "./forms/WmsScannerApp";
 import WmsPackageScreen from "./forms/WmsPackageScreen";
+import BarcodeGenerator from "./forms/BarcodeGenerator";
+import BarcodeScanner from "./forms/BarcodeScanner";
+import BarcodeSearch from "./forms/BarcodeSearch";
+import BarcodeSettings from "./forms/BarcodeSettings";
+import WarehouseBarcodePage from "./forms/WarehouseBarcodePage";
+import ZoneBarcodePage from "./forms/ZoneBarcodePage";
+import AisleBarcodePage from "./forms/AisleBarcodePage";
+import RackBarcodePage from "./forms/RackBarcodePage";
+import ShelfBarcodePage from "./forms/ShelfBarcodePage";
+import BinBarcodePage from "./forms/BinBarcodePage";
+import ItemBarcodePage from "./forms/ItemBarcodePage";
+import LotBarcodePage from "./forms/LotBarcodePage";
+import SerialBarcodePage from "./forms/SerialBarcodePage";
+import PurchaseOrderBarcodePage from "./forms/PurchaseOrderBarcodePage";
+import SalesOrderBarcodePage from "./forms/SalesOrderBarcodePage";
+import ShipmentBarcodePage from "./forms/ShipmentBarcodePage";
+import PickListBarcodePage from "./forms/PickListBarcodePage";
+import BarcodeDetailsPage from "./forms/BarcodeDetailsPage";
 
 import { LocalAIProvider } from "./context/LocalAIContext";
 import { smartErpApi } from "./services/smartErpApi";
@@ -114,6 +132,10 @@ const MODULE_CONFIG = [
       { id: "wmsOperations", label: "WMS Operations", path: "/wms/operations" },
       { id: "barcodeDashboard", label: "Barcode Dashboard", path: "/wms/barcode-dashboard" },
       { id: "wmsBarcodeLabels", label: "Barcode Labels", path: "/wms/barcode-labels" },
+      { id: "barcodeGenerator", label: "Barcode Generator", path: "/wms/barcode-generator" },
+      { id: "barcodeScanner", label: "Barcode Scanner", path: "/wms/barcode-scanner" },
+      { id: "barcodeSearch", label: "Barcode Search", path: "/wms/barcode-search" },
+      { id: "barcodeSettings", label: "Barcode Settings", path: "/wms/barcode-settings" },
     ]
   },
   {
@@ -158,7 +180,7 @@ const DEFAULT_ROLE_MODULES = {
   Manager: [
     "dashboard", "products", "orderManagement", "salesOrderList", "createSalesOrder", "customers", "vendors",
     "purchaseOrders", "vendorReturns", "inventory", "lots", "warehouses", "operations", "finance", "reports",
-    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "wmsScannerApp", "wmsPackageScreen", ...COMPANY_MODULES
+    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen", ...COMPANY_MODULES
   ],
   Operator: ["operations", "scannerDevice", "serialScan", "wmsOperations"],
   OperationsWorker: [
@@ -168,7 +190,7 @@ const DEFAULT_ROLE_MODULES = {
   ScannerWorker: ["scannerDevice", "serialScan", "operations", "wmsScannerApp"],
   "Warehouse Manager": [
     "dashboard", "products", "inventory", "lots", "warehouses", "operations", "purchaseOrders", "vendors",
-    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "wmsScannerApp", "wmsPackageScreen"
+    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen"
   ],
   "Finance Manager": [
     "dashboard", "finance", "reports", "salesOrderList", "purchaseOrders", "customers", "vendors",
@@ -617,8 +639,26 @@ function AppContent() {
           <Route path="/wms/dashboard" element={renderProtectedRoute("wmsDashboard", <WmsDashboard />)} />
           <Route path="/wms/setup" element={renderProtectedRoute("wmsSetup", <WmsSetup />)} />
           <Route path="/wms/operations" element={renderProtectedRoute("wmsOperations", <WmsOperations />)} />
-          <Route path="/wms/barcode-dashboard" element={renderProtectedRoute("barcodeDashboard", <BarcodeDashboard />)} />
+           <Route path="/wms/barcode-dashboard" element={renderProtectedRoute("barcodeDashboard", <BarcodeDashboard />)} />
           <Route path="/wms/barcode-labels" element={renderProtectedRoute("wmsBarcodeLabels", <WmsBarcodeLabels />)} />
+          <Route path="/wms/barcode-generator" element={renderProtectedRoute("barcodeDashboard", <BarcodeGenerator />)} />
+          <Route path="/wms/barcode-scanner" element={renderProtectedRoute("barcodeDashboard", <BarcodeScanner />)} />
+          <Route path="/wms/barcode-search" element={renderProtectedRoute("barcodeDashboard", <BarcodeSearch />)} />
+          <Route path="/wms/barcode-settings" element={renderProtectedRoute("barcodeDashboard", <BarcodeSettings />)} />
+          <Route path="/wms/warehouse-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <WarehouseBarcodePage />)} />
+          <Route path="/wms/zone-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <ZoneBarcodePage />)} />
+          <Route path="/wms/aisle-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <AisleBarcodePage />)} />
+          <Route path="/wms/rack-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <RackBarcodePage />)} />
+          <Route path="/wms/shelf-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <ShelfBarcodePage />)} />
+          <Route path="/wms/bin-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <BinBarcodePage />)} />
+          <Route path="/wms/item-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <ItemBarcodePage />)} />
+          <Route path="/wms/lot-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <LotBarcodePage />)} />
+          <Route path="/wms/serial-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <SerialBarcodePage />)} />
+          <Route path="/wms/po-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <PurchaseOrderBarcodePage />)} />
+          <Route path="/wms/so-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <SalesOrderBarcodePage />)} />
+          <Route path="/wms/shipment-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <ShipmentBarcodePage />)} />
+          <Route path="/wms/picklist-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <PickListBarcodePage />)} />
+          <Route path="/wms/barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <BarcodeDetailsPage />)} />
           <Route path="/scanner-app" element={renderProtectedRoute("wmsScannerApp", <WmsScannerApp />)} />
           <Route path="/package-dispatch" element={renderProtectedRoute("wmsPackageScreen", <WmsPackageScreen />)} />
 

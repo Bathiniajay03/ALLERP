@@ -21,11 +21,21 @@ const wmsApi = {
   putAway: (data) => api.post('/wmsoperations/put-away', data),
 
   // Barcode and Scanner endpoints
-  bulkGenerateBarcodes: () => api.post('/barcode/generate/bulk'),
+  bulkGenerateBarcodes: () => api.post('/barcode/generate-bulk'),
   getBarcodeDashboard: () => api.get('/barcode/dashboard'),
   globalScan: (barcode) => api.get(`/barcode/scan/${encodeURIComponent(barcode)}`),
+  getBarcodeSettings: () => api.get('/barcode/settings'),
+  saveBarcodeSettings: (prefixes) => api.post('/barcode/settings', prefixes),
+  updateBarcodeStatus: (payload) => api.post('/barcode/update-status', payload),
+  generateSingleBarcode: (payload) => api.post('/barcode/generate-single', payload),
+  logBarcodePrint: (payload) => api.post('/barcode/print-log', payload),
+  unifiedSearchBarcode: (q) => api.get(`/barcode/search?q=${encodeURIComponent(q)}`),
   scannerTransfer: (data) => api.post('/wmsscanner/transfer', data),
-  scannerCycleCount: (data) => api.post('/wmsscanner/cycle-count', data)
+  scannerCycleCount: (data) => api.post('/wmsscanner/cycle-count', data),
+  recommendBin: (itemId, warehouseId) => api.get(`/wmsoperations/recommend-bin/${itemId}/${warehouseId}`),
+  getCycleCounts: () => api.get('/wmsoperations/cycle-counts'),
+  approveCycleCount: (id) => api.post(`/wmsoperations/cycle-counts/${id}/approve`),
+  rejectCycleCount: (id) => api.post(`/wmsoperations/cycle-counts/${id}/reject`)
 };
 
 export const smartErpApi = {

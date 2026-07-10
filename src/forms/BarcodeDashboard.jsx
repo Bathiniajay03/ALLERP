@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { smartErpApi } from "../services/smartErpApi";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Link } from "react-router-dom";
 
 export default function BarcodeDashboard() {
-  const [metrics, setMetrics] = useState({ scansToday: 0, missingItemBarcodes: 0, missingBinBarcodes: 0, recentScans: [] });
+  const [metrics, setMetrics] = useState({
+    scansToday: 0,
+    missingItemBarcodes: 0,
+    missingBinBarcodes: 0,
+    totalBarcodes: 0,
+    recentScans: []
+  });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -27,61 +33,117 @@ export default function BarcodeDashboard() {
       setToast({ type: "success", msg: res.data.message });
       loadDashboard();
     } catch (err) {
-      setToast({ type: "error", msg: "Failed to bulk generate." });
+      setToast({ type: "error", msg: "Failed to bulk generate barcodes." });
     } finally {
       setLoading(false);
     }
   };
 
+  // Mock heatmap grid data
+  const heatmapData = [
+    { zone: "Zone A", utilization: 80, color: "#ef4444" },
+    { zone: "Zone B", utilization: 45, color: "#f59e0b" },
+    { zone: "Zone C", utilization: 20, color: "#10b981" },
+    { zone: "Zone D", utilization: 95, color: "#ef4444" },
+    { zone: "Zone E", utilization: 60, color: "#f59e0b" },
+    { zone: "Zone F", utilization: 10, color: "#10b981" },
+  ];
+
   return (
     <div style={{ padding: "30px", fontFamily: "'Inter', sans-serif", color: "#1e293b", background: "#f8fafc", minHeight: "100vh" }}>
-      {toast && <div style={{ padding: "15px", marginBottom: "20px", background: toast.type === "error" ? "#fee2e2" : "#d1fae5", color: toast.type === "error" ? "#b91c1c" : "#047857", borderRadius: "8px" }}>{toast.msg}</div>}
-      
+      {toast && (
+        <div style={{ padding: "15px", marginBottom: "20px", background: toast.type === "error" ? "#fee2e2" : "#d1fae5", color: toast.type === "error" ? "#b91c1c" : "#047857", borderRadius: "8px", fontWeight: "600" }}>
+          {toast.msg}
+        </div>
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-        <h2 style={{ margin: 0, fontWeight: "600", color: "#0f172a" }}>Barcode Command Center</h2>
+        <div>
+          <h2 style={{ margin: 0, fontWeight: "700", color: "#0f172a", fontSize: "28px" }}>Enterprise Barcode Command Center</h2>
+          <p style={{ margin: "5px 0 0 0", color: "#64748b" }}>Manage, generate, scan, and audit warehouse operations barcodes.</p>
+        </div>
         <button 
           onClick={handleBulkGenerate}
           disabled={loading}
-          style={{ background: "#4f46e5", color: "white", border: "none", padding: "10px 20px", borderRadius: "8px", fontWeight: "600", cursor: "pointer", transition: "0.2s" }}
+          style={{ background: "#4f46e5", color: "white", border: "none", padding: "12px 24px", borderRadius: "8px", fontWeight: "600", cursor: "pointer", fontSize: "15px", transition: "0.2s" }}
         >
-          {loading ? "Generating..." : "⚡ Auto-Generate Missing Barcodes"}
+          {loading ? "Generating..." : "⚡ Auto-Generate All Missing Barcodes"}
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px", marginBottom: "40px" }}>
+      {/* Metric Cards Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px", marginBottom: "35px" }}>
         <MetricCard title="Scans Today" value={metrics.scansToday} color="#3b82f6" />
-        <MetricCard title="Items Missing Barcodes" value={metrics.missingItemBarcodes} color={metrics.missingItemBarcodes > 0 ? "#ef4444" : "#10b981"} />
-        <MetricCard title="Bins Missing Barcodes" value={metrics.missingBinBarcodes} color={metrics.missingBinBarcodes > 0 ? "#ef4444" : "#10b981"} />
+        <MetricCard title="Barcodes Registered" value={metrics.totalBarcodes} color="#8b5cf6" />
+        <MetricCard title="Items Lacking Barcode" value={metrics.missingItemBarcodes} color={metrics.missingItemBarcodes > 0 ? "#ef4444" : "#10b981"} />
+        <MetricCard title="Bins Lacking Barcode" value={metrics.missingBinBarcodes} color={metrics.missingBinBarcodes > 0 ? "#ef4444" : "#10b981"} />
       </div>
 
-      <div style={{ background: "white", padding: "20px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}>
-        <h3 style={{ marginTop: 0, marginBottom: "20px" }}>Recent Scanner Activity</h3>
-        {metrics.recentScans.length > 0 ? (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "#f1f5f9", textAlign: "left" }}>
-                <th style={{ padding: "12px 15px", borderBottom: "2px solid #e2e8f0" }}>Barcode</th>
-                <th style={{ padding: "12px 15px", borderBottom: "2px solid #e2e8f0" }}>Action</th>
-                <th style={{ padding: "12px 15px", borderBottom: "2px solid #e2e8f0" }}>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {metrics.recentScans.map((scan, idx) => (
-                <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                  <td style={{ padding: "12px", color: "#0f172a", fontWeight: 500 }}>{scan.barcode}</td>
-                  <td style={{ padding: "12px" }}>
-                    <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: 600, background: "#e0f2fe", color: "#0369a1" }}>
-                      {scan.action}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px", color: "#64748b" }}>{new Date(scan.timestamp).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p style={{ color: "#94a3b8" }}>No recent scans found.</p>
-        )}
+      {/* Quick Actions Panel */}
+      <div style={{ background: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", marginBottom: "35px" }}>
+        <h3 style={{ margin: "0 0 20px 0", color: "#0f172a", fontSize: "18px", fontWeight: "600" }}>Quick Actions</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "15px" }}>
+          <QuickActionLink to="/scanner-app" title="📷 Camera Scanner" desc="Scan any object barcode" color="#eff6ff" textColor="#1e40af" />
+          <QuickActionLink to="/wms/barcode-search" title="🔍 Unified Search" desc="Find items, lots, bins" color="#faf5ff" textColor="#5b21b6" />
+          <QuickActionLink to="/wms/barcode-labels" title="🖨 Label Printer" desc="Single/Bulk tag prints" color="#ecfdf5" textColor="#065f46" />
+          <QuickActionLink to="/wms/barcode-generator" title="⚡ Single Generator" desc="Register custom tags" color="#fff7ed" textColor="#854d0e" />
+          <QuickActionLink to="/wms/barcode-settings" title="⚙ Prefix Settings" desc="Configure UI prefixes" color="#f1f5f9" textColor="#334155" />
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
+        {/* Recent Scanner Activity */}
+        <div style={{ background: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+          <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "18px", fontWeight: "600" }}>Recent Audit Scans</h3>
+          {metrics.recentScans && metrics.recentScans.length > 0 ? (
+            <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "#f8fafc", textAlign: "left" }}>
+                    <th style={{ padding: "10px", color: "#64748b", fontSize: "13px" }}>Barcode</th>
+                    <th style={{ padding: "10px", color: "#64748b", fontSize: "13px" }}>Action</th>
+                    <th style={{ padding: "10px", color: "#64748b", fontSize: "13px" }}>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {metrics.recentScans.map((scan, idx) => (
+                    <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "10px", fontSize: "14px" }}>
+                        <Link to={`/wms/barcode/${scan.barcode}`} style={{ color: "#4f46e5", textDecoration: "none", fontWeight: "600" }}>
+                          {scan.barcode}
+                        </Link>
+                      </td>
+                      <td style={{ padding: "10px" }}>
+                        <span style={{ padding: "3px 8px", background: "#e0f2fe", color: "#0369a1", borderRadius: "12px", fontSize: "11px", fontWeight: "600" }}>
+                          {scan.action}
+                        </span>
+                      </td>
+                      <td style={{ padding: "10px", color: "#64748b", fontSize: "13px" }}>{new Date(scan.timestamp).toLocaleTimeString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p style={{ color: "#94a3b8" }}>No scanner events recorded today.</p>
+          )}
+        </div>
+
+        {/* Heat Map / Bin Utilization */}
+        <div style={{ background: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+          <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "18px", fontWeight: "600" }}>Warehouse Zone Occupancy</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "15px" }}>
+            {heatmapData.map((h, idx) => (
+              <div key={idx} style={{ background: "#f8fafc", padding: "20px 10px", borderRadius: "10px", textAlign: "center", border: "1px solid #e2e8f0" }}>
+                <span style={{ fontSize: "14px", fontWeight: "600", color: "#475569", display: "block", marginBottom: "8px" }}>{h.zone}</span>
+                <span style={{ fontSize: "20px", fontWeight: "800", color: h.color }}>{h.utilization}%</span>
+                <div style={{ width: "100%", background: "#cbd5e1", height: "6px", borderRadius: "3px", marginTop: "10px", overflow: "hidden" }}>
+                  <div style={{ width: `${h.utilization}%`, background: h.color, height: "100%" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -89,9 +151,20 @@ export default function BarcodeDashboard() {
 
 function MetricCard({ title, value, color }) {
   return (
-    <div style={{ background: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", borderLeft: `6px solid ${color}` }}>
-      <h3 style={{ margin: "0 0 8px 0", color: "#64748b", fontSize: "14px", textTransform: "uppercase" }}>{title}</h3>
-      <p style={{ margin: 0, fontSize: "36px", fontWeight: 700, color: color }}>{value}</p>
+    <div style={{ background: "white", padding: "20px 24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.03)", borderLeft: `6px solid ${color}` }}>
+      <h4 style={{ margin: "0 0 6px 0", color: "#64748b", fontSize: "12px", textTransform: "uppercase", fontWeight: "600" }}>{title}</h4>
+      <p style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#0f172a" }}>{value}</p>
     </div>
+  );
+}
+
+function QuickActionLink({ to, title, desc, color, textColor }) {
+  return (
+    <Link to={to} style={{ textDecoration: "none", color: "inherit" }}>
+      <div style={{ background: color, padding: "15px", borderRadius: "8px", border: "1px solid rgba(0,0,0,0.03)", height: "100%", cursor: "pointer", transition: "0.2s" }}>
+        <h4 style={{ margin: "0 0 4px 0", color: textColor, fontSize: "15px", fontWeight: "700" }}>{title}</h4>
+        <p style={{ margin: 0, fontSize: "12px", color: "#475569" }}>{desc}</p>
+      </div>
+    </Link>
   );
 }

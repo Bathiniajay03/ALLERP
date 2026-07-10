@@ -85,6 +85,13 @@ export default function WmsDashboard() {
           const binsInLevel = heatmapData.filter(d => d.gridZ === z);
           const maxX = Math.max(...binsInLevel.map(d => d.gridX)) || 10;
           const maxY = Math.max(...binsInLevel.map(d => d.gridY)) || 10;
+          const isLargeGrid = (maxX * maxY) > 600;
+
+          // Pre-index bins by coordinate for O(1) lookups
+          const binMap = {};
+          binsInLevel.forEach(b => {
+            binMap[`${b.gridX}-${b.gridY}`] = b;
+          });
 
           return (
             <Card key={z} className="shadow-sm border-0 mb-4 overflow-hidden">
@@ -92,44 +99,75 @@ export default function WmsDashboard() {
                 <h6 className="fw-bold">Level {z}</h6>
               </Card.Header>
               <Card.Body>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: `repeat(${maxX + 1}, minmax(40px, 1fr))`,
-                  gap: '4px',
-                  background: '#f8fafc',
-                  padding: '20px',
-                  borderRadius: '12px',
-                  overflowX: 'auto'
-                }}>
-                  {Array.from({ length: maxY + 1 }).map((_, y) => (
-                    Array.from({ length: maxX + 1 }).map((_, x) => {
-                      const bin = binsInLevel.find(d => d.gridX === x && d.gridY === y);
-                      return (
-                        <div key={`${x}-${y}`}
-                          style={{
-                            aspectRatio: '1',
-                            background: bin ? getCellColor(bin) : 'transparent',
-                            border: bin ? '1px solid rgba(0,0,0,0.1)' : '1px dashed #e2e8f0',
-                            borderRadius: '4px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.65rem',
-                            fontWeight: 'bold',
-                            color: bin ? '#fff' : 'transparent',
-                            cursor: bin ? 'pointer' : 'default',
-                            transition: 'all 0.2s',
-                            opacity: bin ? 0.9 : 0.5
-                          }}
-                          title={bin ? `Bin: ${bin.code}\nZone: ${bin.zoneCode}\nQty: ${bin.totalQuantity}\nMax: ${bin.capacityMaxWeight}` : ''}
-                          onMouseEnter={e => { if (bin) e.currentTarget.style.opacity = 1; }}
-                          onMouseLeave={e => { if (bin) e.currentTarget.style.opacity = 0.9; }}>
-                          {bin ? bin.code : ''}
-                        </div>
-                      )
-                    })
-                  ))}
-                </div>
+                {isLargeGrid ? (
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    background: '#f8fafc',
+                    padding: '20px',
+                    borderRadius: '12px'
+                  }}>
+                    {binsInLevel.map(bin => (
+                      <div key={bin.binId}
+                        style={{
+                          padding: '8px 16px',
+                          background: getCellColor(bin),
+                          border: '1px solid rgba(0,0,0,0.1)',
+                          borderRadius: '6px',
+                          fontWeight: 'bold',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          opacity: 0.9
+                        }}
+                        title={`Bin: ${bin.code}\nZone: ${bin.zoneCode}\nQty: ${bin.totalQuantity}\nMax: ${bin.capacityMaxWeight}`}
+                        onMouseEnter={e => { e.currentTarget.style.opacity = 1; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity = 0.9; }}>
+                        {bin.code}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${maxX + 1}, minmax(40px, 1fr))`,
+                    gap: '4px',
+                    background: '#f8fafc',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    overflowX: 'auto'
+                  }}>
+                    {Array.from({ length: maxY + 1 }).map((_, y) => (
+                      Array.from({ length: maxX + 1 }).map((_, x) => {
+                        const bin = binMap[`${x}-${y}`];
+                        return (
+                          <div key={`${x}-${y}`}
+                            style={{
+                              aspectRatio: '1',
+                              background: bin ? getCellColor(bin) : 'transparent',
+                              border: bin ? '1px solid rgba(0,0,0,0.1)' : '1px dashed #e2e8f0',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.65rem',
+                              fontWeight: 'bold',
+                              color: bin ? '#fff' : 'transparent',
+                              cursor: bin ? 'pointer' : 'default',
+                              transition: 'all 0.2s',
+                              opacity: bin ? 0.9 : 0.5
+                            }}
+                            title={bin ? `Bin: ${bin.code}\nZone: ${bin.zoneCode}\nQty: ${bin.totalQuantity}\nMax: ${bin.capacityMaxWeight}` : ''}
+                            onMouseEnter={e => { if (bin) e.currentTarget.style.opacity = 1; }}
+                            onMouseLeave={e => { if (bin) e.currentTarget.style.opacity = 0.9; }}>
+                            {bin ? bin.code : ''}
+                          </div>
+                        )
+                      })
+                    ))}
+                  </div>
+                )}
               </Card.Body>
             </Card>
           )

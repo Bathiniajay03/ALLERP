@@ -4,85 +4,198 @@ import { useReactToPrint } from "react-to-print";
 import { smartErpApi } from "../services/smartErpApi";
 
 export default function WmsBarcodeLabels() {
-  const [entities, setEntities] = useState([]);
-  const [selectedBarcodes, setSelectedBarcodes] = useState([]);
+  const [items, setItems] = useState([]);
+  const [lots, setLots] = useState([]);
+  const [selectedType, setSelectedType] = useState("Item");
+  const [selectedEntityId, setSelectedEntityId] = useState("");
+  const [copies, setCopies] = useState(1);
+  const [labelList, setLabelList] = useState([]);
+  
   const printRef = useRef();
 
   useEffect(() => {
-    loadEntities();
+    loadData();
   }, []);
 
-  const loadEntities = async () => {
+  const loadData = async () => {
     try {
-      const itemsRes = await smartErpApi.getItems();
-      // In a real app we'd fetch WmsLocations and Packages here too
-      // Merging mock bin data for demo purposes since getBins requires warehouseId
-      const mappedItems = (itemsRes.data || []).filter(i => i.itemCode).map(i => ({
-        type: "Item",
-        id: i.id,
-        name: i.itemName,
-        barcode: i.itemCode
-      }));
-      setEntities(mappedItems);
+      const itemRes = await smartErpApi.getItems();
+      setItems(itemRes.data || []);
+
+      const lotRes = await smartErpApi.getLots();
+      setLots(lotRes.data || []);
     } catch (err) {
-      console.error("Failed to load entities for barcodes", err);
+      console.error("Failed to load items/lots", err);
     }
   };
 
-  const toggleSelect = (barcode) => {
-    setSelectedBarcodes(prev => 
-      prev.includes(barcode) ? prev.filter(b => b !== barcode) : [...prev, barcode]
-    );
+  const handleAddLabels = () => {
+    if (!selectedEntityId) return;
+
+    let targetCode = "";
+    let targetName = "";
+
+    if (selectedType === "Item") {
+      const item = items.find(i => i.id === parseInt(selectedEntityId));
+      targetCode = item?.itemCode || `ITM-${item?.id}`;
+      targetName = item?.itemName || "";
+    } else if (selectedType === "Lot") {
+      const lot = lots.find(l => l.id === parseInt(selectedEntityId));
+      targetCode = lot?.lotNumber || `LOT-${lot?.id}`;
+      targetName = `Item ID: ${lot?.itemId}`;
+    } else if (selectedType === "Serial") {
+      // Mock Serial code generation
+      targetCode = `SER-${selectedEntityId}-${Date.now().toString().slice(-4)}`;
+      targetName = `Serial Tag`;
+    }
+
+    const newLabels = Array.from({ length: copies }, (_, i) => ({
+      id: `${targetCode}-${Date.now()}-${i}`,
+      barcode: targetCode,
+      name: targetName,
+      type: selectedType,
+      entityId: parseInt(selectedEntityId)
+    }));
+
+    setLabelList(prev => [...prev, ...newLabels]);
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-    documentTitle: "WMS_Barcodes",
-    onAfterPrint: () => {
-      // Here we would call BarcodeController /history endpoint to log the print
+    contentRef: printRef,
+    documentTitle: "Barcode_Labels",
+    onAfterPrint: async () => {
+      // Log print histories
+      for (const lbl of labelList) {
+        try {
+          await smartErpApi.logBarcodePrint({
+            entityType: lbl.type,
+            entityId: lbl.entityId,
+            copies: 1
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      alert("Labels printed successfully!");
+      setLabelList([]);
     }
   });
 
   return (
-    <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h2 style={{ margin: 0, fontSize: "28px", color: "#1e293b", fontWeight: 700 }}>Barcode Label Printing</h2>
-        <button
-          onClick={handlePrint}
-          disabled={selectedBarcodes.length === 0}
-          style={{ padding: "10px 20px", background: selectedBarcodes.length > 0 ? "#10b981" : "#cbd5e1", color: "white", border: "none", borderRadius: "6px", cursor: selectedBarcodes.length > 0 ? "pointer" : "not-allowed", fontWeight: 600, transition: "0.2s" }}
-        >
-          Print Selected ({selectedBarcodes.length})
-        </button>
-      </div>
+    <div style={{ padding: "30px", fontFamily: "'Inter', sans-serif", color: "#1e293b", background: "#f8fafc", minHeight: "100vh" }}>
+      <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+        <h2 style={{ fontSize: "28px", fontWeight: "700", color: "#0f172a", marginBottom: "8px" }}>Enterprise Label Printer</h2>
+        <p style={{ color: "#64748b", marginBottom: "30px" }}>Select product tags, lots, or serial tags and queue them for thermal printing.</p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-        <div style={{ background: "white", borderRadius: "12px", padding: "20px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}>
-          <h3 style={{ marginTop: 0, marginBottom: "20px", color: "#334155" }}>Select Labels</h3>
-          <div style={{ maxHeight: "600px", overflowY: "auto" }}>
-            {entities.map(ent => (
-              <div key={`${ent.type}-${ent.id}`} style={{ display: "flex", alignItems: "center", padding: "12px", borderBottom: "1px solid #f1f5f9", cursor: "pointer" }} onClick={() => toggleSelect(ent.barcode)}>
-                <input type="checkbox" checked={selectedBarcodes.includes(ent.barcode)} readOnly style={{ marginRight: "12px", width: "18px", height: "18px" }} />
-                <div>
-                  <div style={{ fontWeight: 600, color: "#0f172a" }}>{ent.name}</div>
-                  <div style={{ fontSize: "13px", color: "#64748b" }}>{ent.type} • {ent.barcode}</div>
-                </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr", gap: "30px" }}>
+          {/* Controls Panel */}
+          <div style={{ background: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", height: "fit-content" }}>
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ fontSize: "14px", fontWeight: "600", color: "#475569", display: "block", marginBottom: "8px" }}>Print Category</label>
+              <div style={{ display: "flex", gap: "10px" }}>
+                {["Item", "Lot", "Serial"].map(type => (
+                  <button 
+                    key={type}
+                    type="button"
+                    onClick={() => { setSelectedType(type); setSelectedEntityId(""); }}
+                    style={{ flex: 1, padding: "8px", background: selectedType === type ? "#4f46e5" : "#f1f5f9", color: selectedType === type ? "white" : "#475569", border: "none", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}
+                  >
+                    {type}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ fontSize: "14px", fontWeight: "600", color: "#475569", display: "block", marginBottom: "8px" }}>Select Entity</label>
+              {selectedType === "Item" && (
+                <select 
+                  value={selectedEntityId} 
+                  onChange={e => setSelectedEntityId(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: "8px", background: "white" }}
+                >
+                  <option value="">-- Choose Item --</option>
+                  {items.map(i => <option key={i.id} value={i.id}>{i.itemName} ({i.itemCode})</option>)}
+                </select>
+              )}
+
+              {selectedType === "Lot" && (
+                <select 
+                  value={selectedEntityId} 
+                  onChange={e => setSelectedEntityId(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: "8px", background: "white" }}
+                >
+                  <option value="">-- Choose Lot --</option>
+                  {lots.map(l => <option key={l.id} value={l.id}>{l.lotNumber}</option>)}
+                </select>
+              )}
+
+              {selectedType === "Serial" && (
+                <input 
+                  type="text" 
+                  value={selectedEntityId} 
+                  onChange={e => setSelectedEntityId(e.target.value)}
+                  placeholder="Enter Serial Code base..."
+                  style={{ width: "100%", padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: "8px" }}
+                />
+              )}
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ fontSize: "14px", fontWeight: "600", color: "#475569", display: "block", marginBottom: "8px" }}>Copies</label>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <input 
+                  type="number" 
+                  value={copies} 
+                  onChange={e => setCopies(Math.max(1, parseInt(e.target.value) || 1))}
+                  style={{ flex: 1, padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: "8px" }}
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setCopies(100)}
+                  style={{ background: "#3b82f6", color: "white", border: "none", padding: "10px 15px", borderRadius: "8px", fontWeight: "600", cursor: "pointer" }}
+                >
+                  100 Copies
+                </button>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleAddLabels}
+              style={{ width: "100%", background: "#4f46e5", color: "white", padding: "12px", border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer", fontSize: "15px" }}
+            >
+              ➕ Queue Labels
+            </button>
           </div>
-        </div>
 
-        <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "20px", border: "1px dashed #cbd5e1" }}>
-          <h3 style={{ marginTop: 0, marginBottom: "20px", color: "#334155" }}>Print Preview</h3>
-          <div ref={printRef} style={{ display: "flex", flexWrap: "wrap", gap: "20px", background: "white", padding: "20px", minHeight: "400px" }}>
-            {selectedBarcodes.map(code => (
-              <div key={code} style={{ border: "1px solid #e2e8f0", padding: "10px", borderRadius: "8px", background: "white", textAlign: "center" }}>
-                <Barcode value={code} format="CODE128" width={2} height={60} fontSize={14} background="#ffffff" />
+          {/* Queue & Printing Preview Panel */}
+          <div style={{ background: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>Print Queue ({labelList.length} items)</h3>
+              <button 
+                onClick={handlePrint}
+                disabled={labelList.length === 0}
+                style={{ background: labelList.length > 0 ? "#10b981" : "#cbd5e1", color: "white", border: "none", padding: "8px 16px", borderRadius: "6px", fontWeight: "600", cursor: labelList.length > 0 ? "pointer" : "not-allowed" }}
+              >
+                🖨 Print Queue
+              </button>
+            </div>
+
+            {labelList.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "50px 0", color: "#64748b", border: "1px dashed #cbd5e1", borderRadius: "8px" }}>
+                Your print queue is empty.
               </div>
-            ))}
-            {selectedBarcodes.length === 0 && (
-              <div style={{ width: "100%", textAlign: "center", color: "#94a3b8", paddingTop: "100px" }}>
-                Select barcodes to preview
+            ) : (
+              <div style={{ maxHeight: "400px", overflowY: "auto", padding: "10px", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
+                <div ref={printRef} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", padding: "20px" }}>
+                  {labelList.map(lbl => (
+                    <div key={lbl.id} style={{ border: "1px solid #cbd5e1", padding: "15px", borderRadius: "6px", display: "flex", flexDirection: "column", alignItems: "center", background: "#fff", pageBreakInside: "avoid" }}>
+                      <span style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "5px" }}>{lbl.name}</span>
+                      <Barcode value={lbl.barcode} width={1.2} height={45} fontSize={10} />
+                      <span style={{ fontSize: "10px", color: "#64748b", marginTop: "5px" }}>Type: {lbl.type}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
