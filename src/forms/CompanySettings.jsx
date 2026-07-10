@@ -6,7 +6,8 @@ export default function CompanySettings() {
     companyName: "", legalName: "", email: "", phone: "", website: "",
     address: "", city: "", state: "", country: "", gstNumber: "", panNumber: "",
     logo: "", primaryColor: "#0f172a", timezone: "UTC", currency: "USD",
-    sidebarBgColor: "#0f172a", sidebarTextColor: "#f8fafc"
+    sidebarBgColor: "#0f172a", sidebarTextColor: "#f8fafc",
+    storefrontEyebrow: "", storefrontTitle: "", storefrontDescription: ""
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,6 +37,9 @@ export default function CompanySettings() {
           currency: res.data.currency || "USD",
           sidebarBgColor: res.data.sidebarBgColor || "#0f172a",
           sidebarTextColor: res.data.sidebarTextColor || "#f8fafc",
+          storefrontEyebrow: res.data.storefrontEyebrow || "",
+          storefrontTitle: res.data.storefrontTitle || "",
+          storefrontDescription: res.data.storefrontDescription || "",
         });
       }
     } catch (err) {
@@ -207,6 +211,30 @@ export default function CompanySettings() {
                     onError={(e) => { e.target.style.display = "none"; }}
                   />
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer App Storefront Customization */}
+        <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: 12 }}>
+          <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
+            <h5 className="fw-bold text-dark">Customer App Storefront</h5>
+            <p className="text-muted small">Configure the hero banner texts shown to customers on your portal.</p>
+          </div>
+          <div className="card-body p-4">
+            <div className="row g-3">
+              <div className="col-12">
+                <label className="form-label fw-bold">Hero Eyebrow Text</label>
+                <input type="text" name="storefrontEyebrow" className="form-control" placeholder="e.g. Quick commerce" value={settings.storefrontEyebrow} onChange={handleChange} />
+              </div>
+              <div className="col-12">
+                <label className="form-label fw-bold">Hero Heading / Title</label>
+                <input type="text" name="storefrontTitle" className="form-control" placeholder="e.g. Daily essentials, delivered fast" value={settings.storefrontTitle} onChange={handleChange} />
+              </div>
+              <div className="col-12">
+                <label className="form-label fw-bold">Hero Description / Subheading</label>
+                <textarea name="storefrontDescription" className="form-control" rows="3" placeholder="Describe your store catalog..." value={settings.storefrontDescription} onChange={handleChange}></textarea>
               </div>
             </div>
           </div>

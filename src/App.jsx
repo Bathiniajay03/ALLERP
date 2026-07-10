@@ -42,6 +42,14 @@ import SignupWizard from "./pages/SignupWizard";
 import RegistrationSuccess from "./pages/RegistrationSuccess";
 import CompanyLoginPage from "./pages/CompanyLoginPage";
 
+import WmsSetup from "./forms/WmsSetup";
+import WmsDashboard from "./forms/WmsDashboard";
+import WmsOperations from "./forms/WmsOperations";
+import BarcodeDashboard from "./forms/BarcodeDashboard";
+import WmsBarcodeLabels from "./forms/WmsBarcodeLabels";
+import WmsScannerApp from "./forms/WmsScannerApp";
+import WmsPackageScreen from "./forms/WmsPackageScreen";
+
 import { LocalAIProvider } from "./context/LocalAIContext";
 import { smartErpApi } from "./services/smartErpApi";
 
@@ -97,12 +105,26 @@ const MODULE_CONFIG = [
     ]
   },
   {
+    id: "wmsGroup",
+    label: "Enterprise WMS",
+    isGroup: true,
+    subModules: [
+      { id: "wmsDashboard", label: "WMS Dashboard", path: "/wms/dashboard" },
+      { id: "wmsSetup", label: "WMS Topology Map", path: "/wms/setup" },
+      { id: "wmsOperations", label: "WMS Operations", path: "/wms/operations" },
+      { id: "barcodeDashboard", label: "Barcode Dashboard", path: "/wms/barcode-dashboard" },
+      { id: "wmsBarcodeLabels", label: "Barcode Labels", path: "/wms/barcode-labels" },
+    ]
+  },
+  {
     id: "scannerGroup",
     label: "Scanner Hub",
     isGroup: true,
     subModules: [
       { id: "scannerDevice", label: "Mobile Scanner", path: "/scanner-device" },
       { id: "serialScan", label: "Serial Scan", path: "/serial-scan" },
+      { id: "wmsScannerApp", label: "Enterprise Scanner", path: "/scanner-app" },
+      { id: "wmsPackageScreen", label: "Package Dispatch", path: "/package-dispatch" },
     ]
   },
   { id: "automation", label: "Automation", path: "/automation" },
@@ -136,17 +158,17 @@ const DEFAULT_ROLE_MODULES = {
   Manager: [
     "dashboard", "products", "orderManagement", "salesOrderList", "createSalesOrder", "customers", "vendors",
     "purchaseOrders", "vendorReturns", "inventory", "lots", "warehouses", "operations", "finance", "reports",
-    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", ...COMPANY_MODULES
+    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "wmsScannerApp", "wmsPackageScreen", ...COMPANY_MODULES
   ],
-  Operator: ["operations", "scannerDevice", "serialScan"],
+  Operator: ["operations", "scannerDevice", "serialScan", "wmsOperations"],
   OperationsWorker: [
     "dashboard", "products", "inventory", "operations", "salesOrderList", "createSalesOrder", "customers",
     "vendors", "purchaseOrders", "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan"
   ],
-  ScannerWorker: ["scannerDevice", "serialScan", "operations"],
+  ScannerWorker: ["scannerDevice", "serialScan", "operations", "wmsScannerApp"],
   "Warehouse Manager": [
     "dashboard", "products", "inventory", "lots", "warehouses", "operations", "purchaseOrders", "vendors",
-    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan"
+    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "wmsScannerApp", "wmsPackageScreen"
   ],
   "Finance Manager": [
     "dashboard", "finance", "reports", "salesOrderList", "purchaseOrders", "customers", "vendors",
@@ -591,6 +613,15 @@ function AppContent() {
           <Route path="/inventory" element={renderProtectedRoute("inventory", <Inventory />)} />
           <Route path="/lots" element={renderProtectedRoute("lots", <Lots />)} />
           <Route path="/warehouses" element={renderProtectedRoute("warehouses", <Warehouses />)} />
+          
+          <Route path="/wms/dashboard" element={renderProtectedRoute("wmsDashboard", <WmsDashboard />)} />
+          <Route path="/wms/setup" element={renderProtectedRoute("wmsSetup", <WmsSetup />)} />
+          <Route path="/wms/operations" element={renderProtectedRoute("wmsOperations", <WmsOperations />)} />
+          <Route path="/wms/barcode-dashboard" element={renderProtectedRoute("barcodeDashboard", <BarcodeDashboard />)} />
+          <Route path="/wms/barcode-labels" element={renderProtectedRoute("wmsBarcodeLabels", <WmsBarcodeLabels />)} />
+          <Route path="/scanner-app" element={renderProtectedRoute("wmsScannerApp", <WmsScannerApp />)} />
+          <Route path="/package-dispatch" element={renderProtectedRoute("wmsPackageScreen", <WmsPackageScreen />)} />
+
           <Route path="/operations" element={renderProtectedRoute("operations", <Operations />)} />
           <Route path="/finance" element={renderProtectedRoute("finance", <Finance />)} />
           <Route path="/reports" element={renderProtectedRoute("reports", <Reports />)} />

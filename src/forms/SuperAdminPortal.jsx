@@ -140,6 +140,9 @@ export default function SuperAdminPortal() {
       phone: company.phone ?? company.Phone ?? "",
       email: company.email ?? company.Email ?? "",
       website: company.website ?? company.Website ?? "",
+      storefrontEyebrow: company.storefrontEyebrow ?? company.StorefrontEyebrow ?? "Quick commerce",
+      storefrontTitle: company.storefrontTitle ?? company.StorefrontTitle ?? "Daily essentials, delivered fast",
+      storefrontDescription: company.storefrontDescription ?? company.StorefrontDescription ?? "Browse fresh groceries, snacks, personal care, and household items from your live ERP catalog.",
     });
     setShowEditModal(true);
   };
@@ -633,6 +636,22 @@ export default function SuperAdminPortal() {
                         <input type="color" className="form-control form-control-color" style={{ width: 60 }} value={editFormData.sidebarTextColor} onChange={e => setEditFormData({...editFormData, sidebarTextColor: e.target.value})} />
                         <input type="text" className="form-control" value={editFormData.sidebarTextColor} onChange={e => setEditFormData({...editFormData, sidebarTextColor: e.target.value})} />
                       </div>
+                    </div>
+
+                    <div className="col-12 mt-3">
+                      <h6 className="fw-bold border-bottom pb-2">Customer App Storefront Configuration</h6>
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-bold">Hero Eyebrow Text</label>
+                      <input type="text" className="form-control" value={editFormData.storefrontEyebrow || ""} onChange={e => setEditFormData({...editFormData, storefrontEyebrow: e.target.value})} placeholder="e.g. Quick commerce" />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-bold">Hero Heading / Title</label>
+                      <input type="text" className="form-control" value={editFormData.storefrontTitle || ""} onChange={e => setEditFormData({...editFormData, storefrontTitle: e.target.value})} placeholder="e.g. Daily essentials, delivered fast" />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-bold">Hero Description / Subheading</label>
+                      <textarea className="form-control" rows="2" value={editFormData.storefrontDescription || ""} onChange={e => setEditFormData({...editFormData, storefrontDescription: e.target.value})} placeholder="Describe the store catalog..."></textarea>
                     </div>
 
                     <hr />

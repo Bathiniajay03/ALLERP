@@ -1,6 +1,35 @@
 import api from "./apiClient";
 
+const wmsApi = {
+  getTopology: (warehouseId) => api.get(`/wms/topology/${warehouseId}`),
+  getBins: (warehouseId) => api.get(`/wms/bins/warehouse/${warehouseId}`),
+  getHeatmap: (warehouseId) => api.get(`/wms/heatmap/${warehouseId}`),
+  getWmsStock: (warehouseId) => api.get(`/wms/stock/${warehouseId}`),
+
+  getItems: () => api.get('/wms/lookup/items'),
+  getLots: () => api.get('/wms/lookup/lots'),
+
+  createZone: (data) => api.post('/wms/zones', data),
+  createAisle: (data) => api.post('/wms/aisles', data),
+  createRack: (data) => api.post('/wms/racks', data),
+  createShelf: (data) => api.post('/wms/shelves', data),
+  createBin: (data) => api.post('/wms/bins', data),
+
+  generatePickList: (data) => api.post('/wmsoperations/generate-picklist', data),
+  getPickLists: (warehouseId) => api.get(`/wmsoperations/pick-lists/${warehouseId}`),
+  confirmPick: (pickItemId) => api.post(`/wmsoperations/pick-lists/${pickItemId}/confirm`),
+  putAway: (data) => api.post('/wmsoperations/put-away', data),
+
+  // Barcode and Scanner endpoints
+  bulkGenerateBarcodes: () => api.post('/barcode/generate/bulk'),
+  getBarcodeDashboard: () => api.get('/barcode/dashboard'),
+  globalScan: (barcode) => api.get(`/barcode/scan/${encodeURIComponent(barcode)}`),
+  scannerTransfer: (data) => api.post('/wmsscanner/transfer', data),
+  scannerCycleCount: (data) => api.post('/wmsscanner/cycle-count', data)
+};
+
 export const smartErpApi = {
+  ...wmsApi,
 
   // System & Authentication
   initialize: () => api.post("/smart-erp/startup/initialize"),

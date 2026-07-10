@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Card, Form, Row, Col, Tabs, Tab, Button, Badge, Alert, Table, Modal } from 'react-bootstrap';
 import api from '../services/apiClient';
 import MobileScanner from '../components/MobileScanner';
 
@@ -407,78 +408,49 @@ export default function Operations() {
   };
 
   return (
-    <div className="erp-app-wrapper min-vh-100 pb-5 pt-3">
-      <div className="container-fluid px-4" style={{ maxWidth: '1000px' }}>
+    <div className="container-fluid py-4">
         
-        {/* HEADER / TABS ROW */}
-        <div className="d-flex justify-content-between align-items-end border-bottom mb-4 pb-2">
-          <div className="erp-tabs border-0 m-0">
-            {MODE_TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  setTxForm({ itemId: '', warehouseId: '', destWarehouseId: '', quantity: '', lotNumber: '', lotId: '', prefix: '' });
-                }}
-                className={`erp-tab ${activeTab === tab ? 'active' : ''}`}
-              >
-                {tab.toUpperCase()}
-              </button>
-            ))}
+        {/* HEADER */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h4><i className="bi bi-arrow-left-right me-2 text-primary"></i>Stock Operations</h4>
+            <p className="text-muted mb-0">Execute inventory receipts, dispatches, transfers, and barcode scanning.</p>
           </div>
-          <button 
+          <Button 
             onClick={fetchData} 
             disabled={loading} 
-            className="btn btn-sm btn-light border d-flex align-items-center gap-2 text-muted fw-bold shadow-sm" 
-            style={{ borderRadius: '3px', marginBottom: '8px' }}
+            variant="outline-secondary"
+            size="sm"
+            className="d-flex align-items-center gap-2 shadow-sm"
           >
-            {loading ? <span className="spinner-border spinner-border-sm" /> : '↻'}
+            {loading ? <span className="spinner-border spinner-border-sm" /> : <i className="bi bi-arrow-clockwise"></i>}
             Refresh API
-          </button>
+          </Button>
         </div>
 
         {status.text && (
-          <div className={`alert erp-alert d-flex justify-content-between align-items-center py-2 mb-4 shadow-sm`} style={{
-            backgroundColor: status.type === 'error' ? '#fee2e2' : '#dcfce7',
-            color: status.type === 'error' ? '#991b1b' : '#166534',
-            border: `1px solid ${status.type === 'error' ? '#f87171' : '#4ade80'}`
-          }}>
+          <Alert variant={status.type === 'error' ? 'danger' : 'success'} dismissible onClose={() => setStatus({ type: '', text: '' })} className="shadow-sm">
             <span className="fw-semibold">{status.text}</span>
-            <button className="btn-close btn-sm" onClick={() => setStatus({ type: '', text: '' })}></button>
-          </div>
+          </Alert>
         )}
 
-        {/* SCANNER TAB */}
-        {activeTab === 'scanner' && (
-          <div className="erp-panel p-0 overflow-hidden shadow-sm">
-            <div className="erp-panel-header bg-dark text-white border-0">
-              <span className="fw-bold">Barcode Scanner Interface</span>
-            </div>
-            <div className="p-0 bg-black">
-              <MobileScanner
-                items={items}
-                warehouses={warehouses}
-                inventory={inventory}
-                fetchData={fetchData}
-                onScanDetected={handleScannerPopulate}
-              />
-            </div>
-            <div className="p-3 bg-light border-top erp-text-muted small">
-              <span className="text-primary me-2">■</span>
-              The scanner feed stays live here. Once a product is detected, switch to the <strong>STOCK</strong> tab to apply quantities and execute movements.
-            </div>
-          </div>
-        )}
-
-        {/* STOCK OPS TAB */}
-        {activeTab === 'stock' && (
-          <div className="erp-panel shadow-sm">
-            <div className="erp-panel-header d-flex justify-content-between align-items-center bg-light">
-              <span className="fw-bold fs-6">Inventory Movement Protocol</span>
-            </div>
-            <div className="p-4 bg-white">
-              
-              {/* MODE SELECTOR */}
+        <Tabs 
+          activeKey={activeTab} 
+          onSelect={(k) => {
+            setActiveTab(k);
+            setTxForm({ itemId: '', warehouseId: '', destWarehouseId: '', quantity: '', lotNumber: '', lotId: '', prefix: '' });
+          }} 
+          className="mb-4"
+        >
+          {/* STOCK OPS TAB */}
+          <Tab eventKey="stock" title={<span><i className="bi bi-box-seam me-2"></i>Stock Protocol</span>}>
+            <Card className="shadow-sm border-0">
+              <Card.Header className="bg-white border-0 pt-4 pb-0">
+                <h6 className="fw-bold">Inventory Movement Protocol</h6>
+              </Card.Header>
+              <Card.Body className="p-4">
+                
+                {/* MODE SELECTOR */}
               <div className="d-flex gap-2 w-100 mb-4 flex-wrap" role="group">
                 <button type="button" className={`btn erp-btn flex-grow-1 ${txMode === 'in' ? 'btn-success fw-bold' : 'btn-light border'}`} onClick={() => { setTxMode('in'); setTxForm(p => ({...p, lotId: '', destWarehouseId: ''})); }}>📥 IN</button>
                 <button type="button" className={`btn erp-btn flex-grow-1 ${txMode === 'out' ? 'btn-danger fw-bold' : 'btn-light border'}`} onClick={() => { setTxMode('out'); setTxForm(p => ({...p, lotNumber: '', destWarehouseId: ''})); }}>📤 OUT</button>
@@ -742,229 +714,94 @@ export default function Operations() {
                   )}
                 </div>
               )}
-            </div>
-          </div>
-        )}
+              )}
+              </Card.Body>
+            </Card>
+          </Tab>
 
-      </div>
+          {/* SCANNER TAB */}
+          <Tab eventKey="scanner" title={<span><i className="bi bi-upc-scan me-2"></i>Barcode Scanner</span>}>
+            <Card className="shadow-sm border-0">
+              <Card.Header className="bg-dark text-white border-0 pt-3 pb-3">
+                <span className="fw-bold">Barcode Scanner Interface</span>
+              </Card.Header>
+              <Card.Body className="p-0 bg-black">
+                <MobileScanner
+                  items={items}
+                  warehouses={warehouses}
+                  inventory={inventory}
+                  fetchData={fetchData}
+                  onScanDetected={handleScannerPopulate}
+                />
+              </Card.Body>
+              <Card.Footer className="bg-light border-top text-muted small">
+                <i className="bi bi-info-square-fill text-primary me-2"></i>
+                The scanner feed stays live here. Once a product is detected, switch to the <strong>STOCK</strong> tab to apply quantities and execute movements.
+              </Card.Footer>
+            </Card>
+          </Tab>
+        </Tabs>
 
       {/* SERIAL GENERATION MODAL */}
-      {showSerialModal && (
-        <div className="erp-modal-overlay" style={{ zIndex: 1060 }}>
-          <div className="erp-dialog erp-dialog-md w-100 mx-3">
-            <div className="erp-dialog-header">
-              <h6 className="m-0 fw-bold">Serial Number Allocation / Verification</h6>
-              <button className="btn-close btn-close-white" onClick={() => setShowSerialModal(false)}></button>
+      <Modal show={showSerialModal} onHide={() => setShowSerialModal(false)} backdrop="static" keyboard={false}>
+        <Modal.Header closeButton className="bg-primary text-white">
+          <Modal.Title className="fs-6 fw-bold">Serial Number Allocation / Verification</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="bg-light">
+          <div className="d-flex justify-content-between align-items-center mb-3 p-3 bg-white border rounded shadow-sm">
+            <div>
+              <div className="text-muted small fw-bold text-uppercase mb-1">Target Qty</div>
+              <span className="fs-5 fw-bold font-monospace text-primary">{serialGenerationForm.quantity}</span>
             </div>
-            <div className="erp-dialog-body bg-white p-3">
-              <div className="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
-                <div>
-                  <span className="erp-label m-0">Target Qty</span>
-                  <span className="fs-5 fw-bold font-monospace text-primary">{serialGenerationForm.quantity}</span>
-                </div>
-                <button className="btn btn-sm btn-outline-primary fw-bold erp-btn" onClick={generateSerialNumbers}>
-                  + Generate Sequence
-                </button>
-              </div>
-
-              {serialGenerationForm.generatedSerials.length > 0 ? (
-                <div className="border rounded" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  <table className="table table-sm table-striped m-0 font-monospace" style={{ fontSize: '0.8rem' }}>
-                    <thead className="table-light sticky-top">
-                      <tr>
-                        <th className="ps-3 text-uppercase text-muted">S/N</th>
-                        <th className="text-uppercase text-muted">Generated Identifier</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {serialGenerationForm.generatedSerials.map((s, i) => (
-                        <tr key={i}>
-                          <td className="ps-3 text-muted">{i + 1}</td>
-                          <td className="fw-bold">{s.serialNumber}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-4 text-muted small border rounded bg-light shadow-sm">
-                  Click generate to assign unique serials for this transaction.
-                </div>
-              )}
-            </div>
-            <div className="p-3 bg-light border-top d-flex justify-content-end gap-2">
-              <button className="btn btn-light border erp-btn" onClick={() => setShowSerialModal(false)}>Cancel</button>
-              <button 
-                className="btn btn-primary erp-btn px-4" 
-                onClick={() => {
-                  setShowSerialModal(false);
-                  handleStockTransaction(); 
-                }}
-                disabled={serialGenerationForm.generatedSerials.length === 0 || loading}
-              >
-                {loading ? 'Saving...' : 'Commit & Execute TX'}
-              </button>
-            </div>
+            <Button variant="outline-primary" size="sm" className="fw-bold shadow-sm" onClick={generateSerialNumbers}>
+              <i className="bi bi-plus-circle me-1"></i> Generate Sequence
+            </Button>
           </div>
-        </div>
-      )}
 
-      <style>{`
-        /* --- ERP THEME CSS --- */
-        :root {
-          --erp-primary: #0f4c81;
-          --erp-bg: #eef2f5;
-          --erp-surface: #ffffff;
-          --erp-border: #cfd8dc;
-          --erp-text-main: #263238;
-          --erp-text-muted: #607d8b;
-        }
+          {serialGenerationForm.generatedSerials.length > 0 ? (
+            <div className="border rounded shadow-sm bg-white" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <Table size="sm" striped hover className="m-0 font-monospace" style={{ fontSize: '0.85rem' }}>
+                <thead className="table-light sticky-top">
+                  <tr>
+                    <th className="ps-3 text-uppercase text-muted">S/N</th>
+                    <th className="text-uppercase text-muted">Generated Identifier</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {serialGenerationForm.generatedSerials.map((s, i) => (
+                    <tr key={i}>
+                      <td className="ps-3 text-muted">{i + 1}</td>
+                      <td className="fw-bold">{s.serialNumber}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-5 text-muted small border rounded bg-white shadow-sm">
+              <i className="bi bi-list-ol fs-3 d-block mb-2 text-secondary"></i>
+              Click generate to assign unique serials for this transaction.
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="bg-white border-top">
+          <Button variant="light" className="border shadow-sm" onClick={() => setShowSerialModal(false)}>Cancel</Button>
+          <Button 
+            variant="primary" 
+            className="px-4 shadow-sm fw-bold" 
+            onClick={() => {
+              setShowSerialModal(false);
+              handleStockTransaction(); 
+            }}
+            disabled={serialGenerationForm.generatedSerials.length === 0 || loading}
+          >
+            {loading ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-check-circle me-2"></i>}
+            {loading ? 'Saving...' : 'Commit & Execute TX'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-        .erp-app-wrapper {
-          background-color: var(--erp-bg);
-          color: var(--erp-text-main);
-          font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-          font-size: 0.85rem;
-        }
-
-        .erp-text-muted { color: var(--erp-text-muted) !important; }
-
-        .erp-tabs {
-          display: flex;
-          gap: 20px;
-        }
-        .erp-tab {
-          background: none;
-          border: none;
-          padding: 10px 16px;
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: var(--erp-text-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          cursor: pointer;
-          position: relative;
-          transition: all 0.2s ease;
-        }
-        .erp-tab:hover { color: var(--erp-primary); }
-        .erp-tab.active {
-          color: var(--erp-primary);
-        }
-        .erp-tab.active::after {
-          content: '';
-          position: absolute;
-          bottom: -2px; left: 0; width: 100%; height: 3px;
-          background-color: var(--erp-primary);
-        }
-
-        .erp-panel {
-          background: var(--erp-surface);
-          border: 1px solid var(--erp-border);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-        .erp-panel-header {
-          background-color: #f8f9fa;
-          border-bottom: 1px solid var(--erp-border);
-          padding: 12px 16px;
-          font-size: 0.85rem;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          color: #34495e;
-          font-weight: bold;
-        }
-
-        .erp-input {
-          border-radius: 3px;
-          border-color: #b0bec5;
-          font-size: 0.85rem;
-          padding: 8px 10px;
-        }
-        .erp-input:focus {
-          border-color: var(--erp-primary);
-          box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.2);
-        }
-        .erp-btn {
-          border-radius: 3px;
-          font-weight: 600;
-          letter-spacing: 0.2px;
-          font-size: 0.8rem;
-          padding: 6px 14px;
-          transition: transform 0.1s ease;
-        }
-        .erp-btn:hover:not(:disabled) {
-          transform: translateY(-1px);
-        }
-        .erp-label {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--erp-text-muted);
-          text-transform: uppercase;
-          margin-bottom: 6px;
-          display: block;
-        }
-        .erp-section-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #90a4ae;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          border-bottom: 1px solid var(--erp-border);
-          padding-bottom: 4px;
-        }
-
-        .erp-instruction-box {
-          padding: 12px 16px;
-          border-radius: 3px;
-        }
-
-        .erp-lot-row {
-          display: flex; justify-content: space-between; align-items: center;
-          background: white; border: 1px solid var(--erp-border);
-          padding: 10px 16px; border-radius: 3px;
-        }
-
-        .erp-modal-overlay {
-          position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-          background: rgba(38, 50, 56, 0.6);
-          display: flex; align-items: center; justify-content: center;
-          z-index: 1050;
-        }
-        .erp-dialog {
-          background: var(--erp-surface);
-          border-radius: 4px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-          width: 100%;
-          max-height: 90vh;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          animation: modalFadeIn 0.2s ease-out;
-        }
-        @keyframes modalFadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .erp-dialog-md { max-width: 500px; }
-        .erp-dialog-header {
-          background-color: var(--erp-primary);
-          color: white;
-          padding: 12px 20px;
-          display: flex; justify-content: space-between; align-items: center;
-        }
-        .serial-entry {
-          border: 1px solid var(--erp-border);
-          border-radius: 5px;
-          padding: 10px;
-        }
-        .serial-entry input {
-          margin-top: 6px;
-        }
-        .erp-dialog-body {
-          padding: 0;
-          overflow-y: auto;
-        }
-      `}</style>
+      {/* Removed custom ERP styles to match WMS aesthetics */}
     </div>
   );
 }
