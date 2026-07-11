@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import { BrowserMultiFormatReader } from '@zxing/library';
 import api from '../services/apiClient';
 
 const SCAN_COOLDOWN_MS = 2000;
@@ -41,7 +41,6 @@ export default function MobileScanner({
 
   // --- Context States ---
   const [currentItem, setCurrentItem] = useState(null);
-  const [detectedBarcode, setDetectedBarcode] = useState('');
   const [lastScannedBarcode, setLastScannedBarcode] = useState('');
 
   // --- Navigation & Modes ---
@@ -59,7 +58,6 @@ export default function MobileScanner({
   });
 
   // --- PO States ---
-  const [poLoading, setPoLoading] = useState(false);
   const [poList, setPoList] = useState([]);
   const [filteredPoList, setFilteredPoList] = useState([]);
   const [selectedPoNumber, setSelectedPoNumber] = useState('');
@@ -114,7 +112,6 @@ export default function MobileScanner({
 
   const resetScanState = useCallback(() => {
     setLastScannedBarcode('');
-    setDetectedBarcode('');
     setCurrentItem(null);
     setCurrentPoLine(null);
     setSelectedPoNumber('');
@@ -123,7 +120,6 @@ export default function MobileScanner({
   }, [defaultWarehouseId]);
 
   const loadPendingPurchaseOrders = useCallback(async () => {
-    setPoLoading(true);
     try {
       const response = await api.get('/purchase-orders/pending');
       setPoList(response.data || []);
@@ -131,8 +127,6 @@ export default function MobileScanner({
     } catch (error) {
       setPoList([]);
       setFilteredPoList([]);
-    } finally {
-      setPoLoading(false);
     }
   }, []);
 
@@ -325,7 +319,6 @@ export default function MobileScanner({
 
       setCurrentItem(null);
       setCurrentPoLine(null);
-      setDetectedBarcode(trimmed);
       let allowScanRecording = true;
 
       try {
@@ -1502,6 +1495,13 @@ export default function MobileScanner({
           color: white;
           padding: 12px 16px;
           display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Form overflowing mobile fix */
+        @media (max-width: 768px) {
+          .d-flex.flex-row { flex-direction: column !important; gap: 10px; }
+          .overflow-auto { max-height: calc(100vh - 100px); }
+          .w-50 { width: 100% !important; }
         }
       `}</style>
     </div>

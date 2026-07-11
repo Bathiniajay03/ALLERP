@@ -27,12 +27,14 @@ export default function WmsOperations() {
 
   const [loading, setLoading] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadWarehouses();
     loadItems();
     loadLots();
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (selectedWarehouseId) {
       loadPickLists();
@@ -246,7 +248,7 @@ export default function WmsOperations() {
                     <Form.Label>Target Bin</Form.Label>
                     <Form.Select value={putAwayBin} onChange={e => setPutAwayBin(e.target.value)}>
                       <option value="">Select Bin...</option>
-                      {bins.map(b => <option key={b.id} value={b.id}>{b.code}</option>)}
+                      {bins.map(b => <option key={b.id} value={b.id}>{b.fullPath || b.code}</option>)}
                     </Form.Select>
                   </Form.Group>
                 </Col>

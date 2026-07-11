@@ -298,6 +298,11 @@ export default function SerialScanPage() {
         .erp-input {
           border-radius: 0;
         }
+        /* Mobile overrides */
+        @media (max-width: 768px) {
+          .d-flex.gap-2 { flex-direction: column !important; }
+          .btn { width: 100% !important; }
+        }
       `}</style>
     </div>
   );

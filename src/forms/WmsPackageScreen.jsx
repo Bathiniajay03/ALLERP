@@ -3,14 +3,14 @@ import Barcode from "react-barcode";
 
 export default function WmsPackageScreen() {
   const [packageId, setPackageId] = useState("");
-  const [weight, setWeight] = useState(0);
+  const [weight, setWeight] = useState("");
   const [generatedLabel, setGeneratedLabel] = useState(null);
 
   const generatePackageLabel = () => {
-    // In reality this would call the API to create the WmsPackage and return the Barcode
+    if (!packageId) return alert("Enter a Sales Order ID");
     setGeneratedLabel({
       packageBarcode: "PKG-" + Math.floor(Math.random() * 1000000),
-      orderId: packageId || "SO-1234",
+      orderId: packageId,
       customer: "Enterprise Solutions Inc",
       weight: weight || 1.5,
       destination: "New York, NY",
@@ -19,67 +19,91 @@ export default function WmsPackageScreen() {
   };
 
   return (
-    <div style={{ padding: "24px", maxWidth: "1000px", margin: "0 auto" }}>
-      <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", color: "#1e293b", fontWeight: 700 }}>Package Dispatch & Label Generation</h2>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-        <div style={{ background: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}>
-          <h3 style={{ margin: "0 0 20px 0", color: "#334155" }}>Package Details</h3>
-          
-          <label style={{ display: "block", marginBottom: "8px", fontWeight: 600, color: "#475569" }}>Sales Order ID</label>
-          <input 
-            type="text" 
-            value={packageId} 
-            onChange={(e) => setPackageId(e.target.value)} 
-            style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1", marginBottom: "16px" }}
-            placeholder="Scan or enter SO number"
-          />
-
-          <label style={{ display: "block", marginBottom: "8px", fontWeight: 600, color: "#475569" }}>Weight (Kg)</label>
-          <input 
-            type="number" 
-            value={weight} 
-            onChange={(e) => setWeight(e.target.value)} 
-            style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1", marginBottom: "24px" }}
-          />
-
-          <button 
-            onClick={generatePackageLabel}
-            style={{ width: "100%", padding: "12px", background: "#38bdf8", color: "white", border: "none", borderRadius: "8px", fontWeight: 700, cursor: "pointer", fontSize: "16px" }}
-          >
-            Generate Shipping Label
-          </button>
+    <div className="erp-app-wrapper min-vh-100 py-4">
+      <style>{`
+        .pkg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 768px) {
+          .pkg-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
+      
+      <div className="container-fluid px-3" style={{ maxWidth: "1000px", margin: "0 auto" }}>
+        
+        <div className="erp-panel p-4 shadow-sm mb-4 d-flex justify-content-between align-items-center">
+          <div>
+            <h2 className="m-0 fs-4 text-dark fw-bold">📦 Package Dispatch</h2>
+            <p className="m-0 mt-1 small text-muted">Generate shipping labels for out-bound stock</p>
+          </div>
+          <span className="badge bg-light border text-primary px-3 py-2">
+            Dispatch Hub
+          </span>
         </div>
 
-        {generatedLabel && (
-          <div style={{ background: "white", padding: "0", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", overflow: "hidden", border: "2px solid #e2e8f0" }}>
-            <div style={{ background: "#0f172a", color: "white", padding: "16px", textAlign: "center" }}>
-              <h3 style={{ margin: 0, fontSize: "20px", fontWeight: 800 }}>SHIPPING LABEL</h3>
-            </div>
-            <div style={{ padding: "24px", textAlign: "center" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", textAlign: "left", marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #e2e8f0" }}>
-                <div>
-                  <div style={{ color: "#64748b", fontSize: "12px", fontWeight: 700, textTransform: "uppercase" }}>Ship To</div>
-                  <div style={{ fontWeight: 800, fontSize: "18px", color: "#0f172a", marginTop: "4px" }}>{generatedLabel.customer}</div>
-                  <div style={{ color: "#475569", marginTop: "4px" }}>{generatedLabel.destination}</div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ color: "#64748b", fontSize: "12px", fontWeight: 700, textTransform: "uppercase" }}>Order</div>
-                  <div style={{ fontWeight: 800, fontSize: "18px", color: "#0f172a", marginTop: "4px" }}>{generatedLabel.orderId}</div>
-                  <div style={{ color: "#64748b", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", marginTop: "10px" }}>Weight</div>
-                  <div style={{ fontWeight: 800, fontSize: "18px", color: "#0f172a", marginTop: "4px" }}>{generatedLabel.weight} KG</div>
-                </div>
-              </div>
+        <div className="pkg-grid">
+          {/* Form */}
+          <div className="erp-panel p-4 shadow-sm align-self-start">
+            <h3 className="m-0 mb-4 fs-5 text-dark fw-bold">Package Details</h3>
+            
+            <label className="form-label small fw-bold text-muted">Sales Order ID</label>
+            <input 
+              type="text" 
+              value={packageId} 
+              onChange={(e) => setPackageId(e.target.value)} 
+              className="form-control erp-input mb-3"
+              placeholder="Scan or enter SO number"
+            />
 
-              <Barcode value={generatedLabel.packageBarcode} format="CODE128" width={2.5} height={80} fontSize={16} background="#ffffff" />
-              <div style={{ marginTop: "20px" }}>
-                <button style={{ padding: "8px 20px", background: "#10b981", color: "white", border: "none", borderRadius: "6px", fontWeight: 700, cursor: "pointer" }}>
-                  Print Label
-                </button>
+            <label className="form-label small fw-bold text-muted">Weight (Kg)</label>
+            <input 
+              type="number" 
+              value={weight} 
+              onChange={(e) => setWeight(e.target.value)} 
+              className="form-control erp-input mb-4"
+              placeholder="e.g. 2.5"
+            />
+
+            <button 
+              onClick={generatePackageLabel}
+              className="btn btn-primary fw-bold w-100 py-2"
+            >
+              Generate Shipping Label
+            </button>
+          </div>
+
+          {/* Generated Label Preview */}
+          {generatedLabel && (
+            <div className="erp-panel shadow-sm align-self-start overflow-hidden p-0 border">
+              <div className="bg-light p-3 text-center border-bottom">
+                <h3 className="m-0 fs-6 fw-bold text-dark" style={{ letterSpacing: "0.1em" }}>SHIPPING LABEL</h3>
+              </div>
+              <div className="p-4 text-center">
+                <div className="d-flex justify-content-between text-start mb-4 pb-4 border-bottom border-dashed">
+                  <div>
+                    <div className="text-muted small fw-bold text-uppercase" style={{ letterSpacing: "0.05em" }}>Ship To</div>
+                    <div className="fs-5 fw-bold text-dark mt-1">{generatedLabel.customer}</div>
+                    <div className="text-secondary small mt-1">{generatedLabel.destination}</div>
+                  </div>
+                  <div className="text-end">
+                    <div className="text-muted small fw-bold text-uppercase" style={{ letterSpacing: "0.05em" }}>Order</div>
+                    <div className="fs-5 fw-bold text-dark mt-1">{generatedLabel.orderId}</div>
+                    <div className="text-muted small fw-bold text-uppercase mt-3" style={{ letterSpacing: "0.05em" }}>Weight</div>
+                    <div className="fs-5 fw-bold text-dark mt-1">{generatedLabel.weight} KG</div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-3 rounded border d-inline-block">
+                  <Barcode value={generatedLabel.packageBarcode} format="CODE128" width={2} height={60} fontSize={14} background="#ffffff" />
+                </div>
+                
+                <div className="mt-4">
+                  <button className="btn btn-outline-success fw-bold w-100 py-2">
+                    🖨️ Print Label
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

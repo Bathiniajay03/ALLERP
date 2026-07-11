@@ -2633,6 +2633,7 @@ export default function SmartERP() {
   const [selectedSerial, setSelectedSerial] = useState(null);
   const [loadingSerials, setLoadingSerials] = useState(false);
   const serialBarcodeRef = useRef(null);
+  const itemBarcodeRef = useRef(null);
   const [validationErrors, setValidationErrors] = useState([]);
   const [showIntegrityCheck, setShowIntegrityCheck] = useState(false);
   const [integrityIssues, setIntegrityIssues] = useState([]);
@@ -2925,6 +2926,19 @@ export default function SmartERP() {
     }
   }, [selectedSerial]);
 
+  useEffect(() => {
+    if (!productForm.barcode || !itemBarcodeRef.current) return;
+    try {
+      JsBarcode(itemBarcodeRef.current, productForm.barcode, {
+        format: "CODE128",
+        width: 1.5, height: 40, displayValue: true, margin: 6,
+        background: "transparent"
+      });
+    } catch (err) {
+      console.warn("Item Barcode render failed", err);
+    }
+  }, [productForm.barcode]);
+
   const handleSave = async () => {
     const errors = validateProductForm();
     setValidationErrors(errors);
@@ -2998,6 +3012,10 @@ export default function SmartERP() {
 
   const generateSerialSequence = async () => {
     if (!productForm.id) return;
+    if (!serialGenerationForm.quantity || serialGenerationForm.quantity <= 0) {
+      setSerialError('Quantity must be greater than 0');
+      return;
+    }
     setSerialLoading(true);
     setSerialError('');
     try {
@@ -3240,7 +3258,17 @@ export default function SmartERP() {
                           )}
                         </div>
                       </div>
-                      <div className="field-row"><label>Barcode:</label> <input className="font-monospace" value={productForm.barcode} onChange={e => handleBarcodeChange(e.target.value)} /></div>
+                      <div className="field-row align-items-start">
+                        <label className="mt-2">Barcode:</label>
+                        <div style={{ width: '65%' }}>
+                          <input className="font-monospace form-control erp-input w-100" value={productForm.barcode} onChange={e => handleBarcodeChange(e.target.value)} />
+                          {productForm.barcode && (
+                            <div className="mt-2 text-center bg-white border rounded p-2 shadow-sm">
+                              <svg ref={itemBarcodeRef}></svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       <div className="field-row"><label className="text-primary fw-bold">Serial Prefix:</label> <input className="border-primary" placeholder="Enter Prefix..." value={productForm.serialPrefix} onChange={e => setProductForm({ ...productForm, serialPrefix: e.target.value })} /></div>
                       <div className="field-row"><label>Description:</label> <textarea rows="2" value={productForm.description} onChange={e => setProductForm({ ...productForm, description: e.target.value })} /></div>
                     </div>

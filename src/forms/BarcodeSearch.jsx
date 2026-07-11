@@ -1,12 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { smartErpApi } from "../services/smartErpApi";
-import { BarcodeDetailsPage } from "./BarcodeDetailsPage";
 
 export default function BarcodeSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
-  const [selectedBarcode, setSelectedBarcode] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSearch = async (e) => {
     const val = e.target.value;
@@ -27,9 +27,7 @@ export default function BarcodeSearch() {
   };
 
   const handleSelect = (barcode) => {
-    setSelectedBarcode(barcode);
-    setResults([]);
-    setQuery(barcode);
+    navigate("/wms/barcode/" + encodeURIComponent(barcode));
   };
 
   return (
@@ -69,14 +67,10 @@ export default function BarcodeSearch() {
             </ul>
           )}
         </div>
-
-        {selectedBarcode ? (
-          <BarcodeDetailsPage barcode={selectedBarcode} onClose={() => setSelectedBarcode(null)} />
-        ) : (
-          <div style={{ textAlign: "center", padding: "40px", background: "white", borderRadius: "12px", border: "1px dashed #cbd5e1", color: "#64748b" }}>
-            🔍 Search results will display here.
-          </div>
-        )}
+        
+        <div style={{ textAlign: "center", padding: "40px", background: "white", borderRadius: "12px", border: "1px dashed #cbd5e1", color: "#64748b" }}>
+          🔍 Search results will display here. Select an item to view full details.
+        </div>
       </div>
     </div>
   );

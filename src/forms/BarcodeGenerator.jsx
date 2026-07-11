@@ -18,6 +18,7 @@ export default function BarcodeGenerator() {
     loadPrefixes();
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     updatePreview();
   }, [entityType, entityId, customPart, prefixes]);
@@ -72,9 +73,9 @@ export default function BarcodeGenerator() {
   return (
     <div style={{ padding: "30px", fontFamily: "'Inter', sans-serif", color: "#1e293b", background: "#f8fafc", minHeight: "100vh" }}>
       {toast && (
-        <div style={{ 
+        <div style={{
           position: "fixed", top: "20px", right: "20px", padding: "15px 25px", borderRadius: "8px", zIndex: 1000,
-          background: toast.type === "success" ? "#d1fae5" : "#fee2e2", 
+          background: toast.type === "success" ? "#d1fae5" : "#fee2e2",
           color: toast.type === "success" ? "#065f46" : "#991b1b",
           boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", fontWeight: "500"
         }}>
@@ -90,8 +91,8 @@ export default function BarcodeGenerator() {
           <form onSubmit={handleGenerate} style={{ background: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", height: "fit-content" }}>
             <div style={{ marginBottom: "20px" }}>
               <label style={{ fontSize: "14px", fontWeight: "600", color: "#475569", display: "block", marginBottom: "8px" }}>Entity Type</label>
-              <select 
-                value={entityType} 
+              <select
+                value={entityType}
                 onChange={(e) => setEntityType(e.target.value)}
                 style={{ width: "100%", padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "16px", outline: "none", background: "white" }}
               >
@@ -101,9 +102,9 @@ export default function BarcodeGenerator() {
 
             <div style={{ marginBottom: "20px" }}>
               <label style={{ fontSize: "14px", fontWeight: "600", color: "#475569", display: "block", marginBottom: "8px" }}>Entity ID</label>
-              <input 
-                type="number" 
-                value={entityId} 
+              <input
+                type="number"
+                value={entityId}
                 onChange={(e) => setEntityId(e.target.value)}
                 placeholder="e.g. 42"
                 style={{ width: "100%", padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "16px", outline: "none" }}
@@ -113,17 +114,17 @@ export default function BarcodeGenerator() {
 
             <div style={{ marginBottom: "30px" }}>
               <label style={{ fontSize: "14px", fontWeight: "600", color: "#475569", display: "block", marginBottom: "8px" }}>Custom Part (Optional)</label>
-              <input 
-                type="text" 
-                value={customPart} 
+              <input
+                type="text"
+                value={customPart}
                 onChange={(e) => setCustomPart(e.target.value)}
                 placeholder="e.g. AJ01"
                 style={{ width: "100%", padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "16px", outline: "none" }}
               />
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               style={{ width: "100%", background: "#4f46e5", color: "white", padding: "12px", border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer", fontSize: "16px" }}
             >
@@ -145,7 +146,7 @@ export default function BarcodeGenerator() {
               <div style={{ background: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <h4 style={{ margin: "0 0 15px 0", color: "#059669" }}>✓ Saved & Active</h4>
                 <Barcode value={generatedBarcode} width={1.5} height={60} fontSize={14} />
-                <button 
+                <button
                   onClick={() => {
                     // Quick print logic
                     const printWindow = window.open("", "_blank");

@@ -50,8 +50,7 @@ import WmsBarcodeLabels from "./forms/WmsBarcodeLabels";
 import WmsScannerApp from "./forms/WmsScannerApp";
 import WmsPackageScreen from "./forms/WmsPackageScreen";
 import BarcodeGenerator from "./forms/BarcodeGenerator";
-import BarcodeScanner from "./forms/BarcodeScanner";
-import BarcodeSearch from "./forms/BarcodeSearch";
+import BarcodeHub from "./forms/BarcodeHub";
 import BarcodeSettings from "./forms/BarcodeSettings";
 import WarehouseBarcodePage from "./forms/WarehouseBarcodePage";
 import ZoneBarcodePage from "./forms/ZoneBarcodePage";
@@ -66,7 +65,6 @@ import PurchaseOrderBarcodePage from "./forms/PurchaseOrderBarcodePage";
 import SalesOrderBarcodePage from "./forms/SalesOrderBarcodePage";
 import ShipmentBarcodePage from "./forms/ShipmentBarcodePage";
 import PickListBarcodePage from "./forms/PickListBarcodePage";
-import BarcodeDetailsPage from "./forms/BarcodeDetailsPage";
 
 import { LocalAIProvider } from "./context/LocalAIContext";
 import { smartErpApi } from "./services/smartErpApi";
@@ -133,8 +131,9 @@ const MODULE_CONFIG = [
       { id: "barcodeDashboard", label: "Barcode Dashboard", path: "/wms/barcode-dashboard" },
       { id: "wmsBarcodeLabels", label: "Barcode Labels", path: "/wms/barcode-labels" },
       { id: "barcodeGenerator", label: "Barcode Generator", path: "/wms/barcode-generator" },
-      { id: "barcodeScanner", label: "Barcode Scanner", path: "/wms/barcode-scanner" },
-      { id: "barcodeSearch", label: "Barcode Search", path: "/wms/barcode-search" },
+      { id: "barcodeScanner", label: "Barcode Hub", path: "/wms/barcode-hub" },
+      // { id: "barcodeSearch", label: "Barcode Search", path: "/wms/barcode-hub" },
+      // { id: "barcodeDetails", label: "Barcode Details", path: "/wms/barcode-hub" },
       { id: "barcodeSettings", label: "Barcode Settings", path: "/wms/barcode-settings" },
     ]
   },
@@ -180,7 +179,7 @@ const DEFAULT_ROLE_MODULES = {
   Manager: [
     "dashboard", "products", "orderManagement", "salesOrderList", "createSalesOrder", "customers", "vendors",
     "purchaseOrders", "vendorReturns", "inventory", "lots", "warehouses", "operations", "finance", "reports",
-    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen", ...COMPANY_MODULES
+    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeDetails", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen", ...COMPANY_MODULES
   ],
   Operator: ["operations", "scannerDevice", "serialScan", "wmsOperations"],
   OperationsWorker: [
@@ -190,7 +189,7 @@ const DEFAULT_ROLE_MODULES = {
   ScannerWorker: ["scannerDevice", "serialScan", "operations", "wmsScannerApp"],
   "Warehouse Manager": [
     "dashboard", "products", "inventory", "lots", "warehouses", "operations", "purchaseOrders", "vendors",
-    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen"
+    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeDetails", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen"
   ],
   "Finance Manager": [
     "dashboard", "finance", "reports", "salesOrderList", "purchaseOrders", "customers", "vendors",
@@ -635,15 +634,17 @@ function AppContent() {
           <Route path="/inventory" element={renderProtectedRoute("inventory", <Inventory />)} />
           <Route path="/lots" element={renderProtectedRoute("lots", <Lots />)} />
           <Route path="/warehouses" element={renderProtectedRoute("warehouses", <Warehouses />)} />
-          
+
           <Route path="/wms/dashboard" element={renderProtectedRoute("wmsDashboard", <WmsDashboard />)} />
           <Route path="/wms/setup" element={renderProtectedRoute("wmsSetup", <WmsSetup />)} />
           <Route path="/wms/operations" element={renderProtectedRoute("wmsOperations", <WmsOperations />)} />
-           <Route path="/wms/barcode-dashboard" element={renderProtectedRoute("barcodeDashboard", <BarcodeDashboard />)} />
+          <Route path="/wms/barcode-dashboard" element={renderProtectedRoute("barcodeDashboard", <BarcodeDashboard />)} />
           <Route path="/wms/barcode-labels" element={renderProtectedRoute("wmsBarcodeLabels", <WmsBarcodeLabels />)} />
           <Route path="/wms/barcode-generator" element={renderProtectedRoute("barcodeDashboard", <BarcodeGenerator />)} />
-          <Route path="/wms/barcode-scanner" element={renderProtectedRoute("barcodeDashboard", <BarcodeScanner />)} />
-          <Route path="/wms/barcode-search" element={renderProtectedRoute("barcodeDashboard", <BarcodeSearch />)} />
+          <Route path="/wms/barcode-scanner" element={renderProtectedRoute("barcodeDashboard", <BarcodeHub />)} />
+          <Route path="/wms/barcode-search" element={renderProtectedRoute("barcodeDashboard", <BarcodeHub />)} />
+          <Route path="/wms/barcode-hub" element={renderProtectedRoute("barcodeDashboard", <BarcodeHub />)} />
+          <Route path="/wms/barcode-hub/:barcode" element={renderProtectedRoute("barcodeDashboard", <BarcodeHub />)} />
           <Route path="/wms/barcode-settings" element={renderProtectedRoute("barcodeDashboard", <BarcodeSettings />)} />
           <Route path="/wms/warehouse-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <WarehouseBarcodePage />)} />
           <Route path="/wms/zone-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <ZoneBarcodePage />)} />
@@ -658,7 +659,8 @@ function AppContent() {
           <Route path="/wms/so-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <SalesOrderBarcodePage />)} />
           <Route path="/wms/shipment-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <ShipmentBarcodePage />)} />
           <Route path="/wms/picklist-barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <PickListBarcodePage />)} />
-          <Route path="/wms/barcode/:barcode" element={renderProtectedRoute("barcodeDashboard", <BarcodeDetailsPage />)} />
+          <Route path="/wms/barcode" element={renderProtectedRoute("barcodeDetails", <BarcodeHub />)} />
+          <Route path="/wms/barcode/:barcode" element={renderProtectedRoute("barcodeDetails", <BarcodeHub />)} />
           <Route path="/scanner-app" element={renderProtectedRoute("wmsScannerApp", <WmsScannerApp />)} />
           <Route path="/package-dispatch" element={renderProtectedRoute("wmsPackageScreen", <WmsPackageScreen />)} />
 
@@ -765,90 +767,5 @@ function Sidebar({ navItems, role, isOpen, onClose, onLogout, brandName, brandCo
         <button className="btn btn-danger btn-sm w-100 fw-bold" onClick={onLogout}>LOGOUT</button>
       </div>
     </aside>
-  );
-}
-
-function LoginPage({ onLoginSuccess, initialError }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [requiresMfa, setRequiresMfa] = useState(false);
-  const [mfaMessage, setMfaMessage] = useState("");
-  const [devOtp, setDevOtp] = useState("");
-  const [error, setError] = useState(initialError || "");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    smartErpApi.initialize().catch(() => { });
-  }, []);
-
-  useEffect(() => {
-    if (initialError) {
-      setError(initialError);
-    }
-  }, [initialError]);
-
-  const handleLogin = async (event) => {
-    event.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await smartErpApi.login({ username, password });
-      if (res.data.requiresMfa) {
-        setRequiresMfa(true);
-        setMfaMessage(res.data.message || "MFA verification required.");
-        setDevOtp(res.data.devOtp || "");
-      } else {
-        onLoginSuccess(res.data);
-      }
-    } catch (err) {
-      setError(err?.response?.data?.message || "Login failed");
-    } finally { setLoading(false); }
-  };
-
-  const handleVerifyMfa = async (event) => {
-    event.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await smartErpApi.verifyMfa({ username, otpCode });
-      onLoginSuccess(res.data);
-    } catch (err) {
-      setError(err?.response?.data?.message || "MFA verification failed");
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-brand">Smart ERP</div>
-        <h1 className="login-title">Enterprise Access</h1>
-        <p className="login-subtitle">Authenticate to open operations and analytics.</p>
-        {!requiresMfa ? (
-          <form onSubmit={handleLogin}>
-            <div className="mb-3">
-              <label className="form-label" htmlFor="userId">User ID</label>
-              <input id="userId" type="text" className="form-control" value={username} onChange={e => setUsername(e.target.value)} autoComplete="off" />
-            </div>
-            <div className="mb-3">
-              <label className="form-label" htmlFor="password">Password</label>
-              <input id="password" type="password" className="form-control" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" />
-            </div>
-            {error && <div className="alert alert-danger py-2 small">{error}</div>}
-            <button type="submit" className="btn btn-primary w-100" disabled={loading}>{loading ? "Signing in..." : "Login"}</button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyMfa}>
-            <div className="alert alert-info py-2 small">{mfaMessage} {devOtp && <strong>OTP: {devOtp}</strong>}</div>
-            <div className="mb-3">
-              <label className="form-label" htmlFor="otpCode">OTP Code</label>
-              <input id="otpCode" type="text" className="form-control text-center fw-bold" value={otpCode} onChange={e => setOtpCode(e.target.value)} placeholder="000000" />
-            </div>
-            {error && <div className="alert alert-danger py-2 small">{error}</div>}
-            <button type="submit" className="btn btn-primary w-100" disabled={loading}>{loading ? "Verifying..." : "Verify MFA"}</button>
-          </form>
-        )}
-      </div>
-    </div>
   );
 }

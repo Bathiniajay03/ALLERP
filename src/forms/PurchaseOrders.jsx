@@ -151,6 +151,10 @@ export default function PurchaseOrders() {
 
   const generateSerialSequence = async () => {
     if (!selectedLine) return;
+    if (!serialGenerationForm.quantity || serialGenerationForm.quantity <= 0) {
+      setSerialError('Quantity must be greater than 0');
+      return;
+    }
     setSerialLoading(true);
     setSerialError('');
     try {

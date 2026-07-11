@@ -567,7 +567,7 @@ export default function Inventory() {
                   <tbody>
                     {selectedItem.lots.map((lot, idx) => (
                       <tr key={idx}>
-                        <td className="text-muted">{lot.warehouseName || `WH-${lot.warehouseId}`}</td>
+                        <td className="text-muted">{lot.locationPath || lot.warehouseName || `WH-${lot.warehouseId}`}</td>
                         <td className="fw-bold font-monospace">{lot.lotNumber || "UNASSIGNED"}</td>
                         <td className="text-end font-monospace fw-bold text-dark">{lot.quantity}</td>
                         <td className="text-end font-monospace text-muted">{(lot.quantity * lot.unitCost).toFixed(2)}</td>
