@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5157/api';
+import apiClient from '../services/apiClient';
 
 export default function VisitorChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,7 +46,7 @@ export default function VisitorChatWidget() {
 
   const pollMessages = async (sid, lastId) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/visitor-chat/poll/${sid}?lastMessageId=${lastId}`);
+      const res = await apiClient.get(`/visitor-chat/poll/${sid}?lastMessageId=${lastId}`);
       if (res.data && res.data.length > 0) {
         setMessages(prev => {
           const newMessages = res.data.filter(nm => !prev.some(pm => pm.id === nm.id));
@@ -68,7 +66,7 @@ export default function VisitorChatWidget() {
     const newSessionId = 'CH-' + Math.random().toString(36).substring(2, 10).toUpperCase();
     
     try {
-      await axios.post(`${API_BASE_URL}/visitor-chat/start`, {
+      await apiClient.post(`/visitor-chat/start`, {
         sessionId: newSessionId,
         name: name,
         email: email
@@ -91,7 +89,7 @@ export default function VisitorChatWidget() {
     setCurrentMessage('');
     
     try {
-      const res = await axios.post(`${API_BASE_URL}/visitor-chat/send`, {
+      const res = await apiClient.post(`/visitor-chat/send`, {
         sessionId: sessionId,
         message: msgText
       });

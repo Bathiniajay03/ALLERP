@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5157/api';
+import apiClient from '../services/apiClient';
 
 export default function SuperAdminChatInbox() {
   const [activeTab, setActiveTab] = useState('visitors'); // 'visitors' or 'clients'
@@ -13,9 +11,6 @@ export default function SuperAdminChatInbox() {
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const messagesEndRef = useRef(null);
-  
-  const token = sessionStorage.getItem('erp_token') || localStorage.getItem('erp_token');
-  const config = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
     fetchSessions();
@@ -38,8 +33,8 @@ export default function SuperAdminChatInbox() {
   const fetchSessions = async () => {
     try {
       const [vRes, cRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/super-admin/chat/sessions`, config),
-        axios.get(`${API_BASE_URL}/super-admin/chat/client-sessions`, config)
+        apiClient.get(`/super-admin/chat/sessions`),
+        apiClient.get(`/super-admin/chat/client-sessions`)
       ]);
       setVisitorSessions(vRes.data.map(s => ({ ...s, type: 'visitor' })));
       setClientSessions(cRes.data.map(s => ({ ...s, type: 'client' })));
@@ -51,7 +46,7 @@ export default function SuperAdminChatInbox() {
   const fetchMessages = async (sessionId, type) => {
     try {
       const endpoint = type === 'visitor' ? 'sessions' : 'client-sessions';
-      const res = await axios.get(`${API_BASE_URL}/super-admin/chat/${endpoint}/${sessionId}/messages`, config);
+      const res = await apiClient.get(`/super-admin/chat/${endpoint}/${sessionId}/messages`);
       setMessages(res.data);
     } catch (err) {
       console.error('Failed to fetch messages', err);
@@ -67,9 +62,9 @@ export default function SuperAdminChatInbox() {
     
     try {
       const endpoint = activeSession.type === 'visitor' ? 'sessions' : 'client-sessions';
-      await axios.post(`${API_BASE_URL}/super-admin/chat/${endpoint}/${activeSession.id}/reply`, {
+      await apiClient.post(`/super-admin/chat/${endpoint}/${activeSession.id}/reply`, {
         message: msgText
-      }, config);
+      });
       fetchMessages(activeSession.id, activeSession.type);
     } catch (err) {
       console.error('Failed to send message', err);
@@ -79,9 +74,9 @@ export default function SuperAdminChatInbox() {
   const markSessionClosed = async (sessionId, type) => {
     try {
       const endpoint = type === 'visitor' ? 'sessions' : 'client-sessions';
-      await axios.put(`${API_BASE_URL}/super-admin/chat/${endpoint}/${sessionId}/status`, {
+      await apiClient.put(`/super-admin/chat/${endpoint}/${sessionId}/status`, {
         status: 'CLOSED'
-      }, config);
+      });
       if (activeSession?.id === sessionId) setActiveSession(null);
       fetchSessions();
     } catch (err) {

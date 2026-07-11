@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5157/api';
+import apiClient from '../services/apiClient';
 
 export default function ClientChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,7 +8,6 @@ export default function ClientChatWidget() {
   const messagesEndRef = useRef(null);
 
   const token = sessionStorage.getItem('erp_token') || localStorage.getItem('erp_token');
-  const config = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
     let pollInterval;
@@ -33,9 +30,9 @@ export default function ClientChatWidget() {
     if (!token) return;
     try {
       // First try to get the active session. If none, start one.
-      const res = await axios.get(`${API_BASE_URL}/client/chat/session`, config).catch(async (e) => {
+      const res = await apiClient.get('/client/chat/session').catch(async (e) => {
         if (e.response && e.response.status === 404) {
-          return await axios.post(`${API_BASE_URL}/client/chat/start`, {}, config);
+          return await apiClient.post('/client/chat/start', {});
         }
         throw e;
       });
@@ -56,9 +53,9 @@ export default function ClientChatWidget() {
     setCurrentMessage('');
     
     try {
-      await axios.post(`${API_BASE_URL}/client/chat/messages`, {
+      await apiClient.post('/client/chat/messages', {
         message: msgText
-      }, config);
+      });
       pollMessages();
     } catch (err) {
       console.error('Error sending message', err);
