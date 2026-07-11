@@ -1,7 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { smartErpApi } from "../services/smartErpApi";
 import CompanyWizard from "./CompanyWizard";
+import SuperAdminChatInbox from "../components/SuperAdminChatInbox";
+
+
 
 export default function SuperAdminPortal() {
   const [companies, setCompanies] = useState([]);
@@ -393,11 +395,18 @@ export default function SuperAdminPortal() {
             System Audit Trail
           </button>
         </li>
+        <li className="nav-item">
+          <button className={`nav-link fw-bold px-4 w-100 ${activeTab === "chats" ? "active" : "text-dark"}`} onClick={() => setActiveTab("chats")}>
+            Live Visitor Chats
+          </button>
+        </li>
       </ul>
 
       {/* Tab Content */}
       <div className="bg-white p-4 rounded-3 shadow-sm border-0">
-        {activeTab === "companies" ? (
+        {activeTab === "chats" ? (
+          <SuperAdminChatInbox />
+        ) : activeTab === "companies" ? (
           <div>
             <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
               <h4 className="fw-bold m-0">Active Tenants Directory</h4>

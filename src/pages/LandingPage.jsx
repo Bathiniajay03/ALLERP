@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import VisitorChatWidget from '../components/VisitorChatWidget';
 
 const INDUSTRIES = [
   { name: 'Retail', icon: '🛍️' },
@@ -451,24 +452,38 @@ export default function LandingPage() {
         .lp-price-card {
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 20px;
-          padding: 40px 32px;
+          border-radius: 24px;
+          padding: 48px 32px;
           position: relative;
           display: flex;
           flex-direction: column;
-          transition: all 0.3s ease;
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+          overflow: hidden;
+        }
+
+        .lp-price-card::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0; height: 4px;
+          background: transparent;
+          transition: all 0.4s ease;
         }
 
         .lp-price-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+          transform: translateY(-8px) scale(1.01);
+          box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.15);
+          border-color: #bae6fd;
         }
 
         .lp-price-card.featured {
-          background: linear-gradient(180deg, rgba(14, 165, 233, 0.02) 0%, rgba(255, 255, 255, 1) 100%);
-          border-color: rgba(14, 165, 233, 0.4);
-          box-shadow: 0 10px 30px rgba(14, 165, 233, 0.05);
+          background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(240, 249, 255, 0.6) 100%);
+          border: 2px solid rgba(14, 165, 233, 0.5);
+          box-shadow: 0 16px 32px -8px rgba(14, 165, 233, 0.15);
+        }
+
+        .lp-price-card.featured::before {
+          background: linear-gradient(90deg, #0ea5e9, #6366f1);
         }
 
         .lp-price-badge {
@@ -1134,6 +1149,55 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Core ERP Modules Section */}
+      <section className="lp-section" id="modules" style={{ background: '#ffffff', padding: '100px 0' }}>
+        <div className="lp-sec-header">
+          <h2>Unmatched Core Capabilities</h2>
+          <p>Explore the powerful modules that drive your business forward.</p>
+        </div>
+
+        <div className="row g-5 align-items-center mb-5" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div className="col-12 col-md-6 order-2 order-md-1">
+            <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>Advanced WMS Hierarchy</h3>
+            <p className="text-muted mb-4" style={{ lineHeight: '1.8' }}>
+              Say goodbye to lost inventory. Our sophisticated Warehouse Management System provides granular tracking down to the exact bin location. Navigate through <strong>Zone → Aisle → Rack → Shelf → Bin</strong> hierarchies.
+            </p>
+            <ul className="list-unstyled text-muted mb-0" style={{ lineHeight: '2' }}>
+              <li><span className="text-success me-2">✔</span>Auto Bin Recommendation</li>
+              <li><span className="text-success me-2">✔</span>Capacity Validation</li>
+              <li><span className="text-success me-2">✔</span>Visual Warehouse Mapping</li>
+              <li><span className="text-success me-2">✔</span>Serial & Lot level traceability</li>
+            </ul>
+          </div>
+          <div className="col-12 col-md-6 order-1 order-md-2 text-center">
+            <div style={{ background: 'linear-gradient(135deg, #e0e7ff, #f1f5f9)', borderRadius: '24px', padding: '40px', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)' }}>
+              <img src="/logo192.png" alt="WMS Dashboard" style={{ width: '80%', opacity: '0.8', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.15))' }} />
+            </div>
+          </div>
+        </div>
+
+        <div className="row g-5 align-items-center mt-5" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div className="col-12 col-md-6 text-center">
+            <div style={{ background: 'linear-gradient(135deg, #fce7f3, #f1f5f9)', borderRadius: '24px', padding: '40px', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)' }}>
+               <img src="/logo192.png" alt="Scanner Application" style={{ width: '80%', opacity: '0.8', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.15))' }} />
+            </div>
+          </div>
+          <div className="col-12 col-md-6">
+            <h3 className="fw-bold mb-3" style={{ color: '#0f172a' }}>PWA Mobile Scanner</h3>
+            <p className="text-muted mb-4" style={{ lineHeight: '1.8' }}>
+              Equip your warehouse workers with our built-in Progressive Web App (PWA) scanner. No need to purchase expensive proprietary scanning hardware. 
+              Simply use any smartphone camera to perform high-speed barcode operations.
+            </p>
+            <ul className="list-unstyled text-muted mb-0" style={{ lineHeight: '2' }}>
+              <li><span className="text-primary me-2">📱</span>Instant Web-cam decoding</li>
+              <li><span className="text-primary me-2">⚡</span>Real-time reconciliation</li>
+              <li><span className="text-primary me-2">📦</span>Directed Put-away</li>
+              <li><span className="text-primary me-2">🔔</span>Auditory feedback</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section className="lp-section" id="pricing">
         <div className="lp-sec-header">
@@ -1267,6 +1331,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <VisitorChatWidget />
     </div>
   );
 }

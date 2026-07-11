@@ -240,26 +240,66 @@ export default function SignupWizard() {
         }
 
         .plan-option {
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          padding: 16px;
-          margin-bottom: 12px;
+          background: #ffffff;
+          border: 2px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 18px 20px;
+          margin-bottom: 14px;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           display: flex;
           justify-content: space-between;
           align-items: center;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .plan-option::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0;
+          width: 4px;
+          height: 100%;
+          background: transparent;
+          transition: all 0.3s ease;
         }
 
         .plan-option:hover {
-          border-color: #cbd5e1;
-          background: #f1f5f9;
+          border-color: #bae6fd;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 16px -4px rgba(14, 165, 233, 0.1);
+        }
+
+        .plan-option:active {
+          transform: scale(0.99);
         }
 
         .plan-option.selected {
           border-color: #0ea5e9;
-          background: rgba(14, 165, 233, 0.05);
+          background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(99, 102, 241, 0.05));
+          box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15);
+        }
+
+        .plan-option.selected::before {
+          background: linear-gradient(180deg, #0ea5e9, #6366f1);
+        }
+
+        .plan-option .fw-bold {
+          font-size: 1.05rem;
+          color: #0f172a;
+          margin-bottom: 4px;
+        }
+
+        .plan-option .text-muted {
+          font-size: 0.85rem;
+        }
+
+        .plan-option .text-info {
+          font-size: 1.15rem;
+          background: linear-gradient(135deg, #0284c7, #6366f1);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
 
         .btn-action {
@@ -462,15 +502,31 @@ export default function SignupWizard() {
           <div>
             <h4 className="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>Step 4: Subscription Tier</h4>
             <div>
-              {PLANS.map(plan => (
-                <div key={plan.id} className={`plan-option ${formData.subscriptionPlan === plan.id ? 'selected' : ''}`} onClick={() => setFormData(prev => ({ ...prev, subscriptionPlan: plan.id }))}>
-                  <div>
-                    <div className="fw-bold" style={{ color: '#0f172a' }}>{plan.name}</div>
-                    <div className="small text-muted">{plan.limit}</div>
+              {PLANS.map(plan => {
+                const isSelected = formData.subscriptionPlan === plan.id;
+                return (
+                  <div key={plan.id} className={`plan-option ${isSelected ? 'selected' : ''}`} onClick={() => setFormData(prev => ({ ...prev, subscriptionPlan: plan.id }))}>
+                    <div>
+                      <div className="fw-bold" style={{ color: '#0f172a' }}>{plan.name}</div>
+                      <div className="small text-muted">{plan.limit}</div>
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <div className="text-info fw-bold me-3">{plan.price}</div>
+                      <div style={{
+                        width: '24px', height: '24px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: isSelected ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#f1f5f9',
+                        color: isSelected ? '#fff' : 'transparent',
+                        transition: 'all 0.3s ease'
+                      }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-info fw-bold">{plan.price}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-3">
