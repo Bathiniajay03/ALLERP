@@ -95,7 +95,7 @@ const apiClient = axios.create({
 
 // Request interceptor - add JWT token
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('erp_token');
+  const token = sessionStorage.getItem('erp_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -114,8 +114,8 @@ apiClient.interceptors.response.use(
       !requestUrl.includes('/smart-erp/auth/login') &&
       !requestUrl.includes('/smart-erp/auth/verify-mfa')
     ) {
-      localStorage.removeItem('erp_token');
-      localStorage.removeItem('erp_role');
+      sessionStorage.removeItem('erp_token');
+      sessionStorage.removeItem('erp_role');
       window.dispatchEvent(new Event('erp:unauthorized'));
       error.customMessage = 'Authentication required. Please login again.';
       return Promise.reject(error);

@@ -72,7 +72,7 @@ export default function Dashboard() {
   }
 
   // Parse user context from token
-  const token = localStorage.getItem("erp_token");
+  const token = sessionStorage.getItem("erp_token");
   let isMainAdminUser = false;
   if (token) {
     try {

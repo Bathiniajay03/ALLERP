@@ -44,6 +44,10 @@ import CompanyLoginPage from "./pages/CompanyLoginPage";
 
 import WmsSetup from "./forms/WmsSetup";
 import WmsDashboard from "./forms/WmsDashboard";
+import WmsPutAwayWorkflow from "./forms/WmsPutAwayWorkflow";
+import WmsBinTransfer from "./forms/WmsBinTransfer";
+import WmsStockHistory from "./forms/WmsStockHistory";
+import WmsReports from "./forms/WmsReports";
 import WmsOperations from "./forms/WmsOperations";
 import BarcodeDashboard from "./forms/BarcodeDashboard";
 import WmsBarcodeLabels from "./forms/WmsBarcodeLabels";
@@ -126,14 +130,16 @@ const MODULE_CONFIG = [
     isGroup: true,
     subModules: [
       { id: "wmsDashboard", label: "WMS Dashboard", path: "/wms/dashboard" },
+      { id: "wmsPutAway", label: "Put Away", path: "/wms/putaway" },
+      { id: "wmsTransfer", label: "Bin Transfer", path: "/wms/transfer" },
+      { id: "barcodeScanner", label: "Barcode Hub", path: "/wms/barcode-hub" },
+      { id: "wmsHistory", label: "Stock History", path: "/wms/history" },
+      { id: "wmsReports", label: "Reports", path: "/wms/reports" },
       { id: "wmsSetup", label: "WMS Topology Map", path: "/wms/setup" },
       { id: "wmsOperations", label: "WMS Operations", path: "/wms/operations" },
       { id: "barcodeDashboard", label: "Barcode Dashboard", path: "/wms/barcode-dashboard" },
       { id: "wmsBarcodeLabels", label: "Barcode Labels", path: "/wms/barcode-labels" },
       { id: "barcodeGenerator", label: "Barcode Generator", path: "/wms/barcode-generator" },
-      { id: "barcodeScanner", label: "Barcode Hub", path: "/wms/barcode-hub" },
-      // { id: "barcodeSearch", label: "Barcode Search", path: "/wms/barcode-hub" },
-      // { id: "barcodeDetails", label: "Barcode Details", path: "/wms/barcode-hub" },
       { id: "barcodeSettings", label: "Barcode Settings", path: "/wms/barcode-settings" },
     ]
   },
@@ -179,7 +185,7 @@ const DEFAULT_ROLE_MODULES = {
   Manager: [
     "dashboard", "products", "orderManagement", "salesOrderList", "createSalesOrder", "customers", "vendors",
     "purchaseOrders", "vendorReturns", "inventory", "lots", "warehouses", "operations", "finance", "reports",
-    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeDetails", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen", ...COMPANY_MODULES
+    "stockAlerts", "scannerDevice", "serialScan", "automation", "notifications", "wmsDashboard", "wmsPutAway", "wmsTransfer", "wmsHistory", "wmsReports", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeDetails", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen", ...COMPANY_MODULES
   ],
   Operator: ["operations", "scannerDevice", "serialScan", "wmsOperations"],
   OperationsWorker: [
@@ -189,7 +195,7 @@ const DEFAULT_ROLE_MODULES = {
   ScannerWorker: ["scannerDevice", "serialScan", "operations", "wmsScannerApp"],
   "Warehouse Manager": [
     "dashboard", "products", "inventory", "lots", "warehouses", "operations", "purchaseOrders", "vendors",
-    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeDetails", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen"
+    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsPutAway", "wmsTransfer", "wmsHistory", "wmsReports", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeDetails", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen"
   ],
   "Finance Manager": [
     "dashboard", "finance", "reports", "salesOrderList", "purchaseOrders", "customers", "vendors",
@@ -269,19 +275,19 @@ function AppContent() {
   const isClient = typeof window !== "undefined";
 
   // 1. UPDATED: Initialize authentication state directly from storage to prevent Dashboard flicker
-  const [isAuthenticated, setIsAuthenticated] = useState(() => (isClient ? !!window.localStorage.getItem("erp_token") : false));
-  const [authToken, setAuthToken] = useState(() => (isClient ? window.localStorage.getItem("erp_token") || "" : ""));
-  const [role, setRole] = useState(() => (isClient ? window.localStorage.getItem("erp_role") || "" : ""));
-  const [userType, setUserType] = useState(() => (isClient ? window.localStorage.getItem("erp_user_type") || "" : ""));
+  const [isAuthenticated, setIsAuthenticated] = useState(() => (isClient ? !!window.sessionStorage.getItem("erp_token") : false));
+  const [authToken, setAuthToken] = useState(() => (isClient ? window.sessionStorage.getItem("erp_token") || "" : ""));
+  const [role, setRole] = useState(() => (isClient ? window.sessionStorage.getItem("erp_role") || "" : ""));
+  const [userType, setUserType] = useState(() => (isClient ? window.sessionStorage.getItem("erp_user_type") || "" : ""));
   const [userAssignedPages, setUserAssignedPages] = useState(() => {
     if (!isClient) return [];
     try {
-      return JSON.parse(window.localStorage.getItem("erp_assigned_pages") || "[]");
+      return JSON.parse(window.sessionStorage.getItem("erp_assigned_pages") || "[]");
     } catch { return []; }
   });
   const [companyBrand, setCompanyBrand] = useState(() => {
     if (!isClient) return {};
-    try { return JSON.parse(window.localStorage.getItem("erp_company_brand") || "{}"); } catch { return {}; }
+    try { return JSON.parse(window.sessionStorage.getItem("erp_company_brand") || "{}"); } catch { return {}; }
   });
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -385,20 +391,20 @@ function AppContent() {
     } else {
       setAuthError("");
     }
-    const loginLogId = window.localStorage.getItem("erp_login_log_id");
+    const loginLogId = window.sessionStorage.getItem("erp_login_log_id");
     if (loginLogId) {
       try {
         await smartErpApi.logout({ loginLogId: Number(loginLogId) });
       } catch (error) { }
     }
-    // Clear all local storage related to session
-    window.localStorage.removeItem("erp_token");
-    window.localStorage.removeItem("erp_role");
-    window.localStorage.removeItem("erp_user_type");
-    window.localStorage.removeItem("erp_assigned_pages");
-    window.localStorage.removeItem("erp_login_log_id");
-    window.localStorage.removeItem("erp_company_brand");
-    window.localStorage.removeItem("erp_company_features");
+    // Clear all session storage related to session
+    window.sessionStorage.removeItem("erp_token");
+    window.sessionStorage.removeItem("erp_role");
+    window.sessionStorage.removeItem("erp_user_type");
+    window.sessionStorage.removeItem("erp_assigned_pages");
+    window.sessionStorage.removeItem("erp_login_log_id");
+    window.sessionStorage.removeItem("erp_company_brand");
+    window.sessionStorage.removeItem("erp_company_features");
 
     setIsAuthenticated(false);
     setAuthToken("");
@@ -413,7 +419,7 @@ function AppContent() {
     if (!isAuthenticated) return;
 
     let timeoutId;
-    const INACTIVITY_LIMIT = 120 * 60 * 1000; // 120 Minutes
+    const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 Minutes
 
     const resetTimer = () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -436,13 +442,13 @@ function AppContent() {
 
   // --- Auth & Access Sync ---
   const handleLoginSuccess = useCallback(({ accessToken, role, loginLogId, userType, assignedPages, companyName, primaryColor, logo, companyCode }) => {
-    window.localStorage.setItem("erp_token", accessToken);
-    window.localStorage.setItem("erp_role", String(role).trim());
-    window.localStorage.setItem("erp_user_type", String(userType).trim().toUpperCase());
-    if (loginLogId) window.localStorage.setItem("erp_login_log_id", loginLogId.toString());
-    window.localStorage.setItem("erp_assigned_pages", JSON.stringify(assignedPages || []));
+    window.sessionStorage.setItem("erp_token", accessToken);
+    window.sessionStorage.setItem("erp_role", String(role).trim());
+    window.sessionStorage.setItem("erp_user_type", String(userType).trim().toUpperCase());
+    if (loginLogId) window.sessionStorage.setItem("erp_login_log_id", loginLogId.toString());
+    window.sessionStorage.setItem("erp_assigned_pages", JSON.stringify(assignedPages || []));
     const brand = { companyName, primaryColor, logo, companyCode };
-    window.localStorage.setItem("erp_company_brand", JSON.stringify(brand));
+    window.sessionStorage.setItem("erp_company_brand", JSON.stringify(brand));
 
     setAuthToken(accessToken);
     setRole(role || "Admin");
@@ -453,21 +459,21 @@ function AppContent() {
   }, []);
 
   const refreshCurrentAccess = useCallback(async () => {
-    if (!window.localStorage.getItem("erp_token")) return;
+    if (!window.sessionStorage.getItem("erp_token")) return;
     try {
       const res = await smartErpApi.getCurrentAccess();
       const access = res.data || {};
       if (access.role) {
         setRole(access.role);
-        window.localStorage.setItem("erp_role", access.role);
+        window.sessionStorage.setItem("erp_role", access.role);
       }
       if (access.userType) {
         setUserType(access.userType);
-        window.localStorage.setItem("erp_user_type", access.userType);
+        window.sessionStorage.setItem("erp_user_type", access.userType);
       }
       const nextPages = Array.isArray(access.assignedPages) ? access.assignedPages : [];
       setUserAssignedPages(nextPages);
-      window.localStorage.setItem("erp_assigned_pages", JSON.stringify(nextPages));
+      window.sessionStorage.setItem("erp_assigned_pages", JSON.stringify(nextPages));
 
       if (access.companyName) {
         const brand = {
@@ -478,7 +484,7 @@ function AppContent() {
           sidebarBgColor: access.sidebarBgColor,
           sidebarTextColor: access.sidebarTextColor
         };
-        window.localStorage.setItem("erp_company_brand", JSON.stringify(brand));
+        window.sessionStorage.setItem("erp_company_brand", JSON.stringify(brand));
         setCompanyBrand(brand);
 
         const features = {
@@ -491,7 +497,7 @@ function AppContent() {
           enablePurchaseOrders: access.enablePurchaseOrders !== false,
           enableSales: access.enableSales !== false,
         };
-        window.localStorage.setItem("erp_company_features", JSON.stringify(features));
+        window.sessionStorage.setItem("erp_company_features", JSON.stringify(features));
         setCompanyFeatures(features);
       }
     } catch (error) {
@@ -636,6 +642,10 @@ function AppContent() {
           <Route path="/warehouses" element={renderProtectedRoute("warehouses", <Warehouses />)} />
 
           <Route path="/wms/dashboard" element={renderProtectedRoute("wmsDashboard", <WmsDashboard />)} />
+          <Route path="/wms/putaway" element={renderProtectedRoute("wmsPutAway", <WmsPutAwayWorkflow />)} />
+          <Route path="/wms/transfer" element={renderProtectedRoute("wmsTransfer", <WmsBinTransfer />)} />
+          <Route path="/wms/history" element={renderProtectedRoute("wmsHistory", <WmsStockHistory />)} />
+          <Route path="/wms/reports" element={renderProtectedRoute("wmsReports", <WmsReports />)} />
           <Route path="/wms/setup" element={renderProtectedRoute("wmsSetup", <WmsSetup />)} />
           <Route path="/wms/operations" element={renderProtectedRoute("wmsOperations", <WmsOperations />)} />
           <Route path="/wms/barcode-dashboard" element={renderProtectedRoute("barcodeDashboard", <BarcodeDashboard />)} />
