@@ -4,13 +4,16 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:5157/api';
 
 export default function SuperAdminChatInbox() {
-  const [sessions, setSessions] = useState([]);
+  const [activeTab, setActiveTab] = useState('visitors'); // 'visitors' or 'clients'
+  
+  const [visitorSessions, setVisitorSessions] = useState([]);
+  const [clientSessions, setClientSessions] = useState([]);
+  
   const [activeSession, setActiveSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const messagesEndRef = useRef(null);
   
-  // Need the superadmin token for auth
   const token = sessionStorage.getItem('erp_token') || localStorage.getItem('erp_token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -22,8 +25,8 @@ export default function SuperAdminChatInbox() {
 
   useEffect(() => {
     if (activeSession) {
-      fetchMessages(activeSession.id);
-      const msgInterval = setInterval(() => fetchMessages(activeSession.id), 3000);
+      fetchMessages(activeSession.id, activeSession.type);
+      const msgInterval = setInterval(() => fetchMessages(activeSession.id, activeSession.type), 3000);
       return () => clearInterval(msgInterval);
     }
   }, [activeSession]);
@@ -34,16 +37,21 @@ export default function SuperAdminChatInbox() {
 
   const fetchSessions = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/super-admin/chat/sessions`, config);
-      setSessions(res.data);
+      const [vRes, cRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/super-admin/chat/sessions`, config),
+        axios.get(`${API_BASE_URL}/super-admin/chat/client-sessions`, config)
+      ]);
+      setVisitorSessions(vRes.data.map(s => ({ ...s, type: 'visitor' })));
+      setClientSessions(cRes.data.map(s => ({ ...s, type: 'client' })));
     } catch (err) {
       console.error('Failed to fetch chat sessions', err);
     }
   };
 
-  const fetchMessages = async (sessionId) => {
+  const fetchMessages = async (sessionId, type) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/super-admin/chat/sessions/${sessionId}/messages`, config);
+      const endpoint = type === 'visitor' ? 'sessions' : 'client-sessions';
+      const res = await axios.get(`${API_BASE_URL}/super-admin/chat/${endpoint}/${sessionId}/messages`, config);
       setMessages(res.data);
     } catch (err) {
       console.error('Failed to fetch messages', err);
@@ -58,18 +66,20 @@ export default function SuperAdminChatInbox() {
     setCurrentMessage('');
     
     try {
-      await axios.post(`${API_BASE_URL}/super-admin/chat/sessions/${activeSession.id}/reply`, {
+      const endpoint = activeSession.type === 'visitor' ? 'sessions' : 'client-sessions';
+      await axios.post(`${API_BASE_URL}/super-admin/chat/${endpoint}/${activeSession.id}/reply`, {
         message: msgText
       }, config);
-      fetchMessages(activeSession.id);
+      fetchMessages(activeSession.id, activeSession.type);
     } catch (err) {
       console.error('Failed to send message', err);
     }
   };
 
-  const markSessionClosed = async (sessionId) => {
+  const markSessionClosed = async (sessionId, type) => {
     try {
-      await axios.put(`${API_BASE_URL}/super-admin/chat/sessions/${sessionId}/status`, {
+      const endpoint = type === 'visitor' ? 'sessions' : 'client-sessions';
+      await axios.put(`${API_BASE_URL}/super-admin/chat/${endpoint}/${sessionId}/status`, {
         status: 'CLOSED'
       }, config);
       if (activeSession?.id === sessionId) setActiveSession(null);
@@ -79,21 +89,38 @@ export default function SuperAdminChatInbox() {
     }
   };
 
+  const displayedSessions = activeTab === 'visitors' ? visitorSessions : clientSessions;
+
   return (
     <div className="chat-inbox-container row g-0 rounded-3 shadow-sm overflow-hidden" style={{ height: '70vh', background: 'white', border: '1px solid #e2e8f0' }}>
       {/* Sidebar - Sessions */}
       <div className="col-4 border-end bg-light d-flex flex-column" style={{ height: '100%' }}>
-        <div className="p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
-          <h5 className="m-0 fw-bold">Active Chats</h5>
-          <span className="badge bg-primary rounded-pill">{sessions.filter(s => s.status === 'ACTIVE').length}</span>
+        <div className="d-flex border-bottom bg-white">
+          <button 
+            className={`flex-fill py-3 border-0 fw-bold ${activeTab === 'visitors' ? 'bg-white text-primary border-bottom border-primary border-3' : 'bg-light text-muted'}`}
+            onClick={() => { setActiveTab('visitors'); setActiveSession(null); }}
+          >
+            Visitors <span className="badge bg-secondary ms-1">{visitorSessions.filter(s => s.status === 'ACTIVE').length}</span>
+          </button>
+          <button 
+            className={`flex-fill py-3 border-0 fw-bold ${activeTab === 'clients' ? 'bg-white text-primary border-bottom border-primary border-3' : 'bg-light text-muted'}`}
+            onClick={() => { setActiveTab('clients'); setActiveSession(null); }}
+          >
+            Clients <span className="badge bg-secondary ms-1">{clientSessions.filter(s => s.status === 'ACTIVE').length}</span>
+          </button>
         </div>
+        
         <div className="overflow-auto flex-grow-1 p-2">
-          {sessions.length === 0 ? (
-            <div className="text-center text-muted p-4 small">No active chats</div>
+          {displayedSessions.length === 0 ? (
+            <div className="text-center text-muted p-4 small">No active chats in this category.</div>
           ) : (
-            sessions.map(s => {
-              const isActive = activeSession?.id === s.id;
+            displayedSessions.map(s => {
+              const isActive = activeSession?.id === s.id && activeSession?.type === s.type;
               const timeStr = new Date(s.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              
+              const displayName = s.type === 'visitor' ? s.visitorName : `Client User #${s.userId}`;
+              const displaySub = s.type === 'visitor' ? s.visitorEmail : `Company ID: ${s.companyId}`;
+
               return (
                 <div 
                   key={s.id} 
@@ -102,12 +129,12 @@ export default function SuperAdminChatInbox() {
                   onClick={() => setActiveSession(s)}
                 >
                   <div className="d-flex justify-content-between align-items-center mb-1">
-                    <span className="fw-bold fs-6 text-truncate">{s.visitorName}</span>
+                    <span className="fw-bold fs-6 text-truncate">{displayName}</span>
                     <span className={`small ${isActive ? 'text-white-50' : 'text-muted'}`}>{timeStr}</span>
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
                     <span className={`small text-truncate ${isActive ? 'text-white' : 'text-secondary'}`} style={{ maxWidth: '70%' }}>
-                      {s.visitorEmail || 'No Email'}
+                      {displaySub}
                     </span>
                     {s.status === 'CLOSED' && <span className="badge bg-secondary" style={{ fontSize: '0.65rem' }}>CLOSED</span>}
                     {s.status === 'ACTIVE' && <span className="badge bg-success" style={{ fontSize: '0.65rem' }}>ACTIVE</span>}
@@ -125,10 +152,15 @@ export default function SuperAdminChatInbox() {
           <>
             <div className="p-3 border-bottom bg-white d-flex justify-content-between align-items-center shadow-sm z-1">
               <div>
-                <h5 className="m-0 fw-bold">{activeSession.visitorName}</h5>
-                <span className="small text-muted">{activeSession.visitorEmail} • ID: {activeSession.sessionId}</span>
+                <h5 className="m-0 fw-bold">
+                  {activeSession.type === 'visitor' ? activeSession.visitorName : `Client User #${activeSession.userId}`}
+                </h5>
+                <span className="small text-muted">
+                  {activeSession.type === 'visitor' ? activeSession.visitorEmail : `Company ID: ${activeSession.companyId}`}
+                  {activeSession.sessionId ? ` • ID: ${activeSession.sessionId}` : ''}
+                </span>
               </div>
-              <button className="btn btn-sm btn-outline-danger" onClick={() => markSessionClosed(activeSession.id)} disabled={activeSession.status === 'CLOSED'}>
+              <button className="btn btn-sm btn-outline-danger" onClick={() => markSessionClosed(activeSession.id, activeSession.type)} disabled={activeSession.status === 'CLOSED'}>
                 Close Chat
               </button>
             </div>
@@ -139,16 +171,32 @@ export default function SuperAdminChatInbox() {
               )}
               {messages.map(m => {
                 const isAdmin = m.senderType === 'SUPERADMIN';
+                const isAI = m.senderType === 'AI';
                 const timeStr = new Date(m.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                let bubbleBg = 'white';
+                let bubbleColor = '#1e293b';
+                let align = 'justify-content-start';
+                
+                if (isAdmin) {
+                  bubbleBg = '#0ea5e9';
+                  bubbleColor = 'white';
+                  align = 'justify-content-end';
+                } else if (isAI) {
+                  bubbleBg = '#fdf2f8';
+                  bubbleColor = '#be185d';
+                  align = 'justify-content-start';
+                }
+
                 return (
-                  <div key={m.id} className={`d-flex ${isAdmin ? 'justify-content-end' : 'justify-content-start'}`}>
+                  <div key={m.id} className={`d-flex ${align}`}>
                     <div style={{
                       maxWidth: '75%',
                       padding: '12px 16px',
                       borderRadius: '16px',
-                      background: isAdmin ? '#0ea5e9' : 'white',
-                      color: isAdmin ? 'white' : '#1e293b',
-                      border: isAdmin ? 'none' : '1px solid #e2e8f0',
+                      background: bubbleBg,
+                      color: bubbleColor,
+                      border: isAdmin ? 'none' : (isAI ? '1px solid #fbcfe8' : '1px solid #e2e8f0'),
                       borderBottomRightRadius: isAdmin ? '4px' : '16px',
                       borderBottomLeftRadius: isAdmin ? '16px' : '4px',
                       boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
