@@ -209,10 +209,9 @@ export default function BarcodeScanner() {
             <div style={{ background: "white", padding: "30px", borderRadius: "12px", width: "100%", maxWidth: "550px", maxStatusHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.15)" }}>
               <h3 style={{ margin: "0 0 10px 0", color: "#b91c1c" }}>❌ Unknown Barcode Scanned</h3>
               <p style={{ color: "#64748b", marginBottom: "20px" }}>Barcode <strong>{unknownBarcode}</strong> is not registered. Fill out details to save and continue transaction.</p>
-              
               <form onSubmit={handleCreateProduct}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginBottom: "20px" }}>
-                  <div>
+                <div className="row g-3 mb-4">
+                  <div className="col-12 col-sm-6">
                     <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Description</label>
                     <input 
                       type="text" 
@@ -222,7 +221,7 @@ export default function BarcodeScanner() {
                       required
                     />
                   </div>
-                  <div>
+                  <div className="col-12 col-sm-6">
                     <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Category</label>
                     <input 
                       type="text" 
@@ -232,7 +231,7 @@ export default function BarcodeScanner() {
                       required
                     />
                   </div>
-                  <div>
+                  <div className="col-12 col-sm-6">
                     <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>UOM</label>
                     <input 
                       type="text" 
@@ -242,7 +241,7 @@ export default function BarcodeScanner() {
                       required
                     />
                   </div>
-                  <div>
+                  <div className="col-12 col-sm-6">
                     <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Price</label>
                     <input 
                       type="number" 
@@ -252,7 +251,7 @@ export default function BarcodeScanner() {
                       required
                     />
                   </div>
-                  <div>
+                  <div className="col-12 col-sm-6">
                     <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>Safety Stock</label>
                     <input 
                       type="number" 

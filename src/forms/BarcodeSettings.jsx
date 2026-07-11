@@ -59,7 +59,7 @@ export default function BarcodeSettings() {
   };
 
   return (
-    <div style={{ padding: "30px", fontFamily: "'Inter', sans-serif", color: "#1e293b", background: "#f8fafc", minHeight: "100vh" }}>
+    <div className="erp-app-wrapper min-vh-100 py-3 py-md-4 px-2 px-md-4" style={{ maxWidth: "1600px", margin: "0 auto", background: "#f8fafc" }}>
       {toast && (
         <div style={{ 
           position: "fixed", top: "20px", right: "20px", padding: "15px 25px", borderRadius: "8px", zIndex: 1000,
@@ -76,9 +76,9 @@ export default function BarcodeSettings() {
         <p style={{ color: "#64748b", marginBottom: "30px" }}>Configure prefix rules for automatic barcode generation across all warehouse entities.</p>
 
         <form onSubmit={handleSubmit} style={{ background: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "30px" }}>
+          <div className="row g-4 mb-4">
             {Object.keys(prefixes).map((key) => (
-              <div key={key} style={{ display: "flex", flexDirection: "column" }}>
+              <div key={key} className="col-12 col-md-6" style={{ display: "flex", flexDirection: "column" }}>
                 <label style={{ fontSize: "14px", fontWeight: "600", color: "#475569", marginBottom: "8px" }}>
                   {key.replace(/([A-Z])/g, ' $1').trim()} Prefix
                 </label>

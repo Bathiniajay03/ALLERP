@@ -743,9 +743,9 @@ export default function MobileScanner({
   };
 
   return (
-    <div className="bg-white p-3 p-md-4 h-100 d-flex flex-column">
-
-      {/* TOP NAVIGATION TABS */}
+    <div className="erp-app-wrapper min-vh-100 py-2 py-md-4">
+      <div className="container-fluid px-2 px-md-3" style={{ maxWidth:"800px", margin:"0 auto" }}>
+        <div className="bg-white p-2 p-md-4 h-100 d-flex flex-column shadow-sm rounded">
       <ul className="nav nav-tabs mb-3 border-bottom-0 flex-nowrap overflow-auto" style={{ whiteSpace: 'nowrap' }}>
         <li className="nav-item">
           <button className={`nav-link fw-bold px-3 ${activeTab === 'stock' ? 'active bg-light border-bottom-0 text-primary' : 'text-muted'}`} onClick={() => { setActiveTab('stock'); resetScanState(); }}>
@@ -1504,6 +1504,8 @@ export default function MobileScanner({
           .w-50 { width: 100% !important; }
         }
       `}</style>
+        </div>
+      </div>
     </div>
   );
 }
