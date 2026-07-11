@@ -87,9 +87,9 @@ export default function SuperAdminChatInbox() {
   const displayedSessions = activeTab === 'visitors' ? visitorSessions : clientSessions;
 
   return (
-    <div className="chat-inbox-container row g-0 rounded-3 shadow-sm overflow-hidden" style={{ height: '70vh', background: 'white', border: '1px solid #e2e8f0' }}>
+    <div className="chat-inbox-container row g-0 rounded-3 shadow-sm overflow-hidden" style={{ height: '70vh', minHeight: '500px', background: 'white', border: '1px solid #e2e8f0' }}>
       {/* Sidebar - Sessions */}
-      <div className="col-4 border-end bg-light d-flex flex-column" style={{ height: '100%' }}>
+      <div className={`col-12 col-md-4 border-end bg-light d-flex flex-column ${activeSession ? 'd-none d-md-flex' : ''}`} style={{ height: '100%' }}>
         <div className="d-flex border-bottom bg-white">
           <button 
             className={`flex-fill py-3 border-0 fw-bold ${activeTab === 'visitors' ? 'bg-white text-primary border-bottom border-primary border-3' : 'bg-light text-muted'}`}
@@ -142,18 +142,26 @@ export default function SuperAdminChatInbox() {
       </div>
 
       {/* Main Area - Messages */}
-      <div className="col-8 d-flex flex-column" style={{ height: '100%', background: '#f8fafc' }}>
+      <div className={`col-12 col-md-8 d-flex flex-column ${!activeSession ? 'd-none d-md-flex' : ''}`} style={{ height: '100%', background: '#f8fafc' }}>
         {activeSession ? (
           <>
             <div className="p-3 border-bottom bg-white d-flex justify-content-between align-items-center shadow-sm z-1">
-              <div>
-                <h5 className="m-0 fw-bold">
+              <div className="d-flex align-items-center">
+                <button className="btn btn-link text-dark p-0 me-3 d-md-none" onClick={() => setActiveSession(null)}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                  </svg>
+                </button>
+                <div>
+                  <h5 className="m-0 fw-bold">
                   {activeSession.type === 'visitor' ? activeSession.visitorName : `Client User #${activeSession.userId}`}
                 </h5>
                 <span className="small text-muted">
                   {activeSession.type === 'visitor' ? activeSession.visitorEmail : `Company ID: ${activeSession.companyId}`}
                   {activeSession.sessionId ? ` • ID: ${activeSession.sessionId}` : ''}
                 </span>
+              </div>
               </div>
               <button className="btn btn-sm btn-outline-danger" onClick={() => markSessionClosed(activeSession.id, activeSession.type)} disabled={activeSession.status === 'CLOSED'}>
                 Close Chat

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { smartErpApi } from "../services/smartErpApi";
+import ClientChatWidget from "../components/ClientChatWidget";
 
 export default function CompanySettings() {
   const [settings, setSettings] = useState({
@@ -290,6 +291,7 @@ export default function CompanySettings() {
           </button>
         </div>
       </form>
+      <ClientChatWidget />
     </div>
   );
 }

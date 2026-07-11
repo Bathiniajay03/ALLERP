@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import apiClient from '../services/apiClient';
 
 export default function VisitorChatWidget() {
@@ -9,32 +9,7 @@ export default function VisitorChatWidget() {
   const [sessionId, setSessionId] = useState('');
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
-
-  useEffect(() => {
-    // Check if session exists in storage
-    const savedSessionId = sessionStorage.getItem('erp_chat_session_id');
-    const savedName = sessionStorage.getItem('erp_chat_name');
-    if (savedSessionId) {
-      setSessionId(savedSessionId);
-      setName(savedName || 'Guest');
-      setHasStarted(true);
-      pollMessages(savedSessionId, 0);
-    }
-  }, []);
-
-  useEffect(() => {
-    let pollInterval;
-    if (hasStarted && sessionId) {
-      // Poll every 3 seconds
-      pollInterval = setInterval(() => {
-        const lastMsgId = messages.length > 0 ? Math.max(...messages.map(m => m.id)) : 0;
-        pollMessages(sessionId, lastMsgId);
-      }, 3000);
-    }
-    return () => clearInterval(pollInterval);
-  }, [hasStarted, sessionId, messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,7 +19,7 @@ export default function VisitorChatWidget() {
     scrollToBottom();
   }, [messages, isOpen]);
 
-  const pollMessages = async (sid, lastId) => {
+  const pollMessages = useCallback(async (sid, lastId) => {
     try {
       const res = await apiClient.get(`/visitor-chat/poll/${sid}?lastMessageId=${lastId}`);
       if (res.data && res.data.length > 0) {
@@ -56,7 +31,31 @@ export default function VisitorChatWidget() {
     } catch (err) {
       console.error('Chat polling error', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Check if session exists in storage
+    const savedSessionId = sessionStorage.getItem('erp_chat_session_id');
+    const savedName = sessionStorage.getItem('erp_chat_name');
+    if (savedSessionId) {
+      setSessionId(savedSessionId);
+      setName(savedName || 'Guest');
+      setHasStarted(true);
+      pollMessages(savedSessionId, 0);
+    }
+  }, [pollMessages]);
+
+  useEffect(() => {
+    let pollInterval;
+    if (hasStarted && sessionId) {
+      // Poll every 3 seconds
+      pollInterval = setInterval(() => {
+        const lastMsgId = messages.length > 0 ? Math.max(...messages.map(m => m.id)) : 0;
+        pollMessages(sessionId, lastMsgId);
+      }, 3000);
+    }
+    return () => clearInterval(pollInterval);
+  }, [hasStarted, sessionId, messages, pollMessages]);
 
   const handleStartChat = async (e) => {
     e.preventDefault();
@@ -153,6 +152,26 @@ export default function VisitorChatWidget() {
           pointer-events: none;
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           border: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 500px) {
+          .chat-window {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            z-index: 99999;
+          }
+          .visitor-chat-wrapper {
+            bottom: 16px;
+            right: 16px;
+          }
+          .chat-toggle-btn {
+            width: 50px;
+            height: 50px;
+          }
         }
 
         .chat-window.open {

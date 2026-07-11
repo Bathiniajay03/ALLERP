@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/apiClient";
-import ClientChatWidget from "../components/ClientChatWidget";
-
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -60,7 +58,6 @@ export default function Dashboard() {
             Attempt Reconnection
           </button>
         </div>
-        <ClientChatWidget />
       </div>
     );
   }
@@ -402,7 +399,6 @@ export default function Dashboard() {
           background: var(--erp-primary);
         }
       `}</style>
-      <ClientChatWidget />
     </div>
   );
 }

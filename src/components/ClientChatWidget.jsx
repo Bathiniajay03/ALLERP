@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import apiClient from '../services/apiClient';
 
 export default function ClientChatWidget() {
@@ -9,15 +9,6 @@ export default function ClientChatWidget() {
 
   const token = sessionStorage.getItem('erp_token') || localStorage.getItem('erp_token');
 
-  useEffect(() => {
-    let pollInterval;
-    if (isOpen && token) {
-      pollMessages();
-      pollInterval = setInterval(pollMessages, 3000);
-    }
-    return () => clearInterval(pollInterval);
-  }, [isOpen, token]);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -26,7 +17,7 @@ export default function ClientChatWidget() {
     scrollToBottom();
   }, [messages, isOpen]);
 
-  const pollMessages = async () => {
+  const pollMessages = useCallback(async () => {
     if (!token) return;
     try {
       // First try to get the active session. If none, start one.
@@ -43,7 +34,16 @@ export default function ClientChatWidget() {
     } catch (err) {
       console.error('Chat polling error', err);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    let pollInterval;
+    if (isOpen && token) {
+      pollMessages();
+      pollInterval = setInterval(pollMessages, 3000);
+    }
+    return () => clearInterval(pollInterval);
+  }, [isOpen, token, pollMessages]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -118,6 +118,26 @@ export default function ClientChatWidget() {
           pointer-events: none;
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           border: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 500px) {
+          .chat-window {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            z-index: 99999;
+          }
+          .client-chat-wrapper {
+            bottom: 16px;
+            right: 16px;
+          }
+          .chat-toggle-btn {
+            width: 50px;
+            height: 50px;
+          }
         }
 
         .chat-window.open {
