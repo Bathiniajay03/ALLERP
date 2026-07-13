@@ -9,7 +9,7 @@ export default function WmsStockHistory() {
   const [loading, setLoading] = useState(false);
 
   const fetchHistory = async (e) => {
-    if(e) e.preventDefault();
+    if (e) e.preventDefault();
     if (!itemId) return;
 
     try {
@@ -28,13 +28,13 @@ export default function WmsStockHistory() {
   return (
     <Container fluid className="erp-panel p-4">
       <h3 className="mb-4">Stock Movement History</h3>
-      
+
       <Card className="shadow-sm border-0 mb-4">
         <Card.Body>
           <Form onSubmit={fetchHistory} className="d-flex gap-2">
-            <Form.Control 
-              type="number" 
-              placeholder="Enter Item ID..." 
+            <Form.Control
+              type="number"
+              placeholder="Enter Item ID..."
               value={itemId}
               onChange={(e) => setItemId(e.target.value)}
               style={{ maxWidth: '300px' }}
@@ -59,8 +59,8 @@ export default function WmsStockHistory() {
                   width: '20px',
                   height: '20px',
                   borderRadius: '50%',
-                  backgroundColor: tx.transactionType === 'IN' || tx.transactionType === 'PUTAWAY' ? '#10B981' : 
-                                  tx.transactionType === 'TRANSFER' ? '#F59E0B' : '#EF4444',
+                  backgroundColor: tx.transactionType === 'IN' || tx.transactionType === 'PUTAWAY' ? '#10B981' :
+                    tx.transactionType === 'TRANSFER' ? '#F59E0B' : '#EF4444',
                   border: '3px solid white',
                   boxShadow: '0 0 0 2px #4F46E5'
                 }}></div>
@@ -71,8 +71,8 @@ export default function WmsStockHistory() {
                       <small className="text-muted">{tx.date}</small>
                     </div>
                     <div className="mt-2 text-muted">
-                      Qty: <strong>{tx.quantity}</strong> | 
-                      Warehouse: {tx.warehouseId || 'N/A'} | 
+                      Qty: <strong>{tx.quantity}</strong> |
+                      Warehouse: {tx.warehouseId || 'N/A'} |
                       Lot: {tx.lotId || 'N/A'}
                     </div>
                     {(tx.sourceBinId || tx.destinationBinId) && (

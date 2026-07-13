@@ -49,7 +49,7 @@ export default function WmsPutAwayWorkflow() {
       // In a real scenario, scanning binBarcode would resolve to binId.
       // For simplicity, if binBarcode matches recommended bin's barcode, we use it.
       let finalBinId = recommendedBin?.id;
-      
+
       // Basic scanner logic simulation
       if (binBarcode && recommendedBin && binBarcode !== recommendedBin.barcode) {
         toast.error('Validation: Scan does not match recommended bin (Simplified for this demo)');
@@ -120,9 +120,9 @@ export default function WmsPutAwayWorkflow() {
 
                 {recommendedBin ? (
                   <div className="alert alert-success mb-4">
-                    <strong>⭐ Recommended Bin:</strong> <br/>
-                    Code: {recommendedBin.code} <br/>
-                    Barcode: {recommendedBin.barcode} <br/>
+                    <strong>⭐ Recommended Bin:</strong> <br />
+                    Code: {recommendedBin.code} <br />
+                    Barcode: {recommendedBin.barcode} <br />
                     <small>Reason: Available Space / FIFO Compatible</small>
                   </div>
                 ) : (
@@ -131,9 +131,9 @@ export default function WmsPutAwayWorkflow() {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Scan Bin Barcode</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Scan bin..." 
+                  <Form.Control
+                    type="text"
+                    placeholder="Scan bin..."
                     autoFocus
                     value={binBarcode}
                     onChange={(e) => setBinBarcode(e.target.value)}

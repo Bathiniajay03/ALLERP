@@ -45,6 +45,8 @@ import CompanyLoginPage from "./pages/CompanyLoginPage";
 import WmsSetup from "./forms/WmsSetup";
 import WmsDashboard from "./forms/WmsDashboard";
 import WmsPutAwayWorkflow from "./forms/WmsPutAwayWorkflow";
+import WmsPutAwayScanner from "./forms/WmsPutAwayScanner";
+import WmsDispatchScanner from "./forms/WmsDispatchScanner";
 import WmsBinTransfer from "./forms/WmsBinTransfer";
 import WmsStockHistory from "./forms/WmsStockHistory";
 import WmsReports from "./forms/WmsReports";
@@ -130,7 +132,9 @@ const MODULE_CONFIG = [
     isGroup: true,
     subModules: [
       { id: "wmsDashboard", label: "WMS Dashboard", path: "/wms/dashboard" },
-      { id: "wmsPutAway", label: "Put Away", path: "/wms/putaway" },
+      { id: "wmsScannerPutAway", label: "Scanner Put Away", path: "/wms/scanner-putaway" },
+      { id: "wmsScannerDispatch", label: "Scanner Dispatch", path: "/wms/scanner-dispatch" },
+      { id: "wmsPutAway", label: "Manual Put Away", path: "/wms/putaway" },
       { id: "wmsTransfer", label: "Bin Transfer", path: "/wms/transfer" },
       { id: "barcodeScanner", label: "Barcode Hub", path: "/wms/barcode-hub" },
       { id: "wmsHistory", label: "Stock History", path: "/wms/history" },
@@ -195,7 +199,7 @@ const DEFAULT_ROLE_MODULES = {
   ScannerWorker: ["scannerDevice", "serialScan", "operations", "wmsScannerApp"],
   "Warehouse Manager": [
     "dashboard", "products", "inventory", "lots", "warehouses", "operations", "purchaseOrders", "vendors",
-    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsPutAway", "wmsTransfer", "wmsHistory", "wmsReports", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeDetails", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen"
+    "vendorReturns", "finance", "stockAlerts", "notifications", "scannerDevice", "serialScan", "wmsDashboard", "wmsScannerPutAway", "wmsScannerDispatch", "wmsPutAway", "wmsTransfer", "wmsHistory", "wmsReports", "wmsSetup", "wmsOperations", "barcodeDashboard", "wmsBarcodeLabels", "barcodeGenerator", "barcodeScanner", "barcodeSearch", "barcodeDetails", "barcodeSettings", "wmsScannerApp", "wmsPackageScreen"
   ],
   "Finance Manager": [
     "dashboard", "finance", "reports", "salesOrderList", "purchaseOrders", "customers", "vendors",
@@ -642,6 +646,8 @@ function AppContent() {
           <Route path="/warehouses" element={renderProtectedRoute("warehouses", <Warehouses />)} />
 
           <Route path="/wms/dashboard" element={renderProtectedRoute("wmsDashboard", <WmsDashboard />)} />
+          <Route path="/wms/scanner-putaway" element={renderProtectedRoute("wmsScannerPutAway", <WmsPutAwayScanner />)} />
+          <Route path="/wms/scanner-dispatch" element={renderProtectedRoute("wmsScannerDispatch", <WmsDispatchScanner />)} />
           <Route path="/wms/putaway" element={renderProtectedRoute("wmsPutAway", <WmsPutAwayWorkflow />)} />
           <Route path="/wms/transfer" element={renderProtectedRoute("wmsTransfer", <WmsBinTransfer />)} />
           <Route path="/wms/history" element={renderProtectedRoute("wmsHistory", <WmsStockHistory />)} />

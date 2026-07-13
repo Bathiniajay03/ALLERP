@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { smartErpApi } from '../services/smartErpApi';
 
-const INDUSTRIES = ['Retail', 'Manufacturing', 'Healthcare', 'Automobile', 'Pharma', 'Electronics', 'Logistics', 'Wholesale', 'Other'];
 const CURRENCIES = ['USD', 'EUR', 'INR', 'GBP', 'AED', 'SGD', 'AUD', 'CAD'];
 const TIMEZONES = ['Asia/Kolkata', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Europe/Berlin', 'Asia/Singapore', 'Asia/Tokyo'];
-const LANGUAGES = ['English', 'Spanish', 'French', 'Hindi', 'Arabic', 'German', 'Japanese'];
 
 const PLANS = [
   { id: 'Trial', name: '14-Day Free Trial', price: 'Free', limit: '5 Users, 3 Warehouses, 1GB Storage' },
@@ -20,16 +18,14 @@ export default function SignupWizard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // Wizard States
+  // Cleaned Wizard States matching Backend Domain Entity
   const [formData, setFormData] = useState({
     // Step 1: Company Info
     companyName: '',
     companyCode: '',
-    industry: 'Retail',
     country: 'United States',
     currency: 'USD',
     timezone: 'America/New_York',
-    language: 'English',
     gstNumber: '',
     phone: '',
     website: '',
@@ -38,23 +34,58 @@ export default function SignupWizard() {
     // Step 2: Administrator
     adminName: '',
     adminEmail: '',
-    adminMobile: '',
     adminUsername: '',
     adminPassword: '',
     adminConfirmPassword: '',
 
-    // Step 3: Warehouse
+    // Step 3: Initial Warehouse Setup
     warehouseCode: 'MAIN',
     warehouseName: 'Main Warehouse',
 
     // Step 4: Subscription
     subscriptionPlan: 'Trial',
-    couponCode: ''
+
+    // Step 5: Payment Details
+    cardName: '',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvc: ''
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = matches && matches[0] || '';
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return value;
+    }
+  };
+
+  const handleCardNumberChange = (e) => {
+    setFormData((prev) => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }));
+  };
+
+  const formatExpiry = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return v.substring(0, 2) + '/' + v.substring(2, 4);
+    }
+    return v;
+  };
+
+  const handleExpiryChange = (e) => {
+    setFormData((prev) => ({ ...prev, cardExpiry: formatExpiry(e.target.value) }));
   };
 
   const handleNext = () => {
@@ -98,13 +129,24 @@ export default function SignupWizard() {
 
   const handleSubmit = async () => {
     setError('');
+    
+    // Step 5 Validation
+    if (!formData.cardName || !formData.cardNumber || !formData.cardExpiry || !formData.cardCvc) {
+      setError('Please complete all payment details to continue.');
+      return;
+    }
+
     setLoading(true);
+    
+    // Simulate payment processing delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     try {
       const payload = {
         company: {
           companyCode: formData.companyCode.trim().toUpperCase(),
           companyName: formData.companyName.trim(),
-          legalName: formData.companyName.trim(),
+          legalName: formData.companyName.trim(), // Defaulting legal to company name
           gstNumber: formData.gstNumber.trim(),
           country: formData.country.trim(),
           timezone: formData.timezone,
@@ -112,13 +154,13 @@ export default function SignupWizard() {
           phone: formData.phone.trim(),
           website: formData.website.trim(),
           logo: formData.logoUrl.trim() || null,
-          primaryColor: '#0ea5e9', // Default primary color
-          sidebarBgColor: '#0f172a',
-          sidebarTextColor: '#f8fafc',
+          primaryColor: '#0052cc', // Default ERP primary blue
+          sidebarBgColor: '#172b4d', // Default ERP secondary dark
+          sidebarTextColor: '#ffffff',
           subscriptionPlan: formData.subscriptionPlan,
           subscriptionStatus: 'Active',
-          maxUsers: formData.subscriptionPlan === 'Trial' ? 5 : formData.subscriptionPlan === 'Starter' ? 10 : 30,
-          maxWarehouses: formData.subscriptionPlan === 'Trial' ? 3 : formData.subscriptionPlan === 'Starter' ? 5 : 15
+          maxUsers: formData.subscriptionPlan === 'Trial' ? 5 : formData.subscriptionPlan === 'Starter' ? 10 : formData.subscriptionPlan === 'Professional' ? 30 : 9999,
+          maxWarehouses: formData.subscriptionPlan === 'Trial' ? 3 : formData.subscriptionPlan === 'Starter' ? 5 : formData.subscriptionPlan === 'Professional' ? 15 : 9999
         },
         adminUser: {
           username: formData.adminUsername.trim(),
@@ -152,442 +194,497 @@ export default function SignupWizard() {
   const percentComplete = Math.round(((step - 1) / 4) * 100);
 
   return (
-    <div className="wizard-page">
+    <div className="erp-wizard-container">
       <style>{`
-        .wizard-page {
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        .erp-wizard-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
-          color: #1e293b;
+          background: #f4f5f7;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 40px 16px;
-          font-family: 'Outfit', sans-serif;
+          font-family: 'Inter', sans-serif;
+          color: #172b4d;
         }
 
-        .wiz-card {
+        .erp-wiz-card {
           background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 20px;
+          border: 1px solid #dfe1e6;
+          border-radius: 8px;
           width: 100%;
-          max-width: 650px;
-          padding: 40px;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          max-width: 600px;
+          padding: 48px;
+          box-shadow: 0 4px 12px rgba(9, 30, 66, 0.05);
         }
 
-        .wiz-header {
+        .erp-wiz-header {
           text-align: center;
-          margin-bottom: 30px;
+          margin-bottom: 32px;
         }
 
-        .wiz-header h2 {
-          font-size: 1.8rem;
-          font-weight: 800;
-          background: linear-gradient(135deg, #0284c7, #6366f1);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+        .erp-wiz-logo {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #0052cc;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 16px;
         }
 
-        .wiz-progress-container {
-          margin-bottom: 30px;
+        .erp-wiz-logo-icon {
+          width: 28px;
+          height: 28px;
+          background-color: #0052cc;
+          color: white;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
         }
 
-        .wiz-progress-bar {
-          background: #f1f5f9;
-          border-radius: 10px;
+        .erp-wiz-header h2 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin: 0 0 8px;
+          color: #172b4d;
+        }
+        
+        .erp-wiz-header p {
+          color: #5e6c84;
+          font-size: 0.95rem;
+          margin: 0;
+        }
+
+        .erp-progress-container {
+          margin-bottom: 32px;
+        }
+
+        .erp-progress-bar {
+          background: #ebecf0;
+          border-radius: 4px;
           height: 6px;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
         }
 
-        .wiz-progress-fill {
+        .erp-progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #0ea5e9, #6366f1);
+          background: #0052cc;
           transition: width 0.3s ease;
         }
 
-        .wiz-step-indicator {
+        .erp-step-indicator {
           display: flex;
           justify-content: space-between;
-          margin-top: 10px;
+          margin-top: 8px;
           font-size: 0.8rem;
-          color: #64748b;
+          color: #5e6c84;
+          font-weight: 500;
         }
 
-        .form-label {
+        .erp-form-label {
           font-size: 0.85rem;
           font-weight: 600;
-          color: #475569;
+          color: #172b4d;
           margin-bottom: 6px;
           display: block;
         }
 
-        .form-control {
-          background: #f8fafc;
-          border: 1px solid #cbd5e1;
-          border-radius: 8px;
-          color: #1e293b;
-          padding: 10px 14px;
+        .erp-form-control {
+          background: #fafbfc;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          color: #172b4d;
+          padding: 10px 12px;
           font-size: 0.95rem;
           width: 100%;
+          transition: background 0.2s, border-color 0.2s;
         }
 
-        .form-control:focus {
+        .erp-form-control:focus {
           background: #ffffff;
-          border-color: #0ea5e9;
-          box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+          border-color: #0052cc;
+          box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.1);
           outline: none;
         }
 
-        .plan-option {
+        .erp-plan-option {
           background: #ffffff;
-          border: 2px solid #e2e8f0;
-          border-radius: 14px;
-          padding: 18px 20px;
-          margin-bottom: 14px;
+          border: 1px solid #dfe1e6;
+          border-radius: 4px;
+          padding: 16px;
+          margin-bottom: 12px;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           display: flex;
-          justify-content: space-between;
           align-items: center;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+          gap: 16px;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .erp-plan-option:hover {
+          border-color: #b3d4ff;
         }
 
-        .plan-option::before {
+        .erp-plan-option.selected {
+          border-color: #0052cc;
+          background: #e6f0ff;
+          box-shadow: 0 0 0 1px #0052cc;
+        }
+
+        .erp-radio-circle {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: 2px solid #dfe1e6;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .erp-plan-option.selected .erp-radio-circle {
+          border-color: #0052cc;
+        }
+
+        .erp-plan-option.selected .erp-radio-circle::after {
           content: '';
-          position: absolute;
-          top: 0; left: 0;
-          width: 4px;
-          height: 100%;
-          background: transparent;
-          transition: all 0.3s ease;
+          width: 10px;
+          height: 10px;
+          background: #0052cc;
+          border-radius: 50%;
         }
 
-        .plan-option:hover {
-          border-color: #bae6fd;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 16px -4px rgba(14, 165, 233, 0.1);
-        }
-
-        .plan-option:active {
-          transform: scale(0.99);
-        }
-
-        .plan-option.selected {
-          border-color: #0ea5e9;
-          background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(99, 102, 241, 0.05));
-          box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.15);
-        }
-
-        .plan-option.selected::before {
-          background: linear-gradient(180deg, #0ea5e9, #6366f1);
-        }
-
-        .plan-option .fw-bold {
-          font-size: 1.05rem;
-          color: #0f172a;
-          margin-bottom: 4px;
-        }
-
-        .plan-option .text-muted {
-          font-size: 0.85rem;
-        }
-
-        .plan-option .text-info {
-          font-size: 1.15rem;
-          background: linear-gradient(135deg, #0284c7, #6366f1);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-
-        .btn-action {
-          padding: 10px 24px;
-          font-weight: 600;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s;
+        .erp-btn-primary {
+          background: #0052cc;
+          color: #ffffff;
           border: none;
-        }
-
-        .btn-next {
-          background: linear-gradient(135deg, #0ea5e9, #6366f1);
-          color: #fff;
-        }
-
-        .btn-next:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-        }
-
-        .btn-back {
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #cbd5e1;
-        }
-
-        .btn-back:hover {
-          background: #e2e8f0;
-        }
-
-        .review-table th, .review-table td {
-          padding: 8px 12px;
-          font-size: 0.9rem;
-        }
-
-        .review-table th {
-          color: #64748b;
-          font-weight: 500;
-          width: 40%;
-        }
-
-        .review-table td {
-          color: #1e293b;
+          padding: 10px 24px;
+          border-radius: 4px;
           font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: background 0.2s;
         }
+
+        .erp-btn-primary:hover {
+          background: #0047b3;
+        }
+
+        .erp-btn-primary:disabled {
+          background: #b3d4ff;
+          cursor: not-allowed;
+        }
+
+        .erp-btn-secondary {
+          background: #ffffff;
+          color: #172b4d;
+          border: 1px solid #dfe1e6;
+          padding: 10px 24px;
+          border-radius: 4px;
+          font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .erp-btn-secondary:hover {
+          background: #f4f5f7;
+        }
+
+        .erp-alert {
+          background: #ffebe6;
+          border-left: 4px solid #ff5630;
+          color: #bf2600;
+          padding: 12px 16px;
+          border-radius: 4px;
+          font-size: 0.9rem;
+          margin-bottom: 24px;
+        }
+
+        .erp-payment-card {
+          border: 1px solid #dfe1e6;
+          border-radius: 8px;
+          padding: 24px;
+          background: #ffffff;
+          box-shadow: 0 2px 4px rgba(9, 30, 66, 0.02);
+          margin-bottom: 24px;
+        }
+
+        .erp-secure-badge {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #00875a;
+          font-size: 0.85rem;
+          font-weight: 600;
+          justify-content: center;
+          margin-bottom: 24px;
+        }
+
+        .spin {
+          animation: spin 1s linear infinite;
+          display: inline-block;
+        }
+        @keyframes spin {
+          100% { transform: rotate(360deg); }
+        }
+
       `}</style>
 
-      <div className="wiz-card">
-        <div className="wiz-header">
-          <Link to="/" style={{ textDecoration: 'none', color: '#64748b', fontSize: '0.85rem' }}>← Back to Homepage</Link>
-          <h2 className="mt-3">Register Your Company</h2>
-          <p className="text-muted small m-0">Setup your branded enterprise workspace in minutes</p>
+      <div className="erp-wiz-card">
+        <div className="erp-wiz-header">
+          <Link to="/" className="erp-wiz-logo">
+            <div className="erp-wiz-logo-icon">E</div>
+            SmartERP
+          </Link>
+          <h2>Create Your Enterprise Workspace</h2>
+          <p>Deploy your multi-tenant environment in minutes.</p>
         </div>
 
-        <div className="wiz-progress-container">
-          <div className="wiz-progress-bar">
-            <div className="wiz-progress-fill" style={{ width: `${percentComplete}%` }}></div>
+        <div className="erp-progress-container">
+          <div className="erp-progress-bar">
+            <div className="erp-progress-fill" style={{ width: `${percentComplete}%` }}></div>
           </div>
-          <div className="wiz-step-indicator">
-            <span style={{ color: step >= 1 ? '#0284c7' : '' }}>1. Info</span>
-            <span style={{ color: step >= 2 ? '#0284c7' : '' }}>2. Admin</span>
-            <span style={{ color: step >= 3 ? '#0284c7' : '' }}>3. Warehouse</span>
-            <span style={{ color: step >= 4 ? '#0284c7' : '' }}>4. Plan</span>
-            <span style={{ color: step >= 5 ? '#0284c7' : '' }}>5. Review</span>
+          <div className="erp-step-indicator">
+            <span>Step {step} of 5</span>
+            <span>
+              {step === 1 && 'Company Details'}
+              {step === 2 && 'Admin Account'}
+              {step === 3 && 'Initial Location'}
+              {step === 4 && 'Subscription'}
+              {step === 5 && 'Payment Details'}
+            </span>
           </div>
         </div>
 
-        {error && (
-          <div className="alert alert-danger py-2 px-3 small border-0 rounded-3 mb-4" style={{ background: '#fef2f2', color: '#b91c1c' }}>
-            ⚠️ {error}
-          </div>
-        )}
+        {error && <div className="erp-alert">{error}</div>}
 
-        {/* Step 1: Company Info */}
+        {/* Step 1: Company Details */}
         {step === 1 && (
-          <div>
-            <h4 className="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>Step 1: Company Profile</h4>
-            <div className="row g-3">
-              <div className="col-12 col-md-6">
-                <label className="form-label">Company Name *</label>
-                <input type="text" name="companyName" className="form-control" value={formData.companyName} onChange={handleChange} placeholder="e.g. Acme Tech Labs" required />
+          <div className="animate__animated animate__fadeIn">
+            <div className="row mb-3">
+              <div className="col-md-6 mb-3 mb-md-0">
+                <label className="erp-form-label">Company Name *</label>
+                <input type="text" className="erp-form-control" name="companyName" value={formData.companyName} onChange={handleChange} placeholder="e.g. Acme Logistics" />
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Company Code (Alphanumeric unique) *</label>
-                <input type="text" name="companyCode" className="form-control" value={formData.companyCode} onChange={handleChange} placeholder="e.g. ACMETECH" required />
+              <div className="col-md-6">
+                <label className="erp-form-label">Company Code (Tenant ID) *</label>
+                <input type="text" className="erp-form-control text-uppercase" name="companyCode" value={formData.companyCode} onChange={handleChange} placeholder="e.g. ACME" />
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Industry</label>
-                <select name="industry" className="form-control" value={formData.industry} onChange={handleChange}>
-                  {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
-                </select>
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-md-6 mb-3 mb-md-0">
+                <label className="erp-form-label">Country *</label>
+                <input type="text" className="erp-form-control" name="country" value={formData.country} onChange={handleChange} />
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Country *</label>
-                <input type="text" name="country" className="form-control" value={formData.country} onChange={handleChange} placeholder="e.g. United States" />
+              <div className="col-md-6">
+                <label className="erp-form-label">Tax ID / GST / PAN</label>
+                <input type="text" className="erp-form-control" name="gstNumber" value={formData.gstNumber} onChange={handleChange} />
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Currency</label>
-                <select name="currency" className="form-control" value={formData.currency} onChange={handleChange}>
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-md-6 mb-3 mb-md-0">
+                <label className="erp-form-label">Currency *</label>
+                <select className="erp-form-control" name="currency" value={formData.currency} onChange={handleChange}>
                   {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Timezone</label>
-                <select name="timezone" className="form-control" value={formData.timezone} onChange={handleChange}>
+              <div className="col-md-6">
+                <label className="erp-form-label">Timezone *</label>
+                <select className="erp-form-control" name="timezone" value={formData.timezone} onChange={handleChange}>
                   {TIMEZONES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Language</label>
-                <select name="language" className="form-control" value={formData.language} onChange={handleChange}>
-                  {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">GST / Tax Number</label>
-                <input type="text" name="gstNumber" className="form-control" value={formData.gstNumber} onChange={handleChange} placeholder="e.g. GSTIN12345" />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Phone</label>
-                <input type="text" name="phone" className="form-control" value={formData.phone} onChange={handleChange} placeholder="e.g. +1 555-0199" />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Website</label>
-                <input type="text" name="website" className="form-control" value={formData.website} onChange={handleChange} placeholder="e.g. www.acme.com" />
-              </div>
-              <div className="col-12">
-                <label className="form-label">Logo Image URL</label>
-                <input type="text" name="logoUrl" className="form-control" value={formData.logoUrl} onChange={handleChange} placeholder="e.g. https://acme.com/logo.png" />
-              </div>
             </div>
+
             <div className="d-flex justify-content-end mt-4">
-              <button onClick={handleNext} className="btn-action btn-next">Next step →</button>
+              <button className="erp-btn-primary" onClick={handleNext}>Continue to Account</button>
             </div>
           </div>
         )}
 
-        {/* Step 2: Administrator Info */}
+        {/* Step 2: Administrator */}
         {step === 2 && (
-          <div>
-            <h4 className="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>Step 2: Owner/Admin Account</h4>
-            <div className="row g-3">
-              <div className="col-12 col-md-6">
-                <label className="form-label">Full Name *</label>
-                <input type="text" name="adminName" className="form-control" value={formData.adminName} onChange={handleChange} placeholder="e.g. Jane Doe" required />
+          <div className="animate__animated animate__fadeIn">
+            <div className="row mb-3">
+              <div className="col-md-6 mb-3 mb-md-0">
+                <label className="erp-form-label">Admin Full Name *</label>
+                <input type="text" className="erp-form-control" name="adminName" value={formData.adminName} onChange={handleChange} />
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Email Address *</label>
-                <input type="email" name="adminEmail" className="form-control" value={formData.adminEmail} onChange={handleChange} placeholder="e.g. jane@acme.com" required />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Mobile Number</label>
-                <input type="text" name="adminMobile" className="form-control" value={formData.adminMobile} onChange={handleChange} placeholder="e.g. +1 555-0198" />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Username *</label>
-                <input type="text" name="adminUsername" className="form-control" value={formData.adminUsername} onChange={handleChange} placeholder="e.g. admin_jane" required />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Password *</label>
-                <input type="password" name="adminPassword" className="form-control" value={formData.adminPassword} onChange={handleChange} placeholder="••••••" required />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Confirm Password *</label>
-                <input type="password" name="adminConfirmPassword" className="form-control" value={formData.adminConfirmPassword} onChange={handleChange} placeholder="••••••" required />
+              <div className="col-md-6">
+                <label className="erp-form-label">Admin Email *</label>
+                <input type="email" className="erp-form-control" name="adminEmail" value={formData.adminEmail} onChange={handleChange} />
               </div>
             </div>
+
+            <div className="mb-3">
+              <label className="erp-form-label">Admin Username *</label>
+              <input type="text" className="erp-form-control" name="adminUsername" value={formData.adminUsername} onChange={handleChange} placeholder="Username to login" />
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-md-6 mb-3 mb-md-0">
+                <label className="erp-form-label">Password *</label>
+                <input type="password" className="erp-form-control" name="adminPassword" value={formData.adminPassword} onChange={handleChange} />
+              </div>
+              <div className="col-md-6">
+                <label className="erp-form-label">Confirm Password *</label>
+                <input type="password" className="erp-form-control" name="adminConfirmPassword" value={formData.adminConfirmPassword} onChange={handleChange} />
+              </div>
+            </div>
+
             <div className="d-flex justify-content-between mt-4">
-              <button onClick={handleBack} className="btn-action btn-back">← Back</button>
-              <button onClick={handleNext} className="btn-action btn-next">Next step →</button>
+              <button className="erp-btn-secondary" onClick={handleBack}>Back</button>
+              <button className="erp-btn-primary" onClick={handleNext}>Continue to Location</button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Warehouse details */}
+        {/* Step 3: Warehouse Setup */}
         {step === 3 && (
-          <div>
-            <h4 className="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>Step 3: Initial Warehouse Layout</h4>
-            <p className="text-muted small">Every company requires at least one default warehouse to store product items and scan codes.</p>
-            <div className="row g-3">
-              <div className="col-12 col-md-6">
-                <label className="form-label">Warehouse Code *</label>
-                <input type="text" name="warehouseCode" className="form-control" value={formData.warehouseCode} onChange={handleChange} placeholder="e.g. MAIN" required />
-              </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Warehouse Name *</label>
-                <input type="text" name="warehouseName" className="form-control" value={formData.warehouseName} onChange={handleChange} placeholder="e.g. Main Distribution Center" required />
-              </div>
+          <div className="animate__animated animate__fadeIn">
+            <p style={{color: '#5e6c84', fontSize: '0.95rem', marginBottom: 24}}>
+              Set up your primary warehouse or store location. You can add more locations later from the dashboard.
+            </p>
+            <div className="mb-3">
+              <label className="erp-form-label">Primary Location Code *</label>
+              <input type="text" className="erp-form-control text-uppercase" name="warehouseCode" value={formData.warehouseCode} onChange={handleChange} placeholder="e.g. MAIN, WH-01" />
             </div>
+            <div className="mb-3">
+              <label className="erp-form-label">Primary Location Name *</label>
+              <input type="text" className="erp-form-control" name="warehouseName" value={formData.warehouseName} onChange={handleChange} placeholder="e.g. Central Warehouse" />
+            </div>
+
             <div className="d-flex justify-content-between mt-4">
-              <button onClick={handleBack} className="btn-action btn-back">← Back</button>
-              <button onClick={handleNext} className="btn-action btn-next">Next step →</button>
+              <button className="erp-btn-secondary" onClick={handleBack}>Back</button>
+              <button className="erp-btn-primary" onClick={handleNext}>Continue to Plan</button>
             </div>
           </div>
         )}
 
         {/* Step 4: Subscription */}
         {step === 4 && (
-          <div>
-            <h4 className="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>Step 4: Subscription Tier</h4>
-            <div>
-              {PLANS.map(plan => {
-                const isSelected = formData.subscriptionPlan === plan.id;
-                return (
-                  <div key={plan.id} className={`plan-option ${isSelected ? 'selected' : ''}`} onClick={() => setFormData(prev => ({ ...prev, subscriptionPlan: plan.id }))}>
-                    <div>
-                      <div className="fw-bold" style={{ color: '#0f172a' }}>{plan.name}</div>
-                      <div className="small text-muted">{plan.limit}</div>
+          <div className="animate__animated animate__fadeIn">
+            <p style={{color: '#5e6c84', fontSize: '0.95rem', marginBottom: 24}}>
+              Select your initial subscription tier. You can upgrade or downgrade at any time from your billing settings.
+            </p>
+            
+            <div className="mb-4">
+              {PLANS.map(plan => (
+                <div 
+                  key={plan.id}
+                  className={`erp-plan-option ${formData.subscriptionPlan === plan.id ? 'selected' : ''}`}
+                  onClick={() => setFormData({ ...formData, subscriptionPlan: plan.id })}
+                >
+                  <div className="erp-radio-circle"></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <strong style={{ fontSize: '1.05rem', color: '#172b4d' }}>{plan.name}</strong>
+                      <span style={{ fontWeight: 700, color: '#0052cc' }}>{plan.price}</span>
                     </div>
-                    <div className="d-flex align-items-center">
-                      <div className="text-info fw-bold me-3">{plan.price}</div>
-                      <div style={{
-                        width: '24px', height: '24px', borderRadius: '50%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: isSelected ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#f1f5f9',
-                        color: isSelected ? '#fff' : 'transparent',
-                        transition: 'all 0.3s ease'
-                      }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      </div>
-                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#5e6c84' }}>{plan.limit}</div>
                   </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-3">
-              <label className="form-label">Promo / Coupon Code</label>
-              <input type="text" name="couponCode" className="form-control" value={formData.couponCode} onChange={handleChange} placeholder="e.g. WELCOME2026" />
+                </div>
+              ))}
             </div>
 
             <div className="d-flex justify-content-between mt-4">
-              <button onClick={handleBack} className="btn-action btn-back">← Back</button>
-              <button onClick={handleNext} className="btn-action btn-next">Review details →</button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 5: Review */}
-        {step === 5 && (
-          <div>
-            <h4 className="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>Step 5: Review Registration</h4>
-            <div className="table-responsive bg-light p-3 rounded-3 border border-light mb-4">
-              <table className="table table-hover m-0 review-table">
-                <tbody>
-                  <tr>
-                    <th>Company Name</th>
-                    <td>{formData.companyName}</td>
-                  </tr>
-                  <tr>
-                    <th>Company Code</th>
-                    <td className="text-info">{formData.companyCode.toUpperCase()}</td>
-                  </tr>
-                  <tr>
-                    <th>Admin Name</th>
-                    <td>{formData.adminName}</td>
-                  </tr>
-                  <tr>
-                    <th>Admin Username</th>
-                    <td className="text-warning">{formData.adminUsername}</td>
-                  </tr>
-                  <tr>
-                    <th>Admin Email</th>
-                    <td>{formData.adminEmail}</td>
-                  </tr>
-                  <tr>
-                    <th>Initial Warehouse</th>
-                    <td>{formData.warehouseName} ({formData.warehouseCode.toUpperCase()})</td>
-                  </tr>
-                  <tr>
-                    <th>Selected Plan</th>
-                    <td><span className="badge bg-success">{formData.subscriptionPlan}</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="d-flex justify-content-between mt-4">
-              <button onClick={handleBack} className="btn-action btn-back" disabled={loading}>← Back</button>
-              <button onClick={handleSubmit} className="btn-action btn-next bg-success" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }} disabled={loading}>
-                {loading ? 'Creating Workspace...' : 'Complete Registration 🚀'}
+              <button className="erp-btn-secondary" onClick={handleBack} disabled={loading}>Back</button>
+              <button className="erp-btn-primary" onClick={handleNext}>
+                Continue to Payment
               </button>
             </div>
           </div>
         )}
+
+        {/* Step 5: Payment Details */}
+        {step === 5 && (
+          <div className="animate__animated animate__fadeIn">
+            <p style={{color: '#5e6c84', fontSize: '0.95rem', marginBottom: 24, textAlign: 'center'}}>
+              Please enter your payment details. You won't be charged if you selected the 14-Day Free Trial until your trial period ends.
+            </p>
+            
+            <div className="erp-payment-card">
+              <div className="erp-secure-badge">
+                <i className="bi bi-shield-lock-fill"></i> Secure SSL Encrypted Payment
+              </div>
+              
+              <div className="mb-3">
+                <label className="erp-form-label">Name on Card *</label>
+                <input 
+                  type="text" 
+                  className="erp-form-control" 
+                  name="cardName" 
+                  value={formData.cardName} 
+                  onChange={handleChange} 
+                  placeholder="e.g. John Doe"
+                  maxLength="50"
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="erp-form-label">Card Number *</label>
+                <input 
+                  type="text" 
+                  className="erp-form-control" 
+                  name="cardNumber" 
+                  value={formData.cardNumber} 
+                  onChange={handleCardNumberChange} 
+                  placeholder="0000 0000 0000 0000"
+                  maxLength="19"
+                />
+              </div>
+
+              <div className="row">
+                <div className="col-6">
+                  <label className="erp-form-label">Expiry (MM/YY) *</label>
+                  <input 
+                    type="text" 
+                    className="erp-form-control" 
+                    name="cardExpiry" 
+                    value={formData.cardExpiry} 
+                    onChange={handleExpiryChange} 
+                    placeholder="MM/YY"
+                    maxLength="5"
+                  />
+                </div>
+                <div className="col-6">
+                  <label className="erp-form-label">CVC *</label>
+                  <input 
+                    type="text" 
+                    className="erp-form-control" 
+                    name="cardCvc" 
+                    value={formData.cardCvc} 
+                    onChange={(e) => setFormData(prev => ({...prev, cardCvc: e.target.value.replace(/[^0-9]/g, '')}))} 
+                    placeholder="123"
+                    maxLength="4"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="d-flex justify-content-between mt-4">
+              <button className="erp-btn-secondary" onClick={handleBack} disabled={loading}>Back</button>
+              <button className="erp-btn-primary" onClick={handleSubmit} disabled={loading}>
+                {loading ? (
+                  <span><i className="bi bi-arrow-repeat spin"></i> Processing Payment...</span>
+                ) : (
+                  'Deploy SmartERP Workspace'
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+        
+        <div style={{textAlign: 'center', marginTop: 32, fontSize: '0.9rem', color: '#5e6c84'}}>
+          Already have an account? <Link to="/login" style={{color: '#0052cc', fontWeight: 600, textDecoration: 'none'}}>Log in</Link>
+        </div>
       </div>
     </div>
   );

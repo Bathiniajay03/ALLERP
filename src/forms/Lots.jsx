@@ -80,11 +80,17 @@ export default function Lots() {
           lotNumber,
           itemCode: item?.itemCode || `Item-${entry.itemId || entry.ItemId}`,
           itemName: item?.description || "Unknown product",
-          warehouseName: warehouse?.name || `WH-${entry.warehouseId || entry.WarehouseId}`,
+          warehouseName: warehouse?.name || entry.warehouseName || `WH-${entry.warehouseId || entry.WarehouseId}`,
           quantity: availableQuantity, // Show available quantity instead of total
           totalQuantity: quantity, // Keep total for reference
           reservedQuantity,
           storage: storageHint,
+          zoneName: entry.zoneName,
+          aisleCode: entry.aisleCode,
+          rackCode: entry.rackCode,
+          shelfCode: entry.shelfCode,
+          binCode: entry.binCode,
+          locationPath: entry.locationPath || entry.locationCode || entry.LocationCode || item?.WarehouseLocation || "N/A",
           locationCode: entry.locationCode || entry.LocationCode || item?.WarehouseLocation || "N/A"
         };
       });
@@ -476,7 +482,11 @@ export default function Lots() {
                               <thead className="table-light">
                                 <tr>
                                   <th>Lot / Batch #</th>
-                                  <th>Storage / Bin</th>
+                                  <th>Warehouse</th>
+                                  <th>Zone</th>
+                                  <th>Rack</th>
+                                  <th>Shelf</th>
+                                  <th>Bin</th>
                                   <th className="text-end">Quantity</th>
                                   <th className="text-center">Serials</th>
                                   <th className="text-center">Status</th>
@@ -492,10 +502,11 @@ export default function Lots() {
                                         onClick={() => toggleLotSerials(lot)}
                                       >
                                         <td className="fw-bold font-monospace text-primary">📦 {lot.lotNumber}</td>
-                                        <td className="text-muted">
-                                          <span className="d-block">{lot.storage}</span>
-                                          {lot.locationCode !== 'N/A' && <span className="small text-secondary">Bin: {lot.locationCode}</span>}
-                                        </td>
+                                        <td className="text-muted">{lot.warehouseName || "-"}</td>
+                                        <td className="text-muted">{lot.zoneName || "-"}</td>
+                                        <td className="text-muted">{lot.rackCode || "-"}</td>
+                                        <td className="text-muted">{lot.shelfCode || "-"}</td>
+                                        <td className="text-muted fw-bold">{lot.binCode || lot.locationCode || "-"}</td>
                                         <td className="text-end fw-bold font-monospace">{lot.quantity.toFixed(2)}</td>
                                         <td className="text-center">
                                           <button
