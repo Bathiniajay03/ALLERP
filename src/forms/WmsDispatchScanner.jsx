@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import api from "../services/apiClient";
 import { smartErpApi } from "../services/smartErpApi";
 import toast from "react-hot-toast";
 
@@ -23,12 +24,12 @@ export default function WmsDispatchScanner() {
 
       setLoading(true);
       try {
-        const resItem = await smartErpApi.get(`/wms-scanner/item/${encodeURIComponent(barcode)}`);
+        const resItem = await api.get(`/wms-scanner/item/${encodeURIComponent(barcode)}`);
         setScannedItem(resItem.data);
         e.target.barcode.value = "";
 
         // Auto-select FIFO stock immediately
-        const resStock = await smartErpApi.get(`/wms-scanner/auto-select-dispatch/${resItem.data.id}`);
+        const resStock = await api.get(`/wms-scanner/auto-select-dispatch/${resItem.data.id}`);
         setAutoSelectedStock(resStock.data);
 
         setStep(2);
@@ -68,8 +69,8 @@ export default function WmsDispatchScanner() {
           : []
       };
 
-       const res = await smartErpApi.post(`/wms-scanner/dispatch`, payload);
-      toast.success(res.data.message || "Dispatch Successful!");
+        const res = await api.post(`/wms-scanner/dispatch`, payload);
+        toast.success(res.data.message || "Dispatch Successful!");
       resetScanner();
     } catch (err) {
       toast.error(err.response?.data?.error || "Dispatch Failed!");

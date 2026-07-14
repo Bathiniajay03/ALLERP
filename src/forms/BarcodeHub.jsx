@@ -567,6 +567,30 @@ const renderDetails = (details, onEntityClick) => {
             </div>
           </div>
         </div>
+        {details.history && details.history.length > 0 && (
+          <div className='col-12'>
+            <div className='card shadow-sm border-0'>
+              <div className='card-header bg-white pt-4 pb-0 border-0'><SectionTitle>Chronological Tracing History</SectionTitle></div>
+              <div className='card-body'>
+                <div className='position-relative ps-4 border-start border-2 border-primary ms-3 my-2'>
+                  {details.history.map((hist, index) => (
+                    <div key={index} className='mb-4 position-relative'>
+                      <div 
+                        className='position-absolute bg-primary rounded-circle d-flex align-items-center justify-content-center text-white'
+                        style={{ left: '-33px', top: '2px', width: '20px', height: '20px', fontSize: '10px' }}
+                      >
+                        {index + 1}
+                      </div>
+                      <div className='fw-bold text-dark'>{hist.title}</div>
+                      <div className='text-muted small'>{hist.description}</div>
+                      <div className='text-secondary small font-monospace'>{new Date(hist.date).toLocaleString()}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
 
