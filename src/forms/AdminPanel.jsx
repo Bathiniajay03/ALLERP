@@ -859,7 +859,8 @@ export default function AdminPanel({
           email: form.email,
           tenantId: editingUser.tenantId || null,
           tenantName: form.tenantName,
-          assignedPages: form.assignedPages
+          assignedPages: form.assignedPages,
+          mfaEnabled: form.mfaEnabled
         });
         setResult({ text: `✓ User updated: ${form.username}`, type: "success" });
       } else {
@@ -1064,7 +1065,6 @@ export default function AdminPanel({
                       <select name="userType" className="form-select erp-input" value={form.userType} onChange={handleChange}>
                         <option value="ADMIN">ADMIN</option>
                         <option value="WORKER">WORKER</option>
-                        <option value="CLIENT">CLIENT</option>
                       </select>
                     </div>
                   )}
@@ -1075,12 +1075,7 @@ export default function AdminPanel({
                     </div>
                   )}
 
-                  {form.userType === "CLIENT" && (
-                    <div className="col-md-4">
-                      <label className="erp-label">Tenant Name <span className="text-danger">*</span></label>
-                      <input name="tenantName" className="form-control erp-input" value={form.tenantName} onChange={handleChange} placeholder="Client ERP name" required={form.userType === "CLIENT"} />
-                    </div>
-                  )}
+                  {/* Client assignment logic moved strictly to SaaS Portal */}
 
                   <div className="col-12 mt-4">
                     <h6 className="erp-section-title">Assigned Page Access</h6>

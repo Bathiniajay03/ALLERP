@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { smartErpApi } from '../services/smartErpApi';
+import { Building2, User, Lock, KeyRound, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function CompanyLoginPage({ onLoginSuccess, initialError }) {
   const navigate = useNavigate();
@@ -65,262 +67,224 @@ export default function CompanyLoginPage({ onLoginSuccess, initialError }) {
   };
 
   return (
-    <div className="erp-login-page">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    <div className="min-vh-100 d-flex position-relative overflow-hidden bg-white text-dark">
+      {/* Animated Background Particles / Blobs */}
+      <div className="position-absolute w-100 h-100 pointer-events-none" style={{ zIndex: 0, overflow: 'hidden' }}>
+        <motion.div 
+          animate={{ x: [0, 100, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }} 
+          transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+          className="position-absolute bg-primary rounded-circle" 
+          style={{ width: '600px', height: '600px', filter: 'blur(150px)', opacity: 0.15, top: '-10%', left: '-10%' }}
+        />
+        <motion.div 
+          animate={{ x: [0, -100, 0], y: [0, -50, 0], scale: [1, 1.5, 1] }} 
+          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+          className="position-absolute bg-info rounded-circle" 
+          style={{ width: '500px', height: '500px', filter: 'blur(150px)', opacity: 0.15, bottom: '-10%', right: '-10%' }}
+        />
+      </div>
 
-        .erp-login-page {
-          min-height: 100vh;
-          background: #f4f5f7;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 40px 16px;
-          font-family: 'Inter', sans-serif;
-          color: #172b4d;
-        }
-
-        .erp-login-card {
-          background: #ffffff;
-          border: 1px solid #dfe1e6;
-          border-radius: 8px;
-          width: 100%;
-          max-width: 450px;
-          padding: 48px;
-          box-shadow: 0 4px 12px rgba(9, 30, 66, 0.05);
-        }
-
-        .erp-login-header {
-          text-align: center;
-          margin-bottom: 32px;
-        }
-
-        .erp-login-logo {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #0052cc;
-          text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 24px;
-        }
-
-        .erp-login-logo-icon {
-          width: 28px;
-          height: 28px;
-          background-color: #0052cc;
-          color: white;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1rem;
-        }
-
-        .erp-login-header h1 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #172b4d;
-          margin: 0 0 8px;
-        }
-
-        .erp-login-header p {
-          color: #5e6c84;
-          font-size: 0.95rem;
-          margin: 0;
-        }
-
-        .erp-form-group {
-          margin-bottom: 20px;
-        }
-
-        .erp-form-label {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: #172b4d;
-          margin-bottom: 6px;
-          display: block;
-        }
-
-        .erp-form-control {
-          background: #fafbfc;
-          border: 1px solid #dfe1e6;
-          border-radius: 4px;
-          color: #172b4d;
-          padding: 10px 12px;
-          font-size: 0.95rem;
-          width: 100%;
-          transition: background 0.2s, border-color 0.2s;
-        }
-
-        .erp-form-control:focus {
-          background: #ffffff;
-          border-color: #0052cc;
-          box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.1);
-          outline: none;
-        }
-
-        .erp-btn-primary {
-          background: #0052cc;
-          color: #ffffff;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 4px;
-          font-weight: 600;
-          font-size: 0.95rem;
-          cursor: pointer;
-          transition: background 0.2s;
-          width: 100%;
-          margin-top: 8px;
-        }
-
-        .erp-btn-primary:hover {
-          background: #0047b3;
-        }
-
-        .erp-btn-primary:disabled {
-          background: #b3d4ff;
-          cursor: not-allowed;
-        }
-
-        .erp-alert {
-          background: #ffebe6;
-          border-left: 4px solid #ff5630;
-          color: #bf2600;
-          padding: 12px 16px;
-          border-radius: 4px;
-          font-size: 0.9rem;
-          margin-bottom: 24px;
-        }
-
-        .erp-alert-info {
-          background: #e6f0ff;
-          border-left: 4px solid #0052cc;
-          color: #0047b3;
-          padding: 12px 16px;
-          border-radius: 4px;
-          font-size: 0.9rem;
-          margin-bottom: 24px;
-        }
-
-        .erp-login-footer {
-          text-align: center;
-          margin-top: 24px;
-          font-size: 0.9rem;
-          color: #5e6c84;
-        }
-
-        .erp-login-footer a {
-          color: #0052cc;
-          font-weight: 600;
-          text-decoration: none;
-        }
-
-        .erp-login-footer a:hover {
-          text-decoration: underline;
-        }
-      `}</style>
-
-      <div className="erp-login-card">
-        <div className="erp-login-header">
-          <Link to="/" className="erp-login-logo">
-            <div className="erp-login-logo-icon">E</div>
-            SmartERP
-          </Link>
-          <h1>Welcome to SmartERP</h1>
-          <p>Log in to your workspace to continue.</p>
-        </div>
-
-        {error && <div className="erp-alert">{error}</div>}
-
-        {!requiresMfa ? (
-          <form onSubmit={handleLogin}>
-            <div className="erp-form-group">
-              <label className="erp-form-label">Workspace Code</label>
-              <input
-                type="text"
-                className="erp-form-control text-uppercase"
-                value={companyCode}
-                onChange={(e) => setCompanyCode(e.target.value)}
-                placeholder="e.g. ACME"
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="erp-form-group">
-              <label className="erp-form-label">Username</label>
-              <input
-                type="text"
-                className="erp-form-control"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="erp-form-group">
-              <div className="d-flex justify-content-between align-items-center mb-1">
-                <label className="erp-form-label mb-0">Password</label>
-                <Link to="/forgot-password" style={{fontSize: '0.8rem', color: '#0052cc', textDecoration: 'none'}}>Forgot password?</Link>
-              </div>
-              <input
-                type="password"
-                className="erp-form-control"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
+      <div className="container-fluid m-0 p-0 d-flex w-100 position-relative z-1">
+        <div className="row g-0 w-100 flex-grow-1">
+          
+          {/* Left Side: Cinematic Video Background */}
+          <div className="col-lg-6 d-none d-lg-flex position-relative overflow-hidden p-0" style={{ borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+            
+            {/* YouTube Background Video */}
+            <div className="position-absolute w-100 h-100 pointer-events-none" style={{ top: 0, left: 0, zIndex: 0 }}>
+              <video
+                src="/images/my-video.mp4"
+                className="w-100 h-100 object-fit-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ pointerEvents: 'none' }} 
+              ></video>
             </div>
 
-            <button type="submit" className="erp-btn-primary" disabled={loading}>
-              {loading ? 'Authenticating...' : 'Log in'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyMfa} className="animate__animated animate__fadeIn">
-            <div className="erp-alert-info">
-              {mfaMessage}
-              {devOtp && (
-                <div className="mt-2 fw-bold text-dark">
-                  [DEV MODE] OTP: {devOtp}
-                </div>
-              )}
-            </div>
-            <div className="erp-form-group">
-              <label className="erp-form-label text-center">Enter 6-Digit OTP</label>
-              <input
-                type="text"
-                className="erp-form-control text-center"
-                style={{letterSpacing: '8px', fontSize: '1.25rem', padding: '12px'}}
-                value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value)}
-                maxLength="6"
-                required
-                disabled={loading}
-              />
-            </div>
-            <button type="submit" className="erp-btn-primary" disabled={loading}>
-              {loading ? 'Verifying...' : 'Verify Secure Code'}
-            </button>
-            <div className="text-center mt-3">
-              <button 
-                type="button" 
-                className="btn btn-link text-muted" 
-                style={{fontSize: '0.85rem', textDecoration: 'none'}}
-                onClick={() => setRequiresMfa(false)}
+            {/* Gradient Overlay for Readability */}
+            <div className="position-absolute w-100 h-100" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 100%)', zIndex: 1 }}></div>
+
+            {/* Text Content Overlay */}
+            <div className="position-relative z-2 d-flex flex-column justify-content-center p-5 h-100 text-white">
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className="ms-4"
               >
-                Back to Login
-              </button>
+                <div className="d-flex align-items-center gap-2 mb-4">
+                  <div className="rounded d-flex align-items-center justify-content-center fw-bold shadow" style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #4f46e5, #06b6d4)', color: 'white' }}>
+                    M
+                  </div>
+                  <span className="fw-bold fs-4 text-white" style={{ letterSpacing: '1px' }}>MIND ERP</span>
+                </div>
+                <h1 className="display-4 fw-bold mb-4 text-white" style={{ letterSpacing: '-1.5px', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+                  Welcome back to your workspace.
+                </h1>
+                <p className="text-white-50 fs-5" style={{ maxWidth: '400px' }}>
+                  Sign in to manage your inventory, warehouses, and enterprise operations natively in the cloud.
+                </p>
+              </motion.div>
             </div>
-          </form>
-        )}
+          </div>
 
-        <div className="erp-login-footer">
-          Don't have an account? <Link to="/signup">Start Free Trial</Link>
+          {/* Right Side: Login Form */}
+          <div className="col-lg-6 d-flex align-items-center justify-content-center p-4 p-sm-5">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="w-100" style={{ maxWidth: '450px' }}
+            >
+              
+              <div className="glass-card rounded-4 shadow-lg p-5" style={{ background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <div className="text-center mb-4">
+                  <h3 className="fw-bold text-dark mb-2">Sign In</h3>
+                  <p className="text-muted fs-7">Enter your details to access your account</p>
+                </div>
+
+                {error && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="alert alert-danger bg-danger bg-opacity-10 border-danger text-danger py-2 fs-7 text-center mb-4">
+                    {error}
+                  </motion.div>
+                )}
+
+                <AnimatePresence mode="wait">
+                  {!requiresMfa ? (
+                    <motion.form 
+                      key="login-form"
+                      initial={{ opacity: 0, x: -20 }} 
+                      animate={{ opacity: 1, x: 0 }} 
+                      exit={{ opacity: 0, x: 20 }}
+                      onSubmit={handleLogin}
+                    >
+                      <div className="mb-3">
+                        <label className="form-label text-muted fs-7">Company Code</label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-white border-light-subtle text-muted"><Building2 size={16} /></span>
+                          <input 
+                            type="text" 
+                            className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                            placeholder="ACME"
+                            value={companyCode}
+                            onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label text-muted fs-7">Username or Email</label>
+                        <div className="input-group">
+                          <span className="input-group-text bg-white border-light-subtle text-muted"><User size={16} /></span>
+                          <input 
+                            type="text" 
+                            className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                            placeholder="admin"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="d-flex justify-content-between align-items-center mb-1">
+                          <label className="form-label text-muted fs-7 mb-0">Password</label>
+                          <a href="#" className="text-primary fs-8 text-decoration-none hover-text-dark">Forgot Password?</a>
+                        </div>
+                        <div className="input-group">
+                          <span className="input-group-text bg-white border-light-subtle text-muted"><Lock size={16} /></span>
+                          <input 
+                            type="password" 
+                            className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-4 form-check">
+                        <input type="checkbox" className="form-check-input bg-white border-light-subtle" id="rememberMe" />
+                        <label className="form-check-label text-muted fs-7" htmlFor="rememberMe">Remember me for 30 days</label>
+                      </div>
+
+                      <button type="submit" className="btn btn-primary w-100 rounded-pill fw-semibold py-2 d-flex justify-content-center align-items-center" disabled={loading} style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}>
+                        {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : 'Sign In'}
+                      </button>
+                    </motion.form>
+                  ) : (
+                    <motion.form 
+                      key="mfa-form"
+                      initial={{ opacity: 0, x: 20 }} 
+                      animate={{ opacity: 1, x: 0 }} 
+                      exit={{ opacity: 0, x: -20 }}
+                      onSubmit={handleVerifyMfa}
+                    >
+                      <div className="text-center mb-4">
+                        <div className="d-inline-flex bg-primary bg-opacity-10 text-primary p-3 rounded-circle mb-3">
+                          <KeyRound size={24} />
+                        </div>
+                        <h5 className="fw-bold mb-2">Two-Factor Authentication</h5>
+                        <p className="text-muted fs-7 mb-0">{mfaMessage}</p>
+                        
+                        {devOtp && (
+                          <div className="mt-3 p-2 border border-info rounded bg-info bg-opacity-10 text-info fs-7">
+                            <strong>[DEV MODE] OTP:</strong> {devOtp}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mb-4">
+                        <input 
+                          type="text" 
+                          className="form-control form-control-lg text-center bg-white border-light-subtle text-dark focus-ring fw-bold" 
+                          placeholder="000000"
+                          maxLength="6"
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                          style={{ letterSpacing: '8px', fontSize: '1.5rem' }}
+                          required
+                          autoFocus
+                        />
+                      </div>
+
+                      <button type="submit" className="btn btn-primary w-100 rounded-pill fw-semibold py-2 mb-3 d-flex justify-content-center align-items-center" disabled={loading || otpCode.length !== 6} style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}>
+                        {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : 'Verify Code'}
+                      </button>
+
+                      <button type="button" className="btn btn-link w-100 text-muted text-decoration-none fs-7 hover-text-dark" onClick={() => setRequiresMfa(false)} disabled={loading}>
+                        <ArrowLeft size={14} className="me-1" /> Back to login
+                      </button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="text-center mt-4">
+                <Link to="/" className="text-muted fs-7 text-decoration-none hover-text-dark">
+                  <ArrowLeft size={14} className="me-1" /> Back to Landing Page
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+
         </div>
       </div>
+      
+      <style>{`
+        .focus-ring:focus {
+          box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.25);
+          border-color: #4f46e5;
+        }
+        .hover-text-dark:hover { color: #f8fafc !important; }
+        .fs-7 { font-size: 0.9rem; }
+        .fs-8 { font-size: 0.8rem; }
+      `}</style>
     </div>
   );
 }

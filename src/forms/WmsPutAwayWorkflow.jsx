@@ -50,10 +50,26 @@ export default function WmsPutAwayWorkflow() {
       // For simplicity, if binBarcode matches recommended bin's barcode, we use it.
       let finalBinId = recommendedBin?.id;
 
-      // Basic scanner logic simulation
-      if (binBarcode && recommendedBin && binBarcode !== recommendedBin.barcode) {
-        toast.error('Validation: Scan does not match recommended bin (Simplified for this demo)');
-        return;
+      // If user scanned a manual barcode, we must resolve it to an actual Bin ID!
+      if (binBarcode) {
+        try {
+          const res = await api.get(`/barcode/scan/${encodeURIComponent(binBarcode)}`);
+          const scanResult = res.data?.data;
+          if (scanResult?.type?.toLowerCase() === 'bin') {
+             finalBinId = scanResult.data.id;
+          } else {
+             toast.error('Scanned barcode is not a valid Bin.');
+             return;
+          }
+        } catch (err) {
+          toast.error('Failed to resolve scanned bin barcode.');
+          return;
+        }
+      }
+
+      if (!finalBinId) {
+         toast.error('No bin recommended and no valid bin scanned.');
+         return;
       }
 
       const res = await api.post('/wms-upgrade/putaway/confirm', {

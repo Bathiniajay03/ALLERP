@@ -129,15 +129,28 @@ export default function WmsDispatchScanner() {
                       <h6 className="mb-1">{scannedItem?.itemCode}</h6>
                       <p className="mb-0 text-muted small">{scannedItem?.description}</p>
                     </div>
-                    <i className="bi bi-check-circle-fill fs-3"></i>
+                    <i className="bi bi-check-circle-fill fs-3 text-primary"></i>
                   </div>
 
-                  <div className="alert alert-success py-2 px-3 mb-0">
-                    <small className="d-block fw-bold mb-1">System Auto-Selected (FIFO):</small>
-                    <span className="d-block"><strong>Warehouse:</strong> {autoSelectedStock?.warehouseName}</span>
-                    <span className="d-block"><strong>Bin:</strong> {autoSelectedStock?.binCode}</span>
-                    <span className="d-block"><strong>Lot:</strong> {autoSelectedStock?.lotNumber || 'General'}</span>
-                    <span className="d-block mt-2 text-primary fw-bold">Available to Pick: {autoSelectedStock?.availableQuantity} {scannedItem?.defaultUnit}</span>
+                  <div className="erp-auto-workflow mt-3">
+                    <ul className="list-group list-group-flush border-0">
+                      <li className="list-group-item bg-transparent d-flex align-items-center px-0 py-2 border-0">
+                        <i className="bi bi-check2-circle text-success me-2 fs-5"></i> <strong className="text-dark">Auto FIFO</strong> <span className="ms-auto text-muted small">Oldest Stock Found</span>
+                      </li>
+                      <li className="list-group-item bg-transparent d-flex align-items-center px-0 py-2 border-0">
+                        <i className="bi bi-check2-circle text-success me-2 fs-5"></i> <strong className="text-dark">Auto Select Lot</strong> <span className="ms-auto fw-bold text-dark">{autoSelectedStock?.lotNumber || 'General'}</span>
+                      </li>
+                      <li className="list-group-item bg-transparent d-flex align-items-center px-0 py-2 border-0">
+                        <i className="bi bi-check2-circle text-success me-2 fs-5"></i> <strong className="text-dark">Auto Select Bin</strong> <span className="ms-auto fw-bold text-dark">{autoSelectedStock?.binCode}</span>
+                      </li>
+                      <li className="list-group-item bg-transparent d-flex align-items-center px-0 py-2 border-0">
+                        <i className="bi bi-check2-circle text-success me-2 fs-5"></i> <strong className="text-dark">Auto Select Serials</strong> <span className="ms-auto text-muted small">{scannedItem?.isSerialTracked ? 'Ready to Dispatch' : 'N/A'}</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="alert alert-primary mt-3 py-2 px-3 mb-0 border-0 shadow-sm" style={{ backgroundColor: 'rgba(0, 82, 204, 0.05)' }}>
+                    <span className="d-block text-primary fw-bold text-center">Available to Pick: {autoSelectedStock?.availableQuantity} {scannedItem?.defaultUnit}</span>
                   </div>
                 </div>
               )}
