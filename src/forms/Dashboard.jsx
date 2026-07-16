@@ -1,12 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/apiClient";
+import {
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell, ComposedChart
+} from 'recharts';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState(null);
   const [isOffline, setIsOffline] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [lastSync, setLastSync] = useState(null);
+
+  const brand = useMemo(() => {
+    try { return JSON.parse(window.sessionStorage.getItem("erp_company_brand") || "{}"); } catch { return {}; }
+  }, []);
+  const primaryColor = brand.primaryColor || '#0f4c81';
 
   const navigate = useNavigate();
 
@@ -20,8 +30,12 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const res = await api.get("/smart-erp/dashboard/realtime");
+      const [res, analyticsRes] = await Promise.all([
+        api.get("/smart-erp/dashboard/realtime"),
+        api.get("/smart-erp/dashboard/analytics")
+      ]);
       setData(res.data);
+      setAnalyticsData(analyticsRes.data);
       setIsOffline(false);
       setErrorMessage("");
       setLastSync(new Date());
@@ -283,7 +297,68 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
         </div>
+
+        {/* ANALYTICS SECTION */}
+        {analyticsData && (
+          <div className="row g-4 mt-1 mb-5">
+            {/* 7-Day Trend Chart */}
+            <div className="col-lg-8">
+              <div className="erp-panel h-100 shadow-sm">
+                <div className="erp-panel-header bg-light">
+                  <span className="fw-bold">7-Day Revenue & Orders Trend</span>
+                </div>
+                <div className="p-4 bg-white" style={{ height: 350 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={analyticsData.trendData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                      <CartesianGrid stroke="#f5f5f5" />
+                      <XAxis dataKey="date" scale="band" />
+                      <YAxis yAxisId="left" tickFormatter={(value) => `₹${value}`} />
+                      <YAxis yAxisId="right" orientation="right" />
+                      <RechartsTooltip />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="revenue" barSize={40} fill={primaryColor} name="Revenue" />
+                      <Line yAxisId="right" type="monotone" dataKey="orders" stroke="#f59e0b" strokeWidth={3} name="Orders" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            {/* Order Status Distribution */}
+            <div className="col-lg-4">
+              <div className="erp-panel h-100 shadow-sm">
+                <div className="erp-panel-header bg-light">
+                  <span className="fw-bold">Order Status Distribution</span>
+                </div>
+                <div className="p-4 bg-white d-flex align-items-center justify-content-center" style={{ height: 350 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={analyticsData.statusDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {analyticsData.statusDistribution?.map((entry, index) => {
+                          const COLORS = [primaryColor, '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#8b5cf6'];
+                          return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
+                        })}
+                      </Pie>
+                      <RechartsTooltip />
+                      <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* AI Floating Button */}

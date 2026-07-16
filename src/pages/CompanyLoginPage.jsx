@@ -15,6 +15,14 @@ export default function CompanyLoginPage({ onLoginSuccess, initialError }) {
   const [devOtp, setDevOtp] = useState('');
   const [error, setError] = useState(initialError || '');
   const [loading, setLoading] = useState(false);
+  const [resetUserId, setResetUserId] = useState(null);
+  const [otpToken, setOtpToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isResetSuccess, setIsResetSuccess] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotMessage, setForgotMessage] = useState('');
 
   useEffect(() => {
     // Load pre-filled company code if returning from successful registration
@@ -24,6 +32,47 @@ export default function CompanyLoginPage({ onLoginSuccess, initialError }) {
       window.sessionStorage.removeItem('erp_login_prefill_code');
     }
   }, []);
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setForgotMessage('');
+    setLoading(true);
+    try {
+      const res = await smartErpApi.forgotPassword({ usernameOrEmail: forgotEmail.trim() });
+      setForgotMessage(res.data.message || 'If the account exists, an OTP has been sent.');
+      if (res.data.userId) {
+        setResetUserId(res.data.userId);
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to submit request.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await smartErpApi.resetPassword({
+        userId: resetUserId,
+        token: otpToken.trim(),
+        newPassword
+      });
+      setIsResetSuccess(true);
+      setForgotMessage('Password reset successfully!');
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to reset password. Check your OTP.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -64,6 +113,275 @@ export default function CompanyLoginPage({ onLoginSuccess, initialError }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderForm = () => {
+    if (isForgotPassword) {
+      if (isResetSuccess) {
+        return (
+          <motion.div 
+            key="reset-success"
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            className="text-center"
+          >
+            <div className="alert alert-success bg-success bg-opacity-10 border-success text-success py-2 fs-7 text-center mb-4">
+              Password has been reset successfully.
+            </div>
+            <button 
+              type="button" 
+              className="btn btn-primary w-100 rounded-pill fw-semibold py-2" 
+              style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}
+              onClick={() => {
+                setIsForgotPassword(false);
+                setResetUserId(null);
+                setOtpToken('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setIsResetSuccess(false);
+                setError('');
+                setForgotMessage('');
+              }}
+            >
+              Back to Login
+            </button>
+          </motion.div>
+        );
+      }
+
+      if (resetUserId) {
+        return (
+          <motion.form 
+            key="reset-form"
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: -20 }}
+            onSubmit={handleResetPassword}
+          >
+            <div className="text-center mb-4">
+              <h5 className="fw-bold mb-2">Verify OTP & Reset</h5>
+              <p className="text-muted fs-7 mb-0">Enter the 6-digit OTP code sent to your email and your new password.</p>
+            </div>
+
+            {forgotMessage && (
+              <div className="alert alert-success bg-success bg-opacity-10 border-success text-success py-2 fs-7 text-center mb-4">
+                {forgotMessage}
+              </div>
+            )}
+
+            <div className="mb-3">
+              <label className="form-label text-muted fs-7">OTP Code</label>
+              <input 
+                type="text" 
+                className="form-control bg-white border-light-subtle text-dark focus-ring text-center fw-bold" 
+                placeholder="000000"
+                maxLength="6"
+                value={otpToken}
+                onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, ''))}
+                required
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label text-muted fs-7">New Password</label>
+              <div className="input-group">
+                <span className="input-group-text bg-white border-light-subtle text-muted"><Lock size={16} /></span>
+                <input 
+                  type="password" 
+                  className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="form-label text-muted fs-7">Confirm Password</label>
+              <div className="input-group">
+                <span className="input-group-text bg-white border-light-subtle text-muted"><Lock size={16} /></span>
+                <input 
+                  type="password" 
+                  className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-primary w-100 rounded-pill fw-semibold py-2 mb-3 d-flex justify-content-center align-items-center" disabled={loading} style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}>
+              {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : 'Reset Password'}
+            </button>
+
+            <button type="button" className="btn btn-link w-100 text-muted text-decoration-none fs-7 hover-text-dark" onClick={() => { setResetUserId(null); setError(''); setForgotMessage(''); }} disabled={loading}>
+              <ArrowLeft size={14} className="me-1" /> Re-enter Email
+            </button>
+          </motion.form>
+        );
+      }
+
+      return (
+        <motion.form 
+          key="forgot-form"
+          initial={{ opacity: 0, x: -20 }} 
+          animate={{ opacity: 1, x: 0 }} 
+          exit={{ opacity: 0, x: 20 }}
+          onSubmit={handleForgotPassword}
+        >
+          <div className="text-center mb-4">
+            <h5 className="fw-bold mb-2">Reset Password</h5>
+            <p className="text-muted fs-7 mb-0">Enter your username or email address and we'll send you an OTP code.</p>
+          </div>
+
+          {forgotMessage && (
+            <div className="alert alert-success bg-success bg-opacity-10 border-success text-success py-2 fs-7 text-center mb-4">
+              {forgotMessage}
+            </div>
+          )}
+
+          <div className="mb-4">
+            <label className="form-label text-muted fs-7">Username or Email</label>
+            <div className="input-group">
+              <span className="input-group-text bg-white border-light-subtle text-muted"><User size={16} /></span>
+              <input 
+                type="text" 
+                className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                placeholder="john@example.com"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <button type="submit" className="btn btn-primary w-100 rounded-pill fw-semibold py-2 mb-3 d-flex justify-content-center align-items-center" disabled={loading} style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}>
+            {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : 'Send OTP'}
+          </button>
+
+          <button type="button" className="btn btn-link w-100 text-muted text-decoration-none fs-7 hover-text-dark" onClick={() => { setIsForgotPassword(false); setError(''); setForgotMessage(''); }} disabled={loading}>
+            <ArrowLeft size={14} className="me-1" /> Back to login
+          </button>
+        </motion.form>
+      );
+    }
+
+    if (!requiresMfa) {
+      return (
+        <motion.form 
+          key="login-form"
+          initial={{ opacity: 0, x: -20 }} 
+          animate={{ opacity: 1, x: 0 }} 
+          exit={{ opacity: 0, x: 20 }}
+          onSubmit={handleLogin}
+        >
+          <div className="mb-3">
+            <label className="form-label text-muted fs-7">Company Code</label>
+            <div className="input-group">
+              <span className="input-group-text bg-white border-light-subtle text-muted"><Building2 size={16} /></span>
+              <input 
+                type="text" 
+                className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                placeholder="ACME"
+                value={companyCode}
+                onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label text-muted fs-7">Username or Email</label>
+            <div className="input-group">
+              <span className="input-group-text bg-white border-light-subtle text-muted"><User size={16} /></span>
+              <input 
+                type="text" 
+                className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                placeholder="admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-1">
+              <label className="form-label text-muted fs-7 mb-0">Password</label>
+              <button type="button" className="btn btn-link p-0 text-primary fs-8 text-decoration-none hover-text-dark border-0 bg-transparent" onClick={() => setIsForgotPassword(true)}>Forgot Password?</button>
+            </div>
+            <div className="input-group">
+              <span className="input-group-text bg-white border-light-subtle text-muted"><Lock size={16} /></span>
+              <input 
+                type="password" 
+                className="form-control bg-white border-light-subtle text-dark focus-ring" 
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="mb-4 form-check">
+            <input type="checkbox" className="form-check-input bg-white border-light-subtle" id="rememberMe" />
+            <label className="form-check-label text-muted fs-7" htmlFor="rememberMe">Remember me for 30 days</label>
+          </div>
+
+          <button type="submit" className="btn btn-primary w-100 rounded-pill fw-semibold py-2 d-flex justify-content-center align-items-center" disabled={loading} style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}>
+            {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : 'Sign In'}
+          </button>
+        </motion.form>
+      );
+    }
+
+    return (
+      <motion.form 
+        key="mfa-form"
+        initial={{ opacity: 0, x: 20 }} 
+        animate={{ opacity: 1, x: 0 }} 
+        exit={{ opacity: 0, x: -20 }}
+        onSubmit={handleVerifyMfa}
+      >
+        <div className="text-center mb-4">
+          <div className="d-inline-flex bg-primary bg-opacity-10 text-primary p-3 rounded-circle mb-3">
+            <KeyRound size={24} />
+          </div>
+          <h5 className="fw-bold mb-2">Two-Factor Authentication</h5>
+          <p className="text-muted fs-7 mb-0">{mfaMessage}</p>
+          
+          {devOtp && (
+            <div className="mt-3 p-2 border border-info rounded bg-info bg-opacity-10 text-info fs-7">
+              <strong>[DEV MODE] OTP:</strong> {devOtp}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <input 
+            type="text" 
+            className="form-control form-control-lg text-center bg-white border-light-subtle text-dark focus-ring fw-bold" 
+            placeholder="000000"
+            maxLength="6"
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+            style={{ letterSpacing: '8px', fontSize: '1.5rem' }}
+            required
+            autoFocus
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary w-100 rounded-pill fw-semibold py-2 mb-3 d-flex justify-content-center align-items-center" disabled={loading || otpCode.length !== 6} style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}>
+          {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : 'Verify Code'}
+        </button>
+
+        <button type="button" className="btn btn-link w-100 text-muted text-decoration-none fs-7 hover-text-dark" onClick={() => setRequiresMfa(false)} disabled={loading}>
+          <ArrowLeft size={14} className="me-1" /> Back to login
+        </button>
+      </motion.form>
+    );
   };
 
   return (
@@ -152,116 +470,7 @@ export default function CompanyLoginPage({ onLoginSuccess, initialError }) {
                 )}
 
                 <AnimatePresence mode="wait">
-                  {!requiresMfa ? (
-                    <motion.form 
-                      key="login-form"
-                      initial={{ opacity: 0, x: -20 }} 
-                      animate={{ opacity: 1, x: 0 }} 
-                      exit={{ opacity: 0, x: 20 }}
-                      onSubmit={handleLogin}
-                    >
-                      <div className="mb-3">
-                        <label className="form-label text-muted fs-7">Company Code</label>
-                        <div className="input-group">
-                          <span className="input-group-text bg-white border-light-subtle text-muted"><Building2 size={16} /></span>
-                          <input 
-                            type="text" 
-                            className="form-control bg-white border-light-subtle text-dark focus-ring" 
-                            placeholder="ACME"
-                            value={companyCode}
-                            onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="form-label text-muted fs-7">Username or Email</label>
-                        <div className="input-group">
-                          <span className="input-group-text bg-white border-light-subtle text-muted"><User size={16} /></span>
-                          <input 
-                            type="text" 
-                            className="form-control bg-white border-light-subtle text-dark focus-ring" 
-                            placeholder="admin"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mb-4">
-                        <div className="d-flex justify-content-between align-items-center mb-1">
-                          <label className="form-label text-muted fs-7 mb-0">Password</label>
-                          <a href="#" className="text-primary fs-8 text-decoration-none hover-text-dark">Forgot Password?</a>
-                        </div>
-                        <div className="input-group">
-                          <span className="input-group-text bg-white border-light-subtle text-muted"><Lock size={16} /></span>
-                          <input 
-                            type="password" 
-                            className="form-control bg-white border-light-subtle text-dark focus-ring" 
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mb-4 form-check">
-                        <input type="checkbox" className="form-check-input bg-white border-light-subtle" id="rememberMe" />
-                        <label className="form-check-label text-muted fs-7" htmlFor="rememberMe">Remember me for 30 days</label>
-                      </div>
-
-                      <button type="submit" className="btn btn-primary w-100 rounded-pill fw-semibold py-2 d-flex justify-content-center align-items-center" disabled={loading} style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}>
-                        {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : 'Sign In'}
-                      </button>
-                    </motion.form>
-                  ) : (
-                    <motion.form 
-                      key="mfa-form"
-                      initial={{ opacity: 0, x: 20 }} 
-                      animate={{ opacity: 1, x: 0 }} 
-                      exit={{ opacity: 0, x: -20 }}
-                      onSubmit={handleVerifyMfa}
-                    >
-                      <div className="text-center mb-4">
-                        <div className="d-inline-flex bg-primary bg-opacity-10 text-primary p-3 rounded-circle mb-3">
-                          <KeyRound size={24} />
-                        </div>
-                        <h5 className="fw-bold mb-2">Two-Factor Authentication</h5>
-                        <p className="text-muted fs-7 mb-0">{mfaMessage}</p>
-                        
-                        {devOtp && (
-                          <div className="mt-3 p-2 border border-info rounded bg-info bg-opacity-10 text-info fs-7">
-                            <strong>[DEV MODE] OTP:</strong> {devOtp}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mb-4">
-                        <input 
-                          type="text" 
-                          className="form-control form-control-lg text-center bg-white border-light-subtle text-dark focus-ring fw-bold" 
-                          placeholder="000000"
-                          maxLength="6"
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                          style={{ letterSpacing: '8px', fontSize: '1.5rem' }}
-                          required
-                          autoFocus
-                        />
-                      </div>
-
-                      <button type="submit" className="btn btn-primary w-100 rounded-pill fw-semibold py-2 mb-3 d-flex justify-content-center align-items-center" disabled={loading || otpCode.length !== 6} style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: 'none' }}>
-                        {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : 'Verify Code'}
-                      </button>
-
-                      <button type="button" className="btn btn-link w-100 text-muted text-decoration-none fs-7 hover-text-dark" onClick={() => setRequiresMfa(false)} disabled={loading}>
-                        <ArrowLeft size={14} className="me-1" /> Back to login
-                      </button>
-                    </motion.form>
-                  )}
+                  {renderForm()}
                 </AnimatePresence>
               </div>
 

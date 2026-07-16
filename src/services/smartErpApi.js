@@ -54,6 +54,12 @@ export const smartErpApi = {
   companyLogin: (payload) =>
     api.post("/smart-erp/auth/company-login", payload),
 
+  forgotPassword: (payload) =>
+    api.post("/smart-erp/auth/forgot-password", payload),
+
+  resetPassword: (payload) =>
+    api.post("/smart-erp/auth/reset-password", payload),
+
   publicOnboard: (payload) =>
     api.post("/smart-erp/public/onboard", payload),
 
@@ -322,6 +328,16 @@ export const smartErpApi = {
   // =============================
   getSuperAdminMetrics: () =>
     api.get("/super-admin/metrics"),
+  getSystemErrors: () =>
+    api.get("/admin/system-errors"),
+  getBackups: () =>
+    api.get("/backups"),
+  triggerBackup: () =>
+    api.post("/backups/manual"),
+  restoreBackup: (id) =>
+    api.post(`/backups/restore/${id}`),
+  downloadBackup: (id) =>
+    api.get(`/backups/download/${id}`, { responseType: 'blob' }),
 
   getCompanies: () =>
     api.get("/super-admin/companies"),

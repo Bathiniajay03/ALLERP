@@ -181,8 +181,7 @@ export default function HeroSection() {
                 <video
                   className="w-100 h-100 object-fit-cover"
                   controls
-                  autoPlay
-                  poster="/images/cinematic_poster.png"
+                  poster="/images/cinematic_3d_avatar_poster.png"
                   src="/images/my-video.mp4"
                 >
                   Your browser does not support the video tag.

@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-
+import { HubConnectionBuilder } from "@microsoft/signalr";
+import { Toaster, toast } from "react-hot-toast";
 // Form Imports
 import Dashboard from "./forms/Dashboard";
 import Products from "./forms/Products";
@@ -36,11 +37,13 @@ import UsageAnalytics from "./forms/UsageAnalytics";
 
 // Super Admin Portal
 import SuperAdminPortal from "./forms/SuperAdminPortal";
+import ModuleGuide from "./forms/ModuleGuide";
 
 import LandingPage from "./pages/LandingPage";
 import SignupWizard from "./pages/SignupWizard";
 import RegistrationSuccess from "./pages/RegistrationSuccess";
 import CompanyLoginPage from "./pages/CompanyLoginPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 import WmsSetup from "./forms/WmsSetup";
 import WmsDashboard from "./forms/WmsDashboard";
@@ -158,6 +161,7 @@ const MODULE_CONFIG = [
       { id: "wmsPackageScreen", label: "Package Dispatch", path: "/package-dispatch" },
     ]
   },
+  { id: "moduleGuide", label: "Module Guide", path: "/module-guide" },
   { id: "automation", label: "Automation", path: "/automation" },
   { id: "localAI", label: "Local AI", path: "/local-ai" },
   { id: "notifications", label: "Notifications", path: "/notifications" },
@@ -179,7 +183,18 @@ const MODULE_CONFIG = [
   },
 
   // Super Admin Module
-  { id: "superAdmin", label: "⚡ Super Admin", path: "/super-admin" }
+  { 
+    id: "superAdminGroup", 
+    label: "⚡ Super Admin", 
+    isGroup: true, 
+    subModules: [
+      { id: "saDashboard", label: "Global Dashboard", path: "/super-admin/dashboard" },
+      { id: "saAudit", label: "System Audit Trail", path: "/super-admin/audit" },
+      { id: "saBackups", label: "Disaster Recovery", path: "/super-admin/backups" },
+      { id: "saLogs", label: "System Error Logs", path: "/super-admin/logs" },
+      { id: "saChats", label: "Support Chats Inbox", path: "/super-admin/chats" },
+    ] 
+  }
 ];
 
 const COMPANY_MODULES = ["companyDashboard", "companySettings", "subscriptionPage", "usageAnalytics"];
@@ -445,13 +460,24 @@ function AppContent() {
   }, [isAuthenticated, handleLogout]);
 
   // --- Auth & Access Sync ---
-  const handleLoginSuccess = useCallback(({ accessToken, role, loginLogId, userType, assignedPages, companyName, primaryColor, logo, companyCode }) => {
+  const handleLoginSuccess = useCallback(({ accessToken, role, loginLogId, userType, assignedPages, companyName, primaryColor, logo, companyCode, sidebarBgColor, sidebarTextColor, storefrontEyebrow, storefrontTitle, storefrontDescription }) => {
     window.sessionStorage.setItem("erp_token", accessToken);
     window.sessionStorage.setItem("erp_role", String(role).trim());
     window.sessionStorage.setItem("erp_user_type", String(userType).trim().toUpperCase());
     if (loginLogId) window.sessionStorage.setItem("erp_login_log_id", loginLogId.toString());
     window.sessionStorage.setItem("erp_assigned_pages", JSON.stringify(assignedPages || []));
-    const brand = { companyName, primaryColor, logo, companyCode };
+    
+    const brand = { 
+      companyName, 
+      primaryColor, 
+      logo, 
+      companyCode,
+      sidebarBgColor,
+      sidebarTextColor,
+      storefrontEyebrow,
+      storefrontTitle,
+      storefrontDescription
+    };
     window.sessionStorage.setItem("erp_company_brand", JSON.stringify(brand));
 
     setAuthToken(accessToken);
@@ -486,7 +512,10 @@ function AppContent() {
           logo: access.logo,
           companyCode: access.companyCode,
           sidebarBgColor: access.sidebarBgColor,
-          sidebarTextColor: access.sidebarTextColor
+          sidebarTextColor: access.sidebarTextColor,
+          storefrontEyebrow: access.storefrontEyebrow,
+          storefrontTitle: access.storefrontTitle,
+          storefrontDescription: access.storefrontDescription
         };
         window.sessionStorage.setItem("erp_company_brand", JSON.stringify(brand));
         setCompanyBrand(brand);
@@ -554,9 +583,9 @@ function AppContent() {
   const allowedIds = useMemo(() => {
     let baseAllowed = [];
     if (isSuperAdmin) {
-      baseAllowed = [...allModuleIds, "superAdmin"];
+      baseAllowed = [...allModuleIds, "superAdminGroup", "saDashboard", "saAudit", "saBackups", "saLogs"];
     } else if (isAdminUser) {
-      baseAllowed = [...allModuleIds.filter(id => id !== "superAdmin"), ...COMPANY_MODULES];
+      baseAllowed = [...allModuleIds.filter(id => id !== "superAdminGroup" && id !== "saDashboard" && id !== "saAudit" && id !== "saBackups" && id !== "saLogs"), ...COMPANY_MODULES];
     } else if (userAssignedPages.length) {
       baseAllowed = userAssignedPages;
     } else {
@@ -566,7 +595,7 @@ function AppContent() {
   }, [allModuleIds, userAssignedPages, role, allowedModulesByRole, isAdminUser, isSuperAdmin, isModuleEnabledByCompany]);
 
   const fallbackPath = useMemo(() => {
-    if (isSuperAdmin) return "/super-admin";
+    if (isSuperAdmin) return "/super-admin/dashboard";
     const firstAllowed = MODULE_CONFIG.flatMap(i => i.isGroup ? i.subModules : [i]).find(i => allowedIds.includes(i.id));
     return firstAllowed?.path || "/dashboard";
   }, [allowedIds, isSuperAdmin]);
@@ -574,18 +603,63 @@ function AppContent() {
   const navItems = useMemo(() => {
     return MODULE_CONFIG
       .filter(item => {
-        if (item.id === "systemSettings" && !isMainAdminUser) return false;
-        if (item.id === "clientSettings" && isMainAdminUser) return false;
-        if (item.id === "superAdmin" && !isSuperAdmin) return false;
+        // Hide settings from main list
+        if (item.id === "systemSettings" || item.id === "clientSettings") return false;
+        if (item.id === "superAdminGroup" && !isSuperAdmin) return false;
         if (item.id === "companyGroup" && isSuperAdmin) return false;
         return item.isGroup ? item.subModules.some(s => allowedIds.includes(s.id)) : allowedIds.includes(item.id);
       })
-      .map(item => item.isGroup ? { ...item, subModules: item.subModules.filter(s => allowedIds.includes(s.id)) } : item);
-  }, [allowedIds, isMainAdminUser, isSuperAdmin]);
+      .map(item => {
+        if (item.isGroup) {
+          // Hide companySettings from company group list
+          const filteredSubModules = item.subModules.filter(s => {
+            if (s.id === "companySettings") return false;
+            return allowedIds.includes(s.id);
+          });
+          return { ...item, subModules: filteredSubModules };
+        }
+        return item;
+      });
+  }, [allowedIds, isSuperAdmin]);
 
   const renderProtectedRoute = useCallback((moduleId, element) => allowedIds.includes(moduleId) ? element : <AccessDenied moduleId={moduleId} />, [allowedIds]);
 
-  // 2. UPDATED: If not authenticated, show landing, custom login wizard, signup wizard, or success pages.
+  // 2. UPDATED: Set up SignalR for global notifications
+  useEffect(() => {
+    if (!isAuthenticated || !authToken) return;
+    
+    let connection = new HubConnectionBuilder()
+      .withUrl("http://localhost:5157/notificationhub", {
+        accessTokenFactory: () => authToken.replace("Bearer ", "")
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.on("ReceiveNotification", (notification) => {
+      // Trigger a toast notification
+      if (notification.priority === "High") {
+        toast.error(notification.title + "\n" + notification.message, { duration: 5000 });
+      } else {
+        toast.success(notification.title + "\n" + notification.message, { duration: 4000 });
+      }
+      
+      // We can also dispatch a custom event to let the Notifications page know to reload
+      window.dispatchEvent(new CustomEvent("new_notification_received", { detail: notification }));
+    });
+
+    connection.start().catch(err => {
+      if (err.name === 'AbortError' || err.message.includes('negotiation')) return;
+      console.log("SignalR Connection Error: ", err);
+    });
+
+    return () => {
+      if (connection) {
+        connection.stop();
+      }
+    };
+  }, [isAuthenticated, authToken]);
+
+  // 3. UPDATED: If not authenticated, show landing, custom login wizard, signup wizard, or success pages.
   if (!isAuthenticated) {
     return (
       <Routes>
@@ -612,12 +686,15 @@ function AppContent() {
       "--sidebar-color": sidebarTextColor,
       "--sidebar-border": sidebarBorderColor
     }}>
+      <Toaster position="top-right" />
       {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
       <Sidebar
         navItems={navItems} role={role} isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)} onLogout={handleLogout}
         brandName={brandName} brandColor={brandColor} brandLogo={brandLogo}
         isSuperAdmin={isSuperAdmin}
+        isMainAdminUser={isMainAdminUser}
+        isAdminUser={isAdminUser}
       />
 
       <div className="erp-main-content">
@@ -630,6 +707,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Navigate to={fallbackPath} replace />} />
           <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/signup" element={<Navigate to="/" replace />} />
           <Route path="/signup/success" element={<Navigate to="/" replace />} />
           <Route path="/dashboard" element={renderProtectedRoute("dashboard", <Dashboard />)} />
@@ -680,6 +758,7 @@ function AppContent() {
           <Route path="/scanner-app" element={renderProtectedRoute("wmsScannerApp", <WmsScannerApp />)} />
           <Route path="/package-dispatch" element={renderProtectedRoute("wmsPackageScreen", <WmsPackageScreen />)} />
 
+          <Route path="/module-guide" element={renderProtectedRoute("moduleGuide", <ModuleGuide />)} />
           <Route path="/operations" element={renderProtectedRoute("operations", <Operations />)} />
           <Route path="/finance" element={renderProtectedRoute("finance", <Finance />)} />
           <Route path="/reports" element={renderProtectedRoute("reports", <Reports />)} />
@@ -700,7 +779,11 @@ function AppContent() {
           <Route path="/company/usage" element={renderProtectedRoute("usageAnalytics", <UsageAnalytics />)} />
 
           {/* Super Admin Route */}
-          <Route path="/super-admin" element={isSuperAdmin ? <SuperAdminPortal /> : <Navigate to="/" />} />
+          <Route path="/super-admin/dashboard" element={isSuperAdmin ? <SuperAdminPortal defaultTab="companies" /> : <Navigate to="/" />} />
+          <Route path="/super-admin/audit" element={isSuperAdmin ? <SuperAdminPortal defaultTab="audit" /> : <Navigate to="/" />} />
+          <Route path="/super-admin/backups" element={isSuperAdmin ? <SuperAdminPortal defaultTab="backups" /> : <Navigate to="/" />} />
+          <Route path="/super-admin/logs" element={isSuperAdmin ? <SuperAdminPortal defaultTab="system_errors" /> : <Navigate to="/" />} />
+          <Route path="/super-admin/chats" element={isSuperAdmin ? <SuperAdminPortal defaultTab="chats" /> : <Navigate to="/" />} />
         </Routes>
       </div>
     </div>
@@ -720,8 +803,9 @@ function AccessDenied({ moduleId }) {
   );
 }
 
-function Sidebar({ navItems, role, isOpen, onClose, onLogout, brandName, brandColor, brandLogo, isSuperAdmin }) {
+function Sidebar({ navItems, role, isOpen, onClose, onLogout, brandName, brandColor, brandLogo, isSuperAdmin, isMainAdminUser, isAdminUser }) {
   const [openGroup, setOpenGroup] = useState(null);
+  const [showSettingsPopover, setShowSettingsPopover] = useState(false);
   const location = useLocation();
 
   return (
@@ -770,8 +854,39 @@ function Sidebar({ navItems, role, isOpen, onClose, onLogout, brandName, brandCo
           })}
         </ul>
       </div>
-      <div className="sidebar-footer">
-        <div className="d-flex align-items-center gap-2 mb-2 px-1">
+      <div className="sidebar-footer" style={{ position: "relative" }}>
+        
+        {/* Settings Popover Menu */}
+        {showSettingsPopover && (
+          <div className="card shadow border-0 position-absolute bg-dark text-white p-2" style={{ bottom: "105%", left: "10px", right: "10px", zIndex: 1050, border: "1px solid rgba(255,255,255,0.15)" }}>
+            <div className="card-body p-1 d-flex flex-column gap-1">
+              <h6 className="text-white-50 small mb-1 px-2 fw-semibold">Settings</h6>
+              
+              {isMainAdminUser && (
+                <Link to="/system-settings" className="text-decoration-none text-white small py-1 px-2 rounded hover-bg-opacity d-block" style={{ background: "rgba(255,255,255,0.05)" }} onClick={() => { setShowSettingsPopover(false); onClose(); }}>
+                  ⚙️ System Settings
+                </Link>
+              )}
+              
+              {isAdminUser && !isMainAdminUser && (
+                <>
+                  <Link to="/tenant-settings" className="text-decoration-none text-white small py-1 px-2 rounded hover-bg-opacity d-block mb-1" style={{ background: "rgba(255,255,255,0.05)" }} onClick={() => { setShowSettingsPopover(false); onClose(); }}>
+                    ⚙️ Tenant Settings
+                  </Link>
+                  <Link to="/company/settings" className="text-decoration-none text-white small py-1 px-2 rounded hover-bg-opacity d-block" style={{ background: "rgba(255,255,255,0.05)" }} onClick={() => { setShowSettingsPopover(false); onClose(); }}>
+                    🏢 Company Settings
+                  </Link>
+                </>
+              )}
+              
+              {!isMainAdminUser && !isAdminUser && (
+                <span className="text-white-50 small px-2">No settings available</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="d-flex align-items-center gap-2 mb-2 px-1 cursor-pointer" onClick={() => setShowSettingsPopover(!showSettingsPopover)}>
           <div style={{ width: 28, height: 28, borderRadius: "50%", background: brandColor || "#38bdf8", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ color: "#fff", fontWeight: 700, fontSize: 12 }}>{(role || "U")[0]}</span>
           </div>

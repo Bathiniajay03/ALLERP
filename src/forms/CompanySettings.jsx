@@ -68,6 +68,23 @@ export default function CompanySettings() {
       document.documentElement.style.setProperty("--brand-color", settings.primaryColor);
       document.documentElement.style.setProperty("--sidebar-bg", settings.sidebarBgColor);
       document.documentElement.style.setProperty("--sidebar-color", settings.sidebarTextColor);
+
+      // Update sessionStorage so refresh maintains it instantly
+      const currentBrand = JSON.parse(window.sessionStorage.getItem("erp_company_brand") || "{}");
+      const updatedBrand = { 
+        ...currentBrand, 
+        companyName: settings.companyName,
+        primaryColor: settings.primaryColor,
+        logo: settings.logo,
+        sidebarBgColor: settings.sidebarBgColor,
+        sidebarTextColor: settings.sidebarTextColor,
+        storefrontEyebrow: settings.storefrontEyebrow,
+        storefrontTitle: settings.storefrontTitle,
+        storefrontDescription: settings.storefrontDescription
+      };
+      window.sessionStorage.setItem("erp_company_brand", JSON.stringify(updatedBrand));
+
+      // Dispatch event to App.jsx if needed (App.jsx also listens to window events if we wanted, but not strictly necessary since CSS variables update live)
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to save settings.");
     } finally {

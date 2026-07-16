@@ -1551,7 +1551,7 @@ export default function OrderManagement() {
                         <thead className="table-light">
                           <tr>
                             <th>Product Name</th>
-                            <th>Warehouse</th>
+                            <th>Warehouse / Storage Location</th>
                             <th>Lot #</th>
                             <th>Serial Number</th>
                             <th className="text-center">Qty</th>
@@ -1561,7 +1561,17 @@ export default function OrderManagement() {
                           {(selectedOrder.items || []).map((item, i) => (
                             <tr key={i}>
                               <td className="fw-bold">{item.productName}</td>
-                              <td className="text-primary fw-semibold">{item.warehouseName || "Primary Whse"}</td>
+                              <td>
+                                <div className="text-primary fw-semibold">{item.warehouseName || "Primary Whse"}</div>
+                                {item.wmsBinCode ? (
+                                  <div className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                                    <span className="badge bg-info text-dark font-monospace me-1">{item.wmsBinCode}</span>
+                                    {item.wmsLocation}
+                                  </div>
+                                ) : (
+                                  <div className="text-muted fst-italic" style={{ fontSize: '0.75rem' }}>No WMS Bin Assigned</div>
+                                )}
+                              </td>
                               <td><span className="badge bg-light text-dark border">{item.lotNumber || "No Lot"}</span></td>
                               <td>
                                 {item.serialNumbers && item.serialNumbers.length > 0 ? (
@@ -1579,7 +1589,7 @@ export default function OrderManagement() {
                                   <code className="text-muted fw-bold">---</code>
                                 )}
                               </td>
-                              <td className="text-center">{item.quantity}</td>
+                              <td className="text-center fw-bold">{item.quantity}</td>
                             </tr>
                           ))}
                         </tbody>

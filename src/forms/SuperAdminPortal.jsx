@@ -5,14 +5,21 @@ import SuperAdminChatInbox from "../components/SuperAdminChatInbox";
 
 
 
-export default function SuperAdminPortal() {
+export default function SuperAdminPortal({ defaultTab = "companies" }) {
   const [companies, setCompanies] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showWizard, setShowWizard] = useState(false);
-  const [activeTab, setActiveTab] = useState("companies");
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [systemErrors, setSystemErrors] = useState([]);
+  const [systemBackups, setSystemBackups] = useState([]);
+  const [backupLoading, setBackupLoading] = useState(false);
 
   // Modal states for actions
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -27,8 +34,18 @@ export default function SuperAdminPortal() {
       // Add custom API calls on smartErpApi
       const compRes = await smartErpApi.getCompanies();
       const metricRes = await smartErpApi.getSuperAdminMetrics();
+      const errorRes = await smartErpApi.getSystemErrors();
+      
+      try {
+        const backupRes = await smartErpApi.getBackups();
+        setSystemBackups(backupRes?.data?.data || []);
+      } catch (err) {
+        console.warn("Failed to fetch backups:", err);
+      }
+      
       setCompanies(compRes.data || []);
       setMetrics(metricRes.data || null);
+      setSystemErrors(errorRes.data || []);
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to load Super Admin data.");
     } finally {
@@ -100,6 +117,11 @@ export default function SuperAdminPortal() {
   const formatLocalDateTime = (date) => {
     const tzoffset = date.getTimezoneOffset() * 60000;
     return new Date(date - tzoffset).toISOString().slice(0, 16);
+  };
+
+  const formatDisplayDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleString();
   };
 
   const [manualBasePlan, setManualBasePlan] = useState("Basic");
@@ -296,12 +318,71 @@ export default function SuperAdminPortal() {
       const res = await smartErpApi.getCompanyUsers(id);
       setDetailCompanyUsers(res.data || []);
     } catch (err) {
-      console.error("Failed to load company users:", err);
+      console.error("Failed");
     } finally {
       setLoadingUsers(false);
     }
   };
-  const filteredCompanies = (companies || []).filter(c => {
+
+
+
+  const handleTriggerBackup = async () => {
+    if (!window.confirm("Are you sure you want to trigger a manual database backup?")) return;
+    setBackupLoading(true);
+    try {
+      await smartErpApi.triggerBackup();
+      setActionMessage("Manual backup triggered successfully.");
+      fetchData();
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to trigger backup.");
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const handleRestoreBackup = async (id) => {
+    if (!window.confirm("CRITICAL WARNING: Restoring a backup will overwrite the current database state! Proceed?")) return;
+    setBackupLoading(true);
+    try {
+      await smartErpApi.restoreBackup(id);
+      setActionMessage("Backup restored successfully.");
+      fetchData();
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to restore backup.");
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const handleDownloadBackup = async (id) => {
+    try {
+      const response = await smartErpApi.downloadBackup(id);
+      
+      // Extract filename from Content-Disposition header if available
+      let filename = `backup_${id}.sql`;
+      const contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch && filenameMatch.length > 1) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError("Failed to download backup. You may not have permission.");
+    }
+  };
+
+  const filteredCompanies = companies.filter(c => {
     const name = c?.companyName ?? c?.CompanyName ?? "";
     const code = c?.companyCode ?? c?.CompanyCode ?? "";
     return name.toLowerCase().includes((searchTerm || "").toLowerCase()) ||
@@ -383,28 +464,127 @@ export default function SuperAdminPortal() {
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <ul className="nav nav-pills mb-4 bg-white p-2 rounded-3 shadow-sm flex-column flex-sm-row gap-2 gap-sm-0">
-        <li className="nav-item">
-          <button className={`nav-link fw-bold px-4 w-100 ${activeTab === "companies" ? "active" : "text-dark"}`} onClick={() => setActiveTab("companies")}>
-            Companies & Subscription Tiers
-          </button>
-        </li>
-        <li className="nav-item">
-          <button className={`nav-link fw-bold px-4 w-100 ${activeTab === "audit" ? "active" : "text-dark"}`} onClick={() => setActiveTab("audit")}>
-            System Audit Trail
-          </button>
-        </li>
-        <li className="nav-item">
-          <button className={`nav-link fw-bold px-4 w-100 ${activeTab === "chats" ? "active" : "text-dark"}`} onClick={() => setActiveTab("chats")}>
-            Live Visitor Chats
-          </button>
-        </li>
-      </ul>
+      {/* Modern Tabs Navigation */}
+      <div className="bg-white rounded-3 shadow-sm p-3 mb-4 border-0">
+        <ul className="nav nav-pills gap-2 flex-wrap">
+          {[
+            { id: "companies", label: "Tenant Directory", icon: "bi-building" },
+            { id: "chats", label: "Support Chats Inbox", icon: "bi-chat-dots" },
+            { id: "backups", label: "Disaster Recovery", icon: "bi-cloud-arrow-up" },
+            { id: "system_errors", label: "System Error Logs", icon: "bi-bug" },
+            { id: "audit", label: "System Audit Trail", icon: "bi-shield-lock" }
+          ].map(tab => (
+            <li key={tab.id} className="nav-item">
+              <button
+                className={`btn btn-sm d-flex align-items-center gap-2 px-3 py-2 fw-semibold border-0 ${activeTab === tab.id ? "btn-primary shadow-sm" : "btn-light text-muted"}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <i className={tab.icon} />
+                {tab.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* Tab Content */}
       <div className="bg-white p-4 rounded-3 shadow-sm border-0">
-        {activeTab === "chats" ? (
+        {activeTab === "backups" ? (
+          <div>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h4 className="fw-bold m-0">System Backups & Disaster Recovery</h4>
+              <button 
+                className="btn btn-primary d-flex align-items-center gap-2"
+                onClick={handleTriggerBackup}
+                disabled={backupLoading}
+              >
+                {backupLoading ? <span className="spinner-border spinner-border-sm" /> : <i className="bi bi-cloud-arrow-up" />}
+                Trigger Manual Backup
+              </button>
+            </div>
+            <div className="table-responsive">
+              <table className="table table-hover align-middle table-sm" style={{ fontSize: '0.85rem' }}>
+                <thead className="table-dark">
+                  <tr>
+                    <th>ID</th>
+                    <th>Date & Time</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>File Size</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {systemBackups.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center text-muted py-4">No backups found.</td>
+                    </tr>
+                  ) : systemBackups.map(b => (
+                    <tr key={b.id}>
+                      <td>{b.id}</td>
+                      <td>{formatDisplayDate(b.createdAt)}</td>
+                      <td><span className="badge bg-secondary">{b.type}</span></td>
+                      <td>
+                        <span className={`badge bg-${b.status === 'Completed' ? 'success' : 'danger'}`}>
+                          {b.status}
+                        </span>
+                      </td>
+                      <td>{b.fileSizeBytes ? (b.fileSizeBytes / (1024 * 1024)).toFixed(2) + " MB" : "-"}</td>
+                      <td className="text-end">
+                        <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleDownloadBackup(b.id)}>
+                          Download
+                        </button>
+                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleRestoreBackup(b.id)}>
+                          Restore
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : activeTab === "system_errors" ? (
+          <div>
+            <h4 className="fw-bold mb-4">System Error Logs</h4>
+            <div className="table-responsive">
+              <table className="table table-hover align-middle table-sm" style={{ fontSize: '0.85rem' }}>
+                <thead className="table-dark">
+                  <tr>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Message</th>
+                    <th>Path</th>
+                    <th>Tenant</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {systemErrors.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center text-muted py-4">No recent system errors found.</td>
+                    </tr>
+                  ) : systemErrors.map(e => (
+                    <tr key={e.id}>
+                      <td>{e.id}</td>
+                      <td>{new Date(e.timestamp).toLocaleString()}</td>
+                      <td className="text-danger fw-bold">{e.message}</td>
+                      <td><code>{e.method} {e.path}</code></td>
+                      <td>{e.tenantId || e.companyId || "-"}</td>
+                      <td>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={() => {
+                          alert(e.stackTrace || "No Stack Trace");
+                        }}>
+                          Trace
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : activeTab === "chats" ? (
           <SuperAdminChatInbox />
         ) : activeTab === "companies" ? (
           <div>

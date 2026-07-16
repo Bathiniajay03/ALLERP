@@ -24,8 +24,8 @@ export default function LandingPage() {
   });
 
   return (
-    <div className="mind-landing-page" style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", backgroundColor: '#f8fafc', color: '#0f172a' }}>
-      
+    <div className="mind-landing-page" style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", backgroundColor: '#f8fafc', color: '#0f172a', overflowX: 'hidden', width: '100%' }}>
+
       {/* Global CSS for MIND ERP Light Theme */}
       <style>{`
         :root {
@@ -39,9 +39,13 @@ export default function LandingPage() {
           --mind-border: rgba(0, 0, 0, 0.06);
           --mind-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
         }
-        body {
+        html, body {
           background-color: var(--mind-bg);
           color: var(--mind-text-main);
+          overflow-x: hidden;
+          width: 100%;
+          margin: 0;
+          padding: 0;
         }
         .mind-hero-bg {
           position: absolute;
@@ -82,9 +86,9 @@ export default function LandingPage() {
       `}</style>
 
       {/* Progress Bar */}
-      <motion.div 
-        className="position-fixed top-0 start-0 right-0 z-3" 
-        style={{ height: '3px', width: '100vw', scaleX, transformOrigin: '0%', background: 'linear-gradient(90deg, var(--mind-primary), var(--mind-info))' }}
+      <motion.div
+        className="position-fixed top-0 start-0 right-0 z-3"
+        style={{ height: '3px', width: '100%', scaleX, transformOrigin: '0%', background: 'linear-gradient(90deg, var(--mind-primary), var(--mind-info))' }}
       />
 
       <Navbar />

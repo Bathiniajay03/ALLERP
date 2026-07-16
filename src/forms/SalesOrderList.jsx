@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { smartErpApi } from "../services/smartErpApi";
+import { useReactToPrint } from "react-to-print";
 
 const STATUS_OPTIONS = [
   "Draft",
@@ -15,10 +16,13 @@ const STATUS_OPTIONS = [
   "Backorder"
 ];
 
-export default function SalesOrderList() {
+const SalesOrderList = React.memo(function SalesOrderList() {
   const [orders, setOrders] = useState([]);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const brand = useMemo(() => {
+    try { return JSON.parse(window.sessionStorage.getItem("erp_company_brand") || "{}"); } catch { return {}; }
+  }, []);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusForm, setStatusForm] = useState({ status: "Confirmed", remarks: "" });
@@ -27,6 +31,12 @@ export default function SalesOrderList() {
   
   // New state for viewing the invoice document
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  
+  const invoiceRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    content: () => invoiceRef.current,
+    documentTitle: `Invoice_${selectedOrder?.orderNumber || 'Document'}`
+  });
 
   useEffect(() => {
     loadData();
@@ -475,14 +485,17 @@ export default function SalesOrderList() {
               <button className="btn-close btn-close-white" onClick={() => setShowInvoiceModal(false)}></button>
             </div>
             
-            <div className="erp-dialog-body bg-white p-5 text-dark" id="printable-invoice-area">
+            <div className="erp-dialog-body bg-white p-5 text-dark" id="printable-invoice-area" ref={invoiceRef}>
               {/* Header */}
               <div className="d-flex justify-content-between mb-5 border-bottom pb-4">
                 <div>
-                  <h3 className="fw-bold mb-1" style={{ color: 'var(--erp-primary)' }}>NODE.STOCK</h3>
+                  {brand.logo ? (
+                     <img src={brand.logo} alt="Company Logo" style={{ maxHeight: '60px', marginBottom: '10px' }} />
+                  ) : (
+                     <h3 className="fw-bold mb-1" style={{ color: brand.primaryColor || 'var(--erp-primary)' }}>{brand.companyName || 'MIND ERP'}</h3>
+                  )}
                   <div className="small text-muted">
-                    Enterprise Order Management<br/>
-                    100 System Way, Cloud City
+                    {brand.storefrontDescription || 'Enterprise Order Management'}
                   </div>
                 </div>
                 <div className="text-end">
@@ -556,7 +569,7 @@ export default function SalesOrderList() {
             
             <div className="p-3 bg-light border-top d-flex justify-content-end gap-2 d-print-none">
               <button className="btn btn-light border erp-btn" onClick={() => setShowInvoiceModal(false)}>Close</button>
-              <button className="btn btn-primary erp-btn" onClick={() => window.print()}>🖨 Print Invoice</button>
+              <button className="btn btn-primary erp-btn" onClick={handlePrint}>🖨 Download PDF / Print</button>
             </div>
           </div>
         </div>
@@ -844,4 +857,6 @@ export default function SalesOrderList() {
       `}</style>
     </div>
   );
-}
+});
+
+export default SalesOrderList;

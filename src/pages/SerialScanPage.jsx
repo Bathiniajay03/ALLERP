@@ -241,23 +241,47 @@ export default function SerialScanPage() {
               <div className="row g-2">
                 <div className="col-md-6">
                   <div className="text-muted small">Item</div>
-                  <div>{serialInfo.itemCode || `Item ${serialInfo.itemId}`}</div>
+                  <div className="fw-semibold">{serialInfo.itemCode || `Item ${serialInfo.itemId}`}</div>
                 </div>
                 <div className="col-md-6">
                   <div className="text-muted small">Warehouse</div>
-                  <div>{serialInfo.warehouseName || `WH-${serialInfo.warehouseId}`}</div>
+                  <div className="fw-semibold">{serialInfo.warehouseName || `WH-${serialInfo.warehouseId}`}</div>
                 </div>
                 <div className="col-md-6">
                   <div className="text-muted small">Lot</div>
-                  <div>{serialInfo.lotNumber || "General"}</div>
+                  <div className="fw-semibold">{serialInfo.lotNumber || "General"}</div>
                 </div>
                 {serialInfo.purchaseOrderNumber && (
                   <div className="col-md-6">
                     <div className="text-muted small">PO Reference</div>
-                    <div>{serialInfo.purchaseOrderNumber}</div>
+                    <div className="fw-semibold">{serialInfo.purchaseOrderNumber}</div>
                   </div>
                 )}
               </div>
+
+              {/* WMS Specific Storage Location Details */}
+              <div className="mt-3 pt-3 border-top">
+                <h6 className="fw-bold mb-2 text-primary small uppercase" style={{ letterSpacing: '0.5px', fontSize: '0.8rem' }}>WMS Storage Location</h6>
+                {serialInfo.wmsBinCode ? (
+                  <div className="row g-2 bg-light p-2 rounded">
+                    <div className="col-4">
+                      <div className="text-muted small" style={{ fontSize: '0.75rem' }}>Zone</div>
+                      <div className="fw-semibold text-dark">{serialInfo.wmsZoneName || "N/A"}</div>
+                    </div>
+                    <div className="col-4">
+                      <div className="text-muted small" style={{ fontSize: '0.75rem' }}>Aisle / Rack</div>
+                      <div className="fw-semibold text-dark">Aisle {serialInfo.wmsAisleCode || "N/A"} / Rack {serialInfo.wmsRackCode || "N/A"}</div>
+                    </div>
+                    <div className="col-4">
+                      <div className="text-muted small" style={{ fontSize: '0.75rem' }}>Shelf / Bin</div>
+                      <div className="fw-semibold text-dark">Shelf {serialInfo.wmsShelfCode || "N/A"} / Bin <span className="badge bg-secondary font-monospace">{serialInfo.wmsBinCode}</span></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-muted small fst-italic">This serial is not currently placed in any WMS Bin layout.</div>
+                )}
+              </div>
+
               <div className="mt-3">
                 <label className="form-label small mb-1">Dispatch Reason (optional)</label>
                 <input
